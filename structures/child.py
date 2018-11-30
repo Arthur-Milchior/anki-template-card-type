@@ -9,7 +9,7 @@ class SingleChild(Gen):
 
     def _getNormalForm(self):
         self.normalizedChild = self.child.getNormalForm()
-
+        
 
         
 class Requirement(SingleChild):
@@ -54,10 +54,11 @@ class Requirement(SingleChild):
                 t = f"{{{{{symbol}{element}}}}}{t}{{{{/{element}}}}}"
         return t
 
-    def _restrictFields(self, fields, empty, hasContent, considered = None):
-        if (forbidden & hasContent) or (empty & requireds):
+    def _restrictFields(self, fields, empty, hasContent):
+        if (self.forbidden & hasContent) or (self.requireds & empty) or (self.requireds - fields):
             return empty
+        considered = (empty|hasContent)
         childRestricted = self.child.restrictFields(fields,empty|forbidden,hasContent|requireds)
         if not childRestricted:
             return empty
-        return Requireds(child=childRestricted, requireds = self.requireds, forbidden = self.forbidden, normalized = True)
+        return Requirements(child=childRestricted, requireds = self.requireds - considered, forbidden = (self.forbidden - considered) & fields, normalized = True)

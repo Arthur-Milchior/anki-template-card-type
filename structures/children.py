@@ -54,7 +54,7 @@ class ListElement(MultipleChild):
             element = element.restrictFields(fields,empty,hasContent)
             if element.toKeep():
                 elements.append(element)
-        return ListElement(element)
+        return ListElement(element, normalized = True)
             
     def _mustache():
         pass

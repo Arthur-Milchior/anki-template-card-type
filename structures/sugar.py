@@ -1,6 +1,7 @@
 from .structures.children import MultipleChild
 from .structures.child import SingleChild
-
+from .structures.leaf import Empty, empty
+from html import escape
 
 class AtLeastOne(SingleChild):
     """Show the child if there is at least one condition.
@@ -182,3 +183,73 @@ class NumberedFields(ListFields):
     def __init__(fieldPrefix, greater, *args, **kwargs):
         fields = [f"""{fieldPrefix}{i}""" for i in range(1,greater+1)]
         super.__init__(fields, *args, **kwargs)
+
+class HTML(SingleChild):
+    """A html tag, and its content.
+
+    A tag directly closed, such as br or img, should have child empty
+    (default value). Values are escaped.
+    If child is an Empty object, then toKeep is assumed to be
+    true."""
+
+    def __init__(self, tag, params=[],child = empty, toKeep = None
+                 *args, **kwargs):
+        self.tag = tag
+        self.params = params
+        if toKeep is None and child == empty:
+            toKeep = True
+        super().__init__(child , toKeep = toKeep, *args, **kwargs)
+
+    def _getNormalForm(self):
+        tag = f"""<{self.tag}"""
+        for (param, value) in self.params:
+            tag+= f""" {param}="{escape(value)}\""""
+        if child == empty:
+            return Literal(f"""{tag}/>""", toKeep = self.toKeep)
+        else:
+            return ListElement([Literal(f"""{tag}>"""),self.child,Literal(f"""</{self.tag}>""")], toKeep=self.toKeep).getNormalForm()
+
+br = HTML("br")
+hr = HTML("hr")
+class Image(HTML):
+    def __init__(self,url):
+        super().__init__("img",["src",url])
+class Table(HTML):
+    def __init__(self, content, trParams = [], tdParams = [] *args, **kwargs):
+        """
+        A table with content stated. If content is empty, its normal
+        form is an Empty object.
+        
+        content -- a list of n lists of m fields. Assuming each
+        element of content have the same length. """
+        table = []
+        for content_ in content:
+            line = []
+            for content__ in content_:
+                line.append(HTML(tag = "td",
+                                 params = tdParams,
+                                 child = content))
+            table.append(HTML(tag = "tr",
+                              params = trParams,
+                              child = ListElement(elements = line)
+            ))
+        super().__init__("table", child = ListElement(elements =
+        table), *args, **kwargs)
+
+def _fixedTag(tag):
+    class FIXED(HTML):
+        def __init__(self,*args, **kwargs):
+            super().__init__(tag,*args, **kwargs)
+    return FIXED
+SPAN = _fixedTag("span")
+DIV = _fixedTag("div")
+P = _fixedTag("p")
+# class SPAN(HTML):
+#     def __init__(self,*args, **kwargs):
+#         super().__init__("span",*args, **kwargs)
+# class DIV(HTML):
+#     def __init__(self,*args, **kwargs):
+#         super().__init__("div",*args, **kwargs)
+# class P(HTML):
+#     def __init__(self,*args, **kwargs):
+#         super().__init__("p",*args, **kwargs)
