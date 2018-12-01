@@ -1,28 +1,15 @@
 import copy
 from .structures import Gen
-from .structures.leaf import Literal, Field
+from .structures.leaf import Literal, Field, Empty, emptyGen
 from .structures.child import Requirements, AtLeastOne
 
 class MultipleChild(Gen):
-    def __init__(self, children, *args, **kwargs):
-        super().__init__( *args, **kwargs)
-        self.children = children
-        self.normalizedChildren = None
-    def _mustache(self, *args, **kwargs):
-        t = ""
-        for child in self.children:
-            t+= child.mustache(*args, **kwargs)
-        return t
-
-    def getNormalizedChilden(self):
-        """Memoize the normal form of children. Return it."""
-        if self.normalizedChildren is None:
-            self.normalizedChildren = [child.normalize() for child in self.children]
-        return self.normalizedChildren
-    
+    pass
+        
 class ListElement(MultipleChild):
     def __init__(self, elements = None, *args, **kwargs):
-        """ 
+
+    """ 
         Keyword arguments:
         nodes -- list of elements. 
                  A string is interpreted as Literal which can be
@@ -33,33 +20,125 @@ class ListElement(MultipleChild):
         for element in elements:
             if isinstance(element,str):
                 element = Literal(element)
+            if not(element):#don't add empty elements.
+                continue
             if isinstance(element,Gen):
                 self.children.append(element)
             else:
                 raise Exception(element, "is neither string nor Gen.")
         super().__init__(self, self.children, *args, **kwargs)
 
-    def _getNormalForm(self):
-        return ListElement(self.getNormalizedChilden() , normalized = True)
-
-    def _toKeep(self):
-        for element in self.elements:
-            if element.toKeep():
-                return True
-        return False
+    def getChildren(self):
+        return self.children
     
-    def _restrictFields(self,fields,empty,hasContent):
-        elements = []
-        for element in self.elements:
-            element = element.restrictFields(fields,empty,hasContent)
-            if element.toKeep():
-                elements.append(element)
-        return ListElement(element, normalized = True)
-            
-    def _mustache():
-        pass
+    def _applyRecursively(self,fun, *args, **kwargs):
+        """self, with fun applied to each element. 
 
-            
+        normalized and unRedundanted are passed to class constructor."""
+        elements = []
+        change = False
+        for element in self.elements:
+            element_ = fun(element)
+            if element != element:
+                change = True
+            if element:
+                elements.append(element)
+        if not elements:
+            return emptyGen
+        if len(elements) == 1:
+            return elements[0]
+        if change:
+            return ListElement(elements = elements, *args, **kwargs)
+        else:
+            return self
+
+    def _template(self, *args, **kwargs):
+        t = ""
+        for child in self.children:
+            t+= child.template(*args, **kwargs)
+        return t
+    
+class Branch(Gen):
+    """The class which expands differently in function of the question/hidden value.
+
+    name -- the name of this question.
+    children[isQuestion][isAsked] -- the field to show on the side question/answer of card (depending on isQuestion). Depending on whether this value is asked or not."""
+    def __init__(self,
+                 name = None,
+                 default = None,
+                 question = None,
+                 answerAsked = None,
+                 answerNotAsked = None
+                 answer = None,
+                 asked = None,
+                 notAsked = None,
+                 questionAsked = None,
+                 questionNotAsked = None,
+                 children = None,
+                 toClone = None,
+                 *args,
+                 **kwargs):
+        """
+        The value of self.children[isQuestion,isAsked] is:
+        {isQuestion}{IsAsked} if it exists.
+        {isAsked} if it exists
+        {isQuestion} if it exists
+        children[isQuestion,isAsked]
+        {default} if it exists
+        empty otherwise.
+
+        """
+        if name is not None:
+            self.name = name
+        elif toClone is not None:
+            self.name = toClone.name
+        else:
+            assert False
+        self.children = dict()
+        tmp = dict()
+        tmp[True,True]= [questionAsked, asked, question, children.get((True,True)), default, emptyGen]
+        tmp[True,False] = [questionNotAsked, notAsked, question, children.get((True,False)), default, emptyGen]
+        tmp[False,True]= [answerAsked, asked, answer, children.get((False,True)), default, emptyGen]
+        tmp[False,False] = [answerNotAsked, notAsked, answer, children.get((False,False)), default, emptyGen]
+        for isQuestionAsked in tmp:
+            for value in tmp[isQuestionAsked]:
+                if value is not None:
+                    self.children[isQuestionAsked] = value
+                    break
+        super().__init__( toClone = toClone, *args, **kwargs)
+
+    def getChildren(self):
+        return self.children.values()
+    
+    def _applyRecursively(fun, **kwargs):
+        children = dict()
+        change = False
+        shouldKeep = False
+        for isQuestionAsked in self.children:
+            tmp = fun(self.children[isQuestionAsked])
+            if tmp != self.children[isQuestionAsked]:
+                change = True
+            if tmp.toKeep():
+                shouldKeep = True
+            children[isQuestionAsked] = tmp
+        if not shouldKeep:
+            return emptyGen
+        if not change:
+            return self
+        return Branch(children = children, **kwargs)
+    
+    def _assumeFieldInSet(self, field, set):
+        if set == "Remove" and field == self.name:
+            return emptyGen
+        return super()._assumeFieldInSet(field,set)
+
+    def _template(self, asked = None, hide = None, isQuestion = False):
+        if hide and self.name in hide:
+            return ""
+        isAsked = asked and self.name in asked
+        return self.children[question,isAsked].template(asked = asked, hide = hide, isQuestion=isQuestion)
+        
+    
 # class RecursiveFields(MultipleChild):
 #     """
 
@@ -67,13 +146,11 @@ class ListElement(MultipleChild):
 #     def __init__(self,
 #                  fields,
 #                  descriptions ,
-#                  name = "",
 #                  hideSuccessor = False,
 #                  *args,
 #                  **kwargs):
 #         super().__init__(*args, **kwargs)
 #         self.fields = fields
-#         self.name = name
 #         self.descriptionsOriginal =copy.deepcopy(descriptions)
 #         self.descriptions = descriptions
 #         self.hideSuccessor = hideSuccessor

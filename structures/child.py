@@ -1,64 +1,176 @@
 import copy
+import sys
 from .structures import Gen
-from .leaf import empty
+from .leaf import emptyGen
 
 class SingleChild(Gen):
     def __init__(self, child, *args, **kwargs):
         self.child = child
-        super().__init__( *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-    def _getNormalForm(self):
-        self.normalizedChild = self.child.getNormalForm()
-        
-
-        
+    def getChildren(self):
+        return frozenset{{self.child}}
+    
+    def _applyRecursively(self, fun,*args,*kwargs):
+        return self
+         
 class Requirement(SingleChild):
-    """Ask child, if all elements of present are present, and those of absent are absent.
+    """Conditional. Both about the content of the field. And the existence of the field in the model.
 
-    An element of present already parent's present
 
+    requireFilled -- the fields which must have some content, (and thus be present in the model)
+    requireEmpty -- the field must be either requireEmpty or absentOfModel of the model
+    inModel -- the field must be present in the model. 
+    absentOfModel -- the field must not belong to the model
+    remove -- named descendant to remove.
+
+    requirements -- the map of set to use if the other value is not explicitly given.
+
+    requireFilled is systematically removed from inModel, because it's redundant.
     """
     def __init__(self,
                  child,
-                 requireds = frozenset(),
-                 forbidden = frozenset(),
+                 requirements = None
+                 requireFilled = None,
+                 requireEmpty = None,
+                 inModel = None,
+                 absentOfModel = None,
+                 remove = None,
+                 empty = None,#added to be sure not to have it in *kwargs
+                 toClone = None
                  *args,
                  **kwargs):
-        # newPresent =requireds  - self.presentFixedInParent()
-        # newAbsent = absent - self.presentFixedInParent()
-        #present = newPresent, absent = newAbsent,
-        super().__init__(child,*args, **kwargs)
-        self.requireds = requireds
-        self.forbidden = forbidden
-        #self.contradiction = (requireds & self.absentInParent()) or (forbidden & self.presentInParent())
+        self.requirements = dict()
+        for (name, param) in {("Filled",requireFilled),
+                              ("Remove",requireremove),
+                              ("Empty",requireEmpty),
+                              ("In model",inModel),
+                              ("Absent of model", absentOfModel)}:
+            if param is not None:
+                self.requirements[name] = frozenset(param)
+            elif requirements is not None:
+                self.requirements[name] = frozenset(requirements.get(name,frozenset()))
+            elif toClone is not None:
+                self.requirements[name] = toClone.requirements[name]
+            else:
+                assert False
+            inconsistent = self.isInconsistent(self):
+        if inconsistent:
+            print("Inconsistant requirements.",file=sys.stderr)
+        super().__init__(child,
+                         empty = inconsistant or empty,
+                         toClone = toClone,
+                         *args,
+                         **kwargs)
+        #self.contradiction = (requireFilled & self.requirements["Absent of model"]InParent()) or (requireEmpty & self.presentInParent())
 
-    def _getNormalForm(self):
-        super().normalize()
-        normal = copy.copy(self)
-        normal.normalized = True
-        normal.child = self.normalizedChild
-        return normal
+    def isInconsistent(self):
+        return ((self.requirements["Filled"] & self.requirements["Empty"]) or
+                (self.requirements["Filled"] & self.requirements["Absent of model"]) or
+                (self.requirements["In model"] & self.requirements["Absent of model"]))
+    
+    def _applyRecursively(self, fun,*args,*kwargs):
+        #used at least for _getNormalForm
+        child = fun(self.child)
+        if not child:
+            return False
+        return Requirements(child = child, requirements = self.requirements,*args,*kwargs)
+
+    def _getUnRedundate(self):
+        child = self.child
+        for requirementName in self.requirements:
+            for field in self.requirements[requirementName]:
+                child = child.assumeFieldInSet(requirementName, field)
+        if child == self.child:
+            return self
+        if not child:
+            return emptyGen
+        return Requirement(child = child,
+                           requirements = self.requirements,
+                           normalized = True,
+                           unRedundanted = True)
+    
+    def _assumeFieldInSet(self, field, set):
+        contradictorySets = {"Absent Of Model":{"Filled", "In model"},
+                             "In model":{"Absent of model"},
+                             "Empty":{"Filled"},
+                             "Filled": {"Empty", "Absent of model"},
+                             "Remove": frozenset()}
+        for contradictorySet in contradictorySets[set]:
+            if field in contradictorySet:
+                return empty
         
-    def _toKeep(self):
-        return self.child.toKeep()
+        redudantSets = {"Absent Of Model":"Empty",
+                        "In model":None,
+                        "Empty":None,
+                        "Filled":  "In model",
+                        "Remove": None}
+        redudantSet = redudantSets[set]
+        requirements = copy.copy(self.requirements)
+        change = False
+        if redudantSet and field in self.requirements[redudantSet]:
+            requirements[redudantSet] = requirements[redudantSet]-{field}
+            change = True
+        if field in self.requirements[set]:
+            requirements[set] = requirements[set]-{field}
+            change = True
+        if change: #since self is not redundant, the removed requirement was already taken in consideration.
+            child = self.child
+        else:
+            child = self.child.assumeFieldInSet(field,set)
+            if not child:
+                return emptyGen
+            if child == self.child:
+                return self
+        if requirements["Filled"] or  requirements["Empty"] or  requirements["In model"] or  requirements["absent of model"]):
+            return Requirement(child = child,
+                               requirements = self.requirements,
+                               normalized = True,
+                               unRedundanted = True)
+        else:
+            return child
+
+    def restrictToModel(self,fields):
+        if self.requirements["In model"] - fields or self.requirements["Absent of model"]&fields:
+            return emptyGen
+        child = self.child.restrictToModel(fields):
+        if not child:
+            return emptyGen()
+        return Requirement(child = child,
+                           requirements = self.requirements,
+                           requireFilled = self.requirements["Filled"],
+                           requireEmpty = self.requirements["Empty"] - fields)
+
+    
         
-    def _mustache(self,asked = None, question = None):
-        t = self.child.mustache(asked = asked, question = question)
+        
+    def _template(self, *args, **kwargs):
+        t = self.child.template(asked = asked, *args, **kwargs)
         if not t:
-            return ""
+           return ""
         for (set, symbol) in [
-                (self.requireds,"#"),
-                (self.rejecteds,"^")
+                (self.requirements["Filled"],"#"),
+                (self.requirements["Empty"],"^")
         ]:
             for element in set:
                 t = f"{{{{{symbol}{element}}}}}{t}{{{{/{element}}}}}"
+        if self.requirements["Remove"]:
+            raise Exception("Asking to require to remove something")
+        if  self.requirements["In model"]:
+            raise Exception("Asking to require the presence of a thing in model")
+        if self.requirements["Absent of model"]:
+            raise Exception("Asking to require the absence of a thing in model")
         return t
 
-    def _restrictFields(self, fields, empty, hasContent):
-        if (self.forbidden & hasContent) or (self.requireds & empty) or (self.requireds - fields):
-            return empty
-        considered = (empty|hasContent)
-        childRestricted = self.child.restrictFields(fields,empty|forbidden,hasContent|requireds)
-        if not childRestricted:
-            return empty
-        return Requirements(child=childRestricted, requireds = self.requireds - considered, forbidden = (self.forbidden - considered) & fields, normalized = True)
+    
+
+    # def _restrictFields(self, fields, requireEmpty, hasContent):
+    #     if (self.requirements["Empty"] & hasContent) or (self.requirements["Filled"] & requireEmpty) or (self.requirements["Filled"] - fields):
+    #         return emptyGen
+    #     considered = (requireEmpty|hasContent)
+    #     childRestricted = self.child.restrictFields(fields,emptyGen|emptyGen,hasContent|requireFilled)
+    #     if not childRestricted:
+    #         return emptyGen
+    #     return Requirements(child=childRestricted, requireFilled = self.requirements["Filled"] - considered, emptyGen = (self.requirements["Empty"] - considered) & fields, normalized = True)
+    
+
