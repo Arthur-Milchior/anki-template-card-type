@@ -1,5 +1,5 @@
-from .structures.child import SingleChild
-from .structures.leaf import emptyGen
+from ..child import SingleChild
+from ..leaf import emptyGen
 
 class HTML(SingleChild):
     """A html tag, and its content.
@@ -9,7 +9,7 @@ class HTML(SingleChild):
     If child is an Empty object, then toKeep is assumed to be
     true."""
 
-    def __init__(self, tag, params=[],child = emptyGen, toKeep = None
+    def __init__(self, tag,child = emptyGen, params={}, toKeep = None,
                  *args, **kwargs):
         self.tag = tag
         self.params = params
@@ -19,8 +19,9 @@ class HTML(SingleChild):
 
     def _getNormalForm(self):
         tag = f"""<{self.tag}"""
-        for (param, value) in self.params:
-            tag+= f""" {param}="{escape(value)}\""""
+        for param in self.params:
+            value = self.params[param]
+            tag+= f""" {param}="{escape(value)}" """
         if not child:
             return Literal(f"""{tag}/>""", toKeep = self.toKeep)
         else:
@@ -30,9 +31,9 @@ br = HTML("br")
 hr = HTML("hr")
 class Image(HTML):
     def __init__(self,url):
-        super().__init__("img",["src",url])
+        super().__init__("img",{"src":url})
 class Table(HTML):
-    def __init__(self, content, trParams = [], tdParams = [] *args, **kwargs):
+    def __init__(self, content, trParams = [], tdParams = [], *args, **kwargs):
         """
         A table with content stated. If content is emptyGen, its normal
         form is an Empty object.
@@ -55,18 +56,18 @@ class Table(HTML):
 
 def _fixedTag(tag):
     class FIXED(HTML):
-        def __init__(self,*args, **kwargs):
-            super().__init__(tag,*args, **kwargs)
+        def __init__(self, *args, **kwargs):
+            super().__init__(tag, *args, **kwargs)
     return FIXED
 SPAN = _fixedTag("span")
 DIV = _fixedTag("div")
 P = _fixedTag("p")
 # class SPAN(HTML):
-#     def __init__(self,*args, **kwargs):
-#         super().__init__("span",*args, **kwargs)
+#     def __init__(self, *args, **kwargs):
+#         super().__init__("span", *args, **kwargs)
 # class DIV(HTML):
-#     def __init__(self,*args, **kwargs):
-#         super().__init__("div",*args, **kwargs)
+#     def __init__(self, *args, **kwargs):
+#         super().__init__("div", *args, **kwargs)
 # class P(HTML):
-#     def __init__(self,*args, **kwargs):
-#         super().__init__("p",*args, **kwargs)
+#     def __init__(self, *args, **kwargs):
+#         super().__init__("p", *args, **kwargs)

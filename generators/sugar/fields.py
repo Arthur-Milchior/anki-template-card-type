@@ -1,7 +1,7 @@
-from .structures.children import MultipleChild, ListElement
-from .structures.child import SingleChild, Requirement
-from .structures.leaf import Empty, emptyGen, Leaf, Literal, Field
-from .structures.sugar.conditionals import PresentOrAbsent 
+from ..children import MultipleChild, ListElement
+from ..child import SingleChild, Requirement
+from ..leaf import Empty, emptyGen, Leaf, Literal, Field
+from .conditionals import PresentOrAbsent 
 from html import escape
 
 class Question(Leaf):
@@ -10,31 +10,36 @@ class Question(Leaf):
                  prefix = emptyGen,
                  suffix = emptyGen,
                  symbol = None,
+                 answer = None,
                  question = None,
-                 separator = " : ",
+                 empty = None,
+                 separator = ": ",
                  toKeep = True,
-                 absence = emptyGen,
-                 *args, **kwargs)
+                 absenceCase = emptyGen,
+                 emptyCase = emptyGen,
+                 *args, **kwargs):
         """
         keyword arguments:
         field -- a field name. Corresponding to the information requested here.
         separator -- Text to show between prefix and field value. Never emphazed.
         prefix/suffix -- Text with which to start/end everything.
         symbol -- Text to show before the field content. If not provided, it's value is "field". Emphasized on uqestions.
-        absence -- the text to show if the field is emptyGen
+        absenceCase -- the text to show if the field is emptyGen
+        answer -- what to show for the answer of this question.
 
         * Normal form of answer is: "symbol separator emphasize({{field}})" 
         * Normal form of everything else is: "symbol separator {{field}}".
         """
     
-        self.field = field if isinstance(field, Field) else Field(field)
+        self.field = field
         self.separator = separator
         self.suffix = suffix
         self.prefix = prefix 
         self.symbol = symbol if symbol else field
         self.question = question
         self.answer = answer
-        self.absence = absence
+        self.absenceCase = absenceCase
+        self.emptyCase = emptyCase
         super().__init__(*args,
                          toKeep = toKeep,
                          **kwargs)
@@ -55,14 +60,19 @@ class Question(Leaf):
                                   requirement = self.field,
                                   toClone = self,
                                   normalized = True)
-        if self.absence is None:
-            r= requirement
-        else:
-            r= PresentOrAbsent(field = self.field,
-                               present = requirement,
-                               absence = self.absence,
-                               toClone = self,
-                               normalized = True)
+        r = requirement
+        if self.emptyCase:
+            r = FilledOrEmpty(field = self.field,
+                                filledCase = r,
+                                emptyCase = self.emptyCase,
+                                toClone = self,
+                                normalized = True)
+        if self.absenceCase:
+            r = PresentOrAbsent(field = self.field,
+                                presentCase = r,
+                                absenceCase = self.absenceCase,
+                                toClone = self,
+                                normalized = True)
         return r.getNormalForm()
 
     
@@ -118,30 +128,29 @@ class ListFields(MultipleChild):#(RecursiveFields)
         self.fields = []
         for field in fields:
             self._addField(field)
-        super().__init__(fields,*args, **kwargs)
+        super().__init__(fields, *args, **kwargs)
 
             
     def _addField(self,field):
         #from pure field
         if isinstance(field,Field):
             symbol = field.field
-            field = copy.deepcopy(field)
         #from field name
         elif isinstance(field,str):
             symbol = field
             field = Field(field)
-            
         #from pair with symbol and field
         elif isinstance(field,tuple):
-            symbol,fieldName = field
+            symbol,field = field
+            if isinstance(field,str):
+                field = Field(field)
         else:
-            raise Exception(field, "is neither a field name, a Field
-            nor a pair")
-        self.fields.append(Question(fieldName,
-                                    prefix = localPrefix,
+            raise Exception(field, """is neither a field name, a Field nor a pair""")
+        self.fields.append(Question(field,
                                     symbol = symbol,
-                                    separator = localSeparator,
-                                    suffix = localSuffix))
+                                    prefix = self.localPrefix,
+                                    separator = self.localSeparator,
+                                    suffix = self.localSuffix))
             
 
     def _getNormalForm(self):
@@ -188,7 +197,12 @@ class NumberedFields(ListFields):
     #can not be normal
     """Similar to ListFields, where the fields are of the form
     fieldPrefix, followed by an integer between 1 and greater. """
-    def __init__(fieldPrefix, greater, *args, **kwargs):
-        fields = [f"""{fieldPrefix}{i}""" for i in range(1,greater+1)]
-        super.__init__(fields, *args, **kwargs)
+    def __init__(self,fieldPrefix, greater, *args, **kwargs):
+        fields = []
+        assert(isinstance(fieldPrefix, str))
+        assert(isinstance(greater, int))
+        for i in range(1,greater+1):
+            s = f"""{fieldPrefix}{i}"""
+            fields.append(s)
+        super().__init__(fields, *args, **kwargs)
 

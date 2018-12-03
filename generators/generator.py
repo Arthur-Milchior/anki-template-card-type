@@ -1,6 +1,43 @@
 import sys
-from leaf import Literal
 
+modelToId_ =dict()
+modelToId_max = 0
+fieldsToId_ = dict()
+idToFields_ = dict()
+
+def fieldsToHashFields(fields):
+    """A hash for this set of fields. 
+    And the original saved set of fields which was used to create this hash."""
+    hash = fieldsToHash_.get(fields)
+    if hash:
+        return (hash, hashToFields_[hash])
+    modelToHash_max +=1
+    hash = modelToHash_max
+    fieldsToHash_[fields] = hash
+    hashToFields_[hash] = fields
+    return (hash, fields)
+
+def modelToHashFields(model, fields = None):
+    """Given the model, return the hash of its set of fields. And the set
+    of fields used to create this hash originally.
+    
+    fields -- if given, the set of fields of the model.
+    """
+    pair = (model["hash"], model["mod"])
+    if pair in modelToHash_:
+        hash = modelToHash_[pair]
+        fields = hashToFields_[hash]
+    else:
+        fields = fields or modelToFields(model)
+        (hash,fields) = fieldsToHashFields(fields)
+        modelToHash_[pair] = hash
+    return (hash,fields)
+    
+def modelToFields(model):
+    """The set of fields of the model given in argument"""
+    return frozenset({f["name"] for fld in model.flds})
+
+#refer to README.md to understand what this class is about
 class Gen:
     """
     Inheriting classes should implement: 
@@ -31,8 +68,9 @@ class Gen:
     returning the string implementing what is wanted 
     """
 
-    def __init__(normalized = False,
+    def __init__(self,
                  normal = None,
+                 normalized = False,
                  toKeep = None,
                  unRedundanted = False,
                  unRedundante = None,
@@ -52,8 +90,8 @@ class Gen:
         else:
             self.normalized = False
                 
-        assert (normalized is None or not normal):
-        assert (unRedundante is None or not unRedundanted):
+        assert (normalized is False or normal is None)
+        assert (unRedundanted is False or unRedundante is None)
 
         if self.normalized:
             self._normal = self
@@ -86,6 +124,11 @@ class Gen:
         self.__toModels = dict()
         self.__templates = dict()
 
+    # def __str__(self):
+    #     return f"""{self.__class____name__}({self._dic()})"""
+    # def _dic(self):
+    #     """A dictionnary used for """
+    
     def isEmpty(self):
         if self.__empty is None:
             self.__empty = self._isEmpty()
@@ -157,7 +200,7 @@ class Gen:
         descendant occurring in mulitple tree to be unredundanted won't
         have to be considered multiple time, except for the elements
         which are specific to the new tree.
-        """.
+        """
         if self._unRedundate is None:
             self._unRedundate = self.getNormalForm()._getUnRedundate()
         return self._unRedundate
@@ -179,7 +222,7 @@ class Gen:
         Memoize. Don't redefine. Call _restrictFields
         """
         if (field,set) not in self.__fieldInSets:
-            self.__fieldInSets[(field,set)] = self._assumeFieldInSet(field,set)
+            self.__fieldInSets[(field,set)] = self.getUnRedundate()._assumeFieldInSet(field,set)
         return self.__fieldInSets[(field,set)]
     
     def _assumeFieldInSet(self, field, set):
@@ -191,23 +234,24 @@ class Gen:
                                         element.assumeFieldInSet(field,set)),
                                        toClone = self)
 
-    def restrictToModel(self,fields):
-        """Given the model (as a set of fields), restrict the generator
-        according the fields existing. It follows that the returned
-        answer contains no inModel/absentOfModel requirement.
+    def restrictToModel(self,model, fields = None):
+        """Given the model, restrict the generator according the fields
+        existing. It follows that the returned answer contains no
+        inModel/absentOfModel requirement.
 
-        memoized. Thus fields should be a frozenset.
+        memoized. 
         don't reimplement.
         """
-        if fields not in self.__models:
-            self.__models[fields] = self._restrictToModel(fields)
-        raise Exception("restrictToModel a Gen")
+        (hash, fields) = modelToHashFields(model, fields = fields)
+        if hash not in self.__models:
+            self.__models[hash] = self._restrictToModel(model, fields)
+        return self.__models[hash]
     
-    def _restrictToModel(self,fields):
+    def _restrictToModel(self, model, fields = fields):
         """Similar to restrictToModel. Do the computation and don't
         memoize. Should be implemented in inheriting normal class."""
         return self._applyRecursively( (lambda element:
-                                        element.restrictToModel(fields)), toClone = self)
+                                        element.restrictToModel(model, fields = fields)), toClone = self)
     
         
     # def restrictFields(self, fields, emptyGen, hasContent)
@@ -243,3 +287,16 @@ class Gen:
 
     def _template(self, asked = None, hide = None, isQuestion = None):
         raise Exception("_template in gen")
+
+
+typeToGenerator= dict()
+def addTypeToGenerator(type,generator):
+    typeToGenerator[type]=generator
+def ensureGen(element):
+    if isinstance(element,Gen):
+        return element
+    for typ in typeToGenerator:
+        if isinstance(ensure, str):
+            return typeToGenerator[typ](ensure)
+    assert False
+

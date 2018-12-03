@@ -1,73 +1,67 @@
-from .structures.child import SingleChild
+from ..child import SingleChild
+from ..leaf import emptyGen
+from ..children import MultipleChild
 
 class AtLeastOne(SingleChild):
     """Show the child if there is at least one condition.
 
     The child is repeated as many time in the card's template as they
-    are conditions. So use this only for small text, such as
+    are fields. So use this only for small text, such as
     <table>
 
     """
-    def __init__(self,child, conditions):
+    def __init__(self,child, fields):
         super().__init__(child)
-        self.conditions = conditions
+        self.fields = fields
 
     def _getNormalForm(self):
         actual = emptyGen
         child = self.child.getNormalForm()
-        for condition in self.conditions:
+        for condition in self.fields:
             actual = FilledOrEmpty(condition, filled = child,
                                      empty = actual).getNormalForm()
         return actual
     
 class FilledOrEmpty(MultipleChild):
-    def __init__(self,field,filled = emptyGen,empty = emptyGen, *args, **kwargs):
-        self.filled = filled
-        self.empty = empty
+    def __init__(self,field,filledCase = emptyGen, emptyCase = emptyGen, *args, **kwargs):
+        self.filledCase = filledCase
+        self.emptyCase = emptyCase
         self.field = field
         super().__init__( *args, **kwargs)
 
     def getChildren(self):
-        return frozenset({self.filled, self.empty})
-    def getFilled(self):
-        return self.filled
-    def getEmpty(self):
-        return self.empty
+        return frozenset({self.filledCase, self.emptyCase})
         
     def _getNormalForm(self):
         super().normalize()
         return ListElement([
             Requirements(
-                self.getFilled().getNormalForm(),
-                requireFilled = {self.field}
+                self.filledCase.getNormalForm(),
+                requireFilledCase = {self.field}
                 ),
             Requirements(
-                self.getEmpty().getNormalForm(),
+                self.emptyCase.getNormalForm(),
                 requireEmpty = {self.field}
             )]).getNormalForm()
     
 class PresentOrAbsent(MultipleChild):
-    def __init__(self,field,present = emptyGen,absent = emptyGen, *args, **kwargs):
-        self.present = present
-        self.absent = absent
+    def __init__(self,field,presentCase = emptyGen,absentCase = emptyGen, *args, **kwargs):
+        self.presentCase = presentCase
+        self.absentCase = absentCase
         self.field = field
         super().__init__(*args, **kwargs)
 
     def getChildren(self):
-        return frozenset({self.present, self.absent})
-    def getPresent(self):
-        return self.present
-    def getAbsent(self):
-        return self.absent
+        return frozenset({self.presentCase, self.absentCase})
         
     def _getNormalForm(self):
         super().normalize()
         return ListElement([
             Requirements(
-                self.getPresent().getNormalForm(),
+                self.presentCase.getNormalForm(),
                 inModel = {self.field}
                 ),
             Requirements(
-                self.getAbsent().getNormalForm(),
+                self.absentCase.getNormalForm(),
                 absentOfModel = {self.field}
             )]).getNormalForm()

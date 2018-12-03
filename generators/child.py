@@ -1,17 +1,18 @@
 import copy
 import sys
-from .structures import Gen
+from .generator import Gen, ensureGen, modeToFields
 from .leaf import emptyGen
+
 
 class SingleChild(Gen):
     def __init__(self, child, *args, **kwargs):
-        self.child = child
+        self.child = ensureGen(child)
         super().__init__(*args, **kwargs)
 
     def getChildren(self):
-        return frozenset{{self.child}}
+        return frozenset({self.child})
     
-    def _applyRecursively(self, fun,*args,*kwargs):
+    def _applyRecursively(self, fun, *args, **kwargs):
         return self
          
 class Requirement(SingleChild):
@@ -30,14 +31,15 @@ class Requirement(SingleChild):
     """
     def __init__(self,
                  child,
-                 requirements = None
+                 requirements = None,
                  requireFilled = None,
                  requireEmpty = None,
                  inModel = None,
                  absentOfModel = None,
                  remove = None,
                  empty = None,#added to be sure not to have it in *kwargs
-                 toClone = None
+                 toClone = None,
+                 normalized = False,
                  *args,
                  **kwargs):
         self.requirements = dict()
@@ -54,12 +56,13 @@ class Requirement(SingleChild):
                 self.requirements[name] = toClone.requirements[name]
             else:
                 assert False
-            inconsistent = self.isInconsistent(self):
+            inconsistent = self.isInconsistent(self)
         if inconsistent:
             print("Inconsistant requirements.",file=sys.stderr)
         super().__init__(child,
                          empty = inconsistant or empty,
                          toClone = toClone,
+                         normalized = normalized or child.isNormal()
                          *args,
                          **kwargs)
         #self.contradiction = (requireFilled & self.requirements["Absent of model"]InParent()) or (requireEmpty & self.presentInParent())
@@ -69,12 +72,12 @@ class Requirement(SingleChild):
                 (self.requirements["Filled"] & self.requirements["Absent of model"]) or
                 (self.requirements["In model"] & self.requirements["Absent of model"]))
     
-    def _applyRecursively(self, fun,*args,*kwargs):
+    def _applyRecursively(self, fun, *args, **kwargs):
         #used at least for _getNormalForm
         child = fun(self.child)
         if not child:
             return False
-        return Requirements(child = child, requirements = self.requirements,*args,*kwargs)
+        return Requirements(child = child, toClone = self, *args, **kwargs)
 
     def _getUnRedundate(self):
         child = self.child
@@ -122,7 +125,11 @@ class Requirement(SingleChild):
                 return emptyGen
             if child == self.child:
                 return self
-        if requirements["Filled"] or  requirements["Empty"] or  requirements["In model"] or  requirements["absent of model"]):
+        if (requirements["Filled"] or
+            requirements["Empty"] or
+            requirements["In model"] or
+            requirements["Absent of model"] or
+            requirements["Remove"]):
             return Requirement(child = child,
                                requirements = self.requirements,
                                normalized = True,
@@ -130,10 +137,11 @@ class Requirement(SingleChild):
         else:
             return child
 
-    def restrictToModel(self,fields):
+    def restrictToModel(self,model,fields = None):
+        fields = fields or modeToFields(model)
         if self.requirements["In model"] - fields or self.requirements["Absent of model"]&fields:
             return emptyGen
-        child = self.child.restrictToModel(fields):
+        child = self.child.restrictToModel(model, fields = fields)
         if not child:
             return emptyGen()
         return Requirement(child = child,

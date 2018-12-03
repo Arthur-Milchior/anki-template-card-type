@@ -1,15 +1,17 @@
 import copy
-from .structures import Gen
-from .structures.leaf import Literal, Field, Empty, emptyGen
-from .structures.child import Requirements, AtLeastOne
+from .generator import Gen, addTypeToGenerator, ensureGen
+from .leaf import Literal, Field, Empty, emptyGen
 
 class MultipleChild(Gen):
     pass
         
 class ListElement(MultipleChild):
-    def __init__(self, elements = None, *args, **kwargs):
+    def __init__(self,
+                 elements = None,
+                 normalized = False,
+                 *args, **kwargs):
 
-    """ 
+        """ 
         Keyword arguments:
         nodes -- list of elements. 
                  A string is interpreted as Literal which can be
@@ -17,16 +19,22 @@ class ListElement(MultipleChild):
         toKeep = True).
         """
         self.rawElements = elements
+        unnormalizedChild = False
         for element in elements:
-            if isinstance(element,str):
-                element = Literal(element)
             if not(element):#don't add empty elements.
                 continue
+            element = ensureGen(element)
             if isinstance(element,Gen):
                 self.children.append(element)
+                if not element.isNormal():
+                    unnormalizedChild = True
             else:
                 raise Exception(element, "is neither string nor Gen.")
-        super().__init__(self, self.children, *args, **kwargs)
+        super().__init__(self,
+                         self.children,
+                         normalized = normalized or (not unnormalizedChild),
+                         *args,
+                         **kwargs)
 
     def getChildren(self):
         return self.children
@@ -58,6 +66,7 @@ class ListElement(MultipleChild):
             t+= child.template(*args, **kwargs)
         return t
     
+addTypeToGenerator(list,ListElement)
 class Branch(Gen):
     """The class which expands differently in function of the question/hidden value.
 
@@ -68,7 +77,7 @@ class Branch(Gen):
                  default = None,
                  question = None,
                  answerAsked = None,
-                 answerNotAsked = None
+                 answerNotAsked = None,
                  answer = None,
                  asked = None,
                  notAsked = None,
@@ -76,6 +85,7 @@ class Branch(Gen):
                  questionNotAsked = None,
                  children = None,
                  toClone = None,
+                 normalized = False,
                  *args,
                  **kwargs):
         """
@@ -100,12 +110,16 @@ class Branch(Gen):
         tmp[True,False] = [questionNotAsked, notAsked, question, children.get((True,False)), default, emptyGen]
         tmp[False,True]= [answerAsked, asked, answer, children.get((False,True)), default, emptyGen]
         tmp[False,False] = [answerNotAsked, notAsked, answer, children.get((False,False)), default, emptyGen]
+        notNormalChild = False
         for isQuestionAsked in tmp:
             for value in tmp[isQuestionAsked]:
                 if value is not None:
-                    self.children[isQuestionAsked] = value
+                    child = ensureGen(value)
+                    self.children[isQuestionAsked] = child
+                    if not child.isNormal():
+                        notNormalChild = True
                     break
-        super().__init__( toClone = toClone, *args, **kwargs)
+        super().__init__( toClone = toClone, normalized = normalized or not notNormalChild, *args, **kwargs)
 
     def getChildren(self):
         return self.children.values()
