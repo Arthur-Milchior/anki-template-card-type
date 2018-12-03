@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 import copy
 import sys
 from .generator import Gen, ensureGen, modeToFields
@@ -152,16 +153,23 @@ class Requirement(SingleChild):
     
         
         
-    def _template(self, *args, **kwargs):
-        t = self.child.template(asked = asked, *args, **kwargs)
+    def _template(self, soup, tag, *args, **kwargs):
+        conditional_span = soup.new_tag("span", createdBy="conditionals")
+        t = self.child.template(soup, conditional_span, *args, **kwargs)
         if not t:
-           return ""
+            conditional_span.decompose()
+            return ""
         for (set, symbol) in [
                 (self.requirements["Filled"],"#"),
                 (self.requirements["Empty"],"^")
         ]:
             for element in set:
-                t = f"{{{{{symbol}{element}}}}}{t}{{{{/{element}}}}}"
+                before = f"""{{{{{symbol}{element}}}}}"""
+                after = f"""{{{{/{element}}}}}"""
+                conditional_span.insert(0,before)
+                conditional_span.append(after)
+                t = f"{before}{t}{after}"
+        tag.append(conditional_span)
         if self.requirements["Remove"]:
             raise Exception("Asking to require to remove something")
         if  self.requirements["In model"]:
@@ -182,3 +190,53 @@ class Requirement(SingleChild):
     #     return Requirements(child=childRestricted, requireFilled = self.requirements["Filled"] - considered, emptyGen = (self.requirements["Empty"] - considered) & fields, normalized = True)
     
 
+class HTML(SingleChild):
+    """A html tag, and its content.
+
+    A tag directly closed, such as br or img, should have child emptyGen
+    (default value). Values are escaped.
+    If child is an Empty object, then toKeep is assumed to be
+    true."""
+
+    def __init__(self, tag, child = None, attrs={}, toKeep = None,
+                 *args, **kwargs):
+        self.emptyTag = child is None:
+        if self.emptyTag:
+            child = emptyGen
+        self.tag = tag
+        self.attrs = attrs
+        if toKeep is None and not child:
+            toKeep = True
+            empty = True
+        super().__init__(child , toKeep = toKeep, empty = empty, *args, **kwargs)
+
+    def _applyRecursively(self, fun, *args, **kwargs):
+        child = fun(self.child, *args,**kwargs)
+        if child == self.child:
+            return self
+        return HTML(tag, child=child, attrs=self.attrs(),toClone = self)
+
+    def _template(self, soup, tag, soup, asked = None, hide = None, isQuestion = None):
+        newtag = soup.new_tag(tag, attrs = self.attrs)
+        tag = f"""<{self.tag}"""
+        for param in self.attrs:
+            value = self.attrs[param]
+            tag+= f""" {param}="{escape(value)}" """
+        
+        if self.emptyTag:
+            t = f"""{tag}/>"""
+        else:
+            t = self.child._template(soup,newtag,asked = asked, hide = hide, isQuestion = isQuestion)
+            if not t: 
+                newtag.decompose()
+                return ""
+            t = f"""{tag}>{t}</{self.tag}>"""
+        tag.append(newtag)
+        return t
+        
+    # def _getNormalForm(self):
+
+    #     if not child:
+    #         return Literal(f"""{tag}/>""", toKeep = self.toKeep)
+    #     else:
+    #         return ListElement([Literal(f"""{tag}>"""),self.child,Literal(f"""</{self.tag}>""")], toKeep=self.toKeep).getNormalForm()

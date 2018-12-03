@@ -1,10 +1,13 @@
 import sys
-
+# from ..editTemplate import modelToFields
 modelToId_ =dict()
 modelToId_max = 0
 fieldsToId_ = dict()
 idToFields_ = dict()
 
+def modelToFields(model):
+    """The set of fields of the model given in argument"""
+    return frozenset({f["name"] for fld in model.flds})
 def fieldsToHashFields(fields):
     """A hash for this set of fields. 
     And the original saved set of fields which was used to create this hash."""
@@ -33,9 +36,6 @@ def modelToHashFields(model, fields = None):
         modelToHash_[pair] = hash
     return (hash,fields)
     
-def modelToFields(model):
-    """The set of fields of the model given in argument"""
-    return frozenset({f["name"] for fld in model.flds})
 
 #refer to README.md to understand what this class is about
 class Gen:
@@ -64,8 +64,9 @@ class Gen:
     Furthermore:
     isEmpty, returning True if the object can be deleted, (i.e. its
     text is always "" )
-    _template(self, asked = None, hide = None, question = None):
-    returning the string implementing what is wanted 
+    _template(self,soup, tag, asked = None, hide = None, isQuestion = None):
+    with soup the soup of the current xml, and tag the container
+    currently processed, in which to add currently generated elements.  
     """
 
     def __init__(self,
@@ -278,14 +279,14 @@ class Gen:
     #     """
     #     raise Exception("Context from a Gen")
         
-    def template(self, asked = None, hide = None, question = None):
+    def template(self, asked = None, hide = None, isQuestion = None):
         """Print the actual template, given the asked questions, list
         of things to hide (as frozen set)."""
-        if (asked,hide, question) in self.__template:
-            self.__template[(asked,hide,question)] = self._template(asked, hide,question)
-        return self.__template[(asked,hide,question)]
+        if (asked,hide, isQuestion) in self.__template:
+            self.__template[(asked,hide,isQuestion)] = self._template(asked, hide,isQuestion)
+        return self.__template[(asked,hide,isQuestion)]
 
-    def _template(self, asked = None, hide = None, isQuestion = None):
+    def _template(self, soup, tag, asked = None, hide = None, isQuestion = None):
         raise Exception("_template in gen")
 
 

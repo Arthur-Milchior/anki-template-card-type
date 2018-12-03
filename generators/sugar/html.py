@@ -1,39 +1,13 @@
 from ..child import SingleChild
 from ..leaf import emptyGen
 
-class HTML(SingleChild):
-    """A html tag, and its content.
-
-    A tag directly closed, such as br or img, should have child emptyGen
-    (default value). Values are escaped.
-    If child is an Empty object, then toKeep is assumed to be
-    true."""
-
-    def __init__(self, tag,child = emptyGen, params={}, toKeep = None,
-                 *args, **kwargs):
-        self.tag = tag
-        self.params = params
-        if toKeep is None and not child:
-            toKeep = True
-        super().__init__(child , toKeep = toKeep, *args, **kwargs)
-
-    def _getNormalForm(self):
-        tag = f"""<{self.tag}"""
-        for param in self.params:
-            value = self.params[param]
-            tag+= f""" {param}="{escape(value)}" """
-        if not child:
-            return Literal(f"""{tag}/>""", toKeep = self.toKeep)
-        else:
-            return ListElement([Literal(f"""{tag}>"""),self.child,Literal(f"""</{self.tag}>""")], toKeep=self.toKeep).getNormalForm()
-
 br = HTML("br")
 hr = HTML("hr")
 class Image(HTML):
     def __init__(self,url):
         super().__init__("img",{"src":url})
 class Table(HTML):
-    def __init__(self, content, trParams = [], tdParams = [], *args, **kwargs):
+    def __init__(self, content, trAttrs = [], tdAttrs = [], *args, **kwargs):
         """
         A table with content stated. If content is emptyGen, its normal
         form is an Empty object.
@@ -45,10 +19,10 @@ class Table(HTML):
             line = []
             for content__ in content_:
                 line.append(HTML(tag = "td",
-                                 params = tdParams,
+                                 attrs = tdAttrs,
                                  child = content))
             table.append(HTML(tag = "tr",
-                              params = trParams,
+                              attrs = trAttrs,
                               child = ListElement(elements = line)
             ))
         super().__init__("table", child = ListElement(elements =

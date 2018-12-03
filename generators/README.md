@@ -53,6 +53,11 @@ Field(foo) : this represents a field of a note type. Field(foo) is almost equiva
 * ListElement(foo) : A list of generators, printed one after the other. Empty generators are rempoved from this list. Can be represented as a python list of generators.
 * Requirement(foo, ...) : this represents the fact that foo (a generator) should be seen only if some conditions are satisfied. Some fields may be required to be/not to be in the note type's list of field. Some fields may be required to have/not to have content. And the order to delete some generators below may also be given. There is no syntactic sugar for this.
 * Branch(name,...) : The printed content of this generator depends on whether it's the question side or answer side, and on whether name belong to the set of asked elements. It can also be deleted if a Requirement above it requests it.
+* HTML(tag, child, params={}): either "<tag param_1=value_1
+  ... param_n=value_n>child</tag>", with param_i=value_i being given
+  according to the dictionnary params. Or if child is None: then "<tag param_1=value_1
+  ... param_n=value_n/>". This is not exactly similar to Literal, because it generate a
+  beautiful soup tag. 
 
 ### None core generators
 
@@ -62,14 +67,11 @@ more easily. There are currently three kinds of syntactic sugar.
 #### HTML
 it is not clear to me whether HTML will ever be usefull, as the HTML
 cases can be directly created as literal. In doubt, I created it.
-* HTML(tag, child, params={}): either "<tag param_1=value_1
-  ... param_n=value_n>child</tag>", with param_i=value_i being given
-  according to the dictionnary params. Or if child is None: then "<tag param_1=value_1
-  ... param_n=value_n/>".
+
 Some praticular classes and values are created for the sake of
-  simplicity, br, hr, Image(url), SPAN(child), DIV(child), P(child)
-  and finally Table(content, trParams, tdParams), with contents being
-  an array (list of list) with the content of the table.
+simplicity, br, hr, Image(url), SPAN(child), DIV(child), P(child) and
+finally Table(content, trParams, tdParams), with contents being an
+array (list of list) with the content of the table.
   
 Html's default's toKeep's holds if either there is no child, or the
 child should not be keep. The same rules applies in order to know

@@ -1,6 +1,7 @@
 import copy
 import collections
 from config import get
+from aqt import mw
 
 def split(text):
     if text:
@@ -10,55 +11,75 @@ def split(text):
 
 
 
-xmlParams = collections.nametuple("xmlParams",["obj", "asked", "hide", "isQuestion"])
-def _xmlGetParams(xml, isQuestion):
-    """Return xmlParams for the given xml. With object name and not the object itself."""
-    asked = split(xml.attrib.get("asked"))
-    hide = split(xml.attrib.get("hide"))
-    objName = xml.attrib.get("object")
-    return xmlParams(objName, asked,hide, isQuestion)
+templateTagParams = collections.nametuple("templateTagParams",["obj", "asked", "hide", "isQuestion"])
+def _templateTagGetParams(templateTag, isQuestion):
+    """Return templateTagParams for the given templateTag. With object name and not the object itself."""
+    asked = split(templateTag.attrs.get("asked"))
+    hide = split(templateTag.attrs.get("hide"))
+    objName = templateTag.attrs.get("object")
+    return templateTagParams(objName, asked,hide, isQuestion)
 
-def xmlGetParams(xml, isQuestion):
-    """Return xmlParams for the given xml with object, or None if it does not exists.
+def templateTagGetParams(templateTag, isQuestion):
+    """Return templateTagParams for the given templateTag with object, or None if it does not exists.
     
-    add objectAbsent to xml if the object is absent. Remove it otherwise.
+    add objectAbsent to templateTag if the object is absent. Remove it otherwise.
     """
-    params = xmlGetParams(xml,isQuestion)
-    obj = get(xml.attrib["object"])
+    params = templateTagGetParams(templateTag,isQuestion)
+    obj = get(templateTag.attrs["object"])
     if obj is None:
-        xml.attrib["objectAbsent"] = objName
+        templateTag.attrs["objectAbsent"] = objName
         print(f"Object {objName} requested but not in the configuration")
         return None
-    elif "objectAbsent" in xml.attrib:
-        del xml.attrib["objectAbsent"]
-    params = _xmlGetParams(xml,isQuestion)
+    elif "objectAbsent" in templateTag.attrs:
+        del templateTag.attrs["objectAbsent"]
+    params = _templateTagGetParams(templateTag,isQuestion)
     params.obj = obj
     return params
 
-def xmlToText(xml,isQuestion):
-    params = xmlGetParams(xml,isQuestion)
+def templateTagToText(templateTag,isQuestion, model):
+    params = templateTagGetParams(templateTag,isQuestion)
     obj = params.obj
-    
+    return obj.restrictToModel(model).template(obj.asked,obj.hide,isQuestion)
     
 
-def xmlToCompiled(xml,
-                  isQuestion,
-                  model):
-    if copy.text or not recompile:
+def _templateTagAddText(templateTag,
+               isQuestion,
+               model):
+    """Assuming templateTag is a template tag"""
+    if copy.contents or not recompile:
         return
-    params = xmlGetParams
-    obj = params.obj
-    if fields is None:
-        assert model is not None
-        fields =getFields(model)
-    obj = obj.restrictToModel(fields)
-    (obj, isQuestion, asked = None, hide = None):
+    text = templateTagToText(isQuestion,model)
+
     
-def compiledToObject(xml):
-    """xml is a span tag"""
-    xml = copy.copy(xml)
-    xml.text = ""
-    if "objectAbsent" in xml.attrib:
-        del xml.attrib["objectAbsent"]
-    return xml
+def _cleanTemplateTag(templateTag):
+    """templateTag is a template tag"""
+    templateTag.clear()
+    if "objectAbsent" in templateTag.attrs:
+        del templateTag.attrs["objectAbsent"]
+
+def applyOnAllTemplateTag(f):
+    for templateTag in soup.find_all("span", TemplateVersion = 1):
+        f(templateTag)
+        
+def cleanSoup(soup):
+    applyOnAllTemplateTag(_cleanTemplateTag)
+    
+def compileSoup(soup, isQuestion, model):
+    applyOnAllTemplateTag(lambda templateTag: _templateTagAddText(templateTag, isQuestion,model))
+
+def applyOnAllTemplate(model, clean = False):
+    for templateObject in model['templateObjects']:
+        for key,isQuestion in [("afmt",False),("qfmt",True),("bafmt",False),("bqfmt",True)]:
+            if key not in templateObject or not  templateObject[key]:
+                continue
+            template = templateObject[key]
+            soup = BeautifulSoup(template,"xml")
+            if clean:
+                cleanSoup(soup)
+            else:
+                compileSoup(soup, isQuestion, model)
+            templateObject[key] = soup.prettify()
+    mw.col.models.save(model, templates = True)
+    mw.col.models.flush()
+
     
