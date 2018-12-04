@@ -1,6 +1,16 @@
 {
     "instructions":[
         ["definitions","NumberedFields(\"definition\", 16)"],
-        "print(definitions)"
+        //["variables", "Question('variables',suffix=br)"],
+        ["head",["Question('variables',suffix=br)", "Question('context', suffix = br)"]],
+
+        
+
+        ["extendedHead", ["head", "Question('assuming',suffix=br)", "namesNotationsDenotedBy"]],
+
+
+        ["deck", "Empty('context','{{deck}}')"],
+        ["footer", []],
+        
     ]
 }

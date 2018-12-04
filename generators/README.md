@@ -89,6 +89,9 @@ and Branch.
 * PresentOrAbsent(field, presentCase, absentCase): show presentCase if
   field is present in the note type, absentCase otherwise. Thus, only
   one of them is actually printed in a template.
+* Fielled(field,child), Empty(field,child), Present(field,child),
+  Absent(field,child): show child only if field satisfy the condition
+* QuestionOrAnswer(field,questionSide, answerSide)
 
 #### Questions
 Hopefully, this should correspond to most standard way of asking
