@@ -27,8 +27,8 @@ class Empty(Leaf):
                          *args,
                          **kwargs)
 
-    def _template(self, soup, tag, *args, **kwargs):
-        return ""
+    def _template(self, *args, **kwargs):
+        return None
 
 emptyGen = Empty()
 addTypeToGenerator(type(None),Empty)
@@ -53,7 +53,7 @@ class Literal(Leaf):
     def _isEmpty(self):
         return not text
     
-    def _template(self, soup, tag, *args, **kwargs):
+    def _template(self, tag, *args, **kwargs):
         tag.append(self.text)
         return self.text
 addTypeToGenerator(str,Literal)
@@ -84,7 +84,7 @@ class Field(Leaf):
         else:
             return emptyGen
 
-    def _template(self, soup, tag, *args, **kwargs):
+    def _template(self, tag, *args, **kwargs):
         t = f"""{{{{{self.field}}}}}"""
         tag.append(t)
         return t

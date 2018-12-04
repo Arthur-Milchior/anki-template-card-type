@@ -1,11 +1,13 @@
-from ..child import SingleChild
+from ..child import SingleChild, HTML
 from ..leaf import emptyGen
 
 br = HTML("br")
 hr = HTML("hr")
+
 class Image(HTML):
     def __init__(self,url):
         super().__init__("img",{"src":url})
+
 class Table(HTML):
     def __init__(self, content, trAttrs = [], tdAttrs = [], *args, **kwargs):
         """

@@ -4,7 +4,7 @@ from ..leaf import Empty, emptyGen, Leaf, Literal, Field
 from .conditionals import PresentOrAbsent 
 from html import escape
 
-class Question(Leaf):
+class DecoratedField(Leaf):
     def __init__(self,
                  field,
                  prefix = emptyGen,
@@ -146,7 +146,7 @@ class ListFields(MultipleChild):#(RecursiveFields)
                 field = Field(field)
         else:
             raise Exception(field, """is neither a field name, a Field nor a pair""")
-        self.fields.append(Question(field,
+        self.fields.append(DecoratedField(field,
                                     symbol = symbol,
                                     prefix = self.localPrefix,
                                     separator = self.localSeparator,

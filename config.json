@@ -1,16 +1,18 @@
 {
     "instructions":[
         ["definitions","NumberedFields(\"definition\", 16)"],
-        //["variables", "Question('variables',suffix=br)"],
-        ["head",["Question('variables',suffix=br)", "Question('context', suffix = br)"]],
+
+        ["head",["DecoratedField('variables',suffix=br)", "DecoratedField('context', suffix = br)"]],
 
         
 
-        ["extendedHead", ["head", "Question('assuming',suffix=br)", "namesNotationsDenotedBy"]],
+        ["extendedHead", ["head", "DecoratedField('assuming',suffix=br)", "namesNotationsDenotedBy"]],
 
 
-        ["deck", "Empty('context','{{deck}}')"],
-        ["footer", []],
+        ["footer",
+         ["Empty('context','{{deck}}')",
+          "Answer(ListFields(['chapter', 'section', 'kind', 'index', 'page'], globalPrefix ='<br/>', localSeparator = '', globalSeparator = ', '))"]
+        ],
         
     ]
 }

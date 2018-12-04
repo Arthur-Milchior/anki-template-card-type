@@ -1,7 +1,8 @@
 import copy
 import collections
-from config import get
+from .config import get
 from aqt import mw
+import re
 
 def split(text):
     if text:
@@ -11,7 +12,7 @@ def split(text):
 
 
 
-templateTagParams = collections.nametuple("templateTagParams",["obj", "asked", "hide", "isQuestion"])
+templateTagParams = collections.namedtuple("templateTagParams",["obj", "asked", "hide", "isQuestion"])
 def _templateTagGetParams(templateTag, isQuestion):
     """Return templateTagParams for the given templateTag. With object name and not the object itself."""
     asked = split(templateTag.attrs.get("asked"))
@@ -39,7 +40,8 @@ def templateTagGetParams(templateTag, isQuestion):
 def templateTagToText(templateTag,isQuestion, model):
     params = templateTagGetParams(templateTag,isQuestion)
     obj = params.obj
-    return obj.restrictToModel(model).template(obj.asked,obj.hide,isQuestion)
+    ret = obj.restrictToModel(model).template(obj.asked,obj.hide,isQuestion)
+    return ret
     
 
 def _templateTagAddText(templateTag,
@@ -49,7 +51,9 @@ def _templateTagAddText(templateTag,
     if copy.contents or not recompile:
         return
     text = templateTagToText(isQuestion,model)
-
+    if isinstance(text,tuple):
+        (text,tag) = text
+    return text
     
 def _cleanTemplateTag(templateTag):
     """templateTag is a template tag"""
@@ -65,21 +69,29 @@ def cleanSoup(soup):
     applyOnAllTemplateTag(_cleanTemplateTag)
     
 def compileSoup(soup, isQuestion, model):
-    applyOnAllTemplateTag(lambda templateTag: _templateTagAddText(templateTag, isQuestion,model))
+    applyOnAllTemplateTag(lambda templateTag:
+                          _templateTagAddText(templateTag, isQuestion,model))
 
+def soupFromTemplate(template):
+    """Return the soup, with body encompassing everything to ensure it's valid xml"""
+    return BeautifulSoup("""<body>template</body>""","xml")
+def templateFromSoup(soup):
+    """Return the text, from soup, with body removed. Assuming no other
+    body tag appear in prettify."""
+    t = soup.prettify()
+    t= re.sub("</?body>", "", t)
+    return
+    
 def applyOnAllTemplate(model, clean = False):
-    for templateObject in model['templateObjects']:
+    for templateObject in model['tmpls']:
         for key,isQuestion in [("afmt",False),("qfmt",True),("bafmt",False),("bqfmt",True)]:
             if key not in templateObject or not  templateObject[key]:
                 continue
-            template = templateObject[key]
-            soup = BeautifulSoup(template,"xml")
+            soup = soupFromTemplate(templateObject[key])
             if clean:
                 cleanSoup(soup)
             else:
                 compileSoup(soup, isQuestion, model)
-            templateObject[key] = soup.prettify()
+            templateObject[key] = templateFromSoup(soup)
     mw.col.models.save(model, templates = True)
     mw.col.models.flush()
-
-    

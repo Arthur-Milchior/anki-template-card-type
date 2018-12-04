@@ -1,5 +1,7 @@
 from aqt import mw
-from .editTemplate import  applyOnAllTemplateTag
+from .editTemplate import applyOnAllTemplate
+from anki.hooks import addHook
+from aqt.qt import QAction, QKeySequence
 
 def runBrowser(browser, clean):
     mw.checkpoint("Change template")
@@ -13,7 +15,7 @@ def runBrowser(browser, clean):
         mids.add(mid)
     for mid in mids:
         model = mw.col.models.get(mid)
-        applyOnAllTemplateTag(model,clean)
+        applyOnAllTemplate(model,clean)
     mw.progress.finish()
     tooltip("Ending "+("cleaning " if clean else "")+"Template")
 

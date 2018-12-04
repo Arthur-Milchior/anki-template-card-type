@@ -8,6 +8,7 @@ idToFields_ = dict()
 def modelToFields(model):
     """The set of fields of the model given in argument"""
     return frozenset({f["name"] for fld in model.flds})
+
 def fieldsToHashFields(fields):
     """A hash for this set of fields. 
     And the original saved set of fields which was used to create this hash."""
@@ -248,7 +249,7 @@ class Gen:
             self.__models[hash] = self._restrictToModel(model, fields)
         return self.__models[hash]
     
-    def _restrictToModel(self, model, fields = fields):
+    def _restrictToModel(self, model, fields = None):
         """Similar to restrictToModel. Do the computation and don't
         memoize. Should be implemented in inheriting normal class."""
         return self._applyRecursively( (lambda element:
@@ -279,14 +280,20 @@ class Gen:
     #     """
     #     raise Exception("Context from a Gen")
         
-    def template(self, asked = None, hide = None, isQuestion = None):
+    def template(self, tag, soup, asked = None, hide = None, isQuestion = None):
         """Print the actual template, given the asked questions, list
         of things to hide (as frozen set)."""
-        if (asked,hide, isQuestion) in self.__template:
-            self.__template[(asked,hide,isQuestion)] = self._template(asked, hide,isQuestion)
-        return self.__template[(asked,hide,isQuestion)]
+        ret = self.__template.get(tag, soup, asked, hide, isQuestion):
+        if ret is None:
+            ret =self._template(tag, soup, asked, hide,isQuestion)
+            self.__template[(tag,soup,asked,hide,isQuestion)] = ret
+        else:
+            if isinstance(ret,tuple):
+                (text,tag) = ret
+                ret = (text, copy.copy(tag))
+        return self.__template[(tag,soup,asked,hide,isQuestion)]
 
-    def _template(self, soup, tag, asked = None, hide = None, isQuestion = None):
+    def _template(self, *args, **kwargs):
         raise Exception("_template in gen")
 
 

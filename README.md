@@ -34,6 +34,8 @@ Add more generators /syntactic sugar.
 Allow more complex question generation. In particular, generation
 created on multiple fields.
 
+{{FrontSide}}: 
+
 ## Links, licence and credits
 
 Key         |Value

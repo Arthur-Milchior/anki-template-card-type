@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import copy
 import sys
-from .generator import Gen, ensureGen, modeToFields
+from .generator import Gen, ensureGen, modelToFields
 from .leaf import emptyGen
 
 
@@ -40,7 +40,7 @@ class Requirement(SingleChild):
                  inModel = None,
                  absentOfModel = None,
                  remove = None,
-                 empty = None,#added to be sure not to have it in *kwargs
+                 empty = None,#added to be sure not to have it in **kwargs
                  toClone = None,
                  normalized = False,
                  *args,
@@ -172,11 +172,11 @@ class Requirement(SingleChild):
     
         
         
-    def _template(self, soup, tag, isQuestion = None, *args, **kwargs):
+    def _template(self, tag, soup, isQuestion, *args, **kwargs):
         if self.isQuestion is not None and self.isQuestion is not isQuestion:
             return ""
         conditional_span = soup.new_tag("span", createdBy="conditionals")
-        t = self.child.template(soup, conditional_span, *args, **kwargs)
+        t = self.child.template( conditional_span, soup, isQuestion, *args, **kwargs)
         if not t:
             conditional_span.decompose()
             return ""
@@ -197,7 +197,7 @@ class Requirement(SingleChild):
             raise Exception("Asking to require the presence of a thing in model")
         if self.requirements["Absent of model"]:
             raise Exception("Asking to require the absence of a thing in model")
-        return t
+        return t, conditional_span
 
     
 
@@ -221,7 +221,7 @@ class HTML(SingleChild):
 
     def __init__(self, tag, child = None, attrs={}, toKeep = None,
                  *args, **kwargs):
-        self.emptyTag = child is None:
+        self.emptyTag = child is None
         if self.emptyTag:
             child = emptyGen
         self.tag = tag
@@ -229,7 +229,7 @@ class HTML(SingleChild):
         if toKeep is None and not child:
             toKeep = True
             empty = True
-        super().__init__(child , toKeep = toKeep, empty = empty, *args, **kwargs)
+        super().__init__(child , toKeep = toKeep, empty = emptyGen, *args, **kwargs)
 
     def _applyRecursively(self, fun, *args, **kwargs):
         child = fun(self.child, *args,**kwargs)
@@ -237,7 +237,7 @@ class HTML(SingleChild):
             return self
         return HTML(tag, child=child, attrs=self.attrs(),toClone = self)
 
-    def _template(self, soup, tag, soup, asked = None, hide = None, isQuestion = None):
+    def _template(self, tag, soup, *args, **kwargs):
         newtag = soup.new_tag(tag, attrs = self.attrs)
         tag = f"""<{self.tag}"""
         for param in self.attrs:
@@ -247,13 +247,13 @@ class HTML(SingleChild):
         if self.emptyTag:
             t = f"""{tag}/>"""
         else:
-            t = self.child._template(soup,newtag,asked = asked, hide = hide, isQuestion = isQuestion)
+            t = self.child._template(newtag,soup,*args, **kwargs)
             if not t: 
                 newtag.decompose()
                 return ""
             t = f"""{tag}>{t}</{self.tag}>"""
         tag.append(newtag)
-        return t
+        return t, newtag
         
     # def _getNormalForm(self):
 
