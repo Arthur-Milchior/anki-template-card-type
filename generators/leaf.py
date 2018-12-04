@@ -72,8 +72,8 @@ class Field(Leaf):
     def _isEmpty(self):
         return False
     
-    def _assumeFieldInSet(self, field, set):
-        if field == self.fied and (set == "absentOfModel" or set == "Empty"):
+    def _assumeFieldInSet(self, field, setName):
+        if field == self.field and (setName == "absentOfModel" or setName == "Empty"):
             return emptyGen
         return self
     

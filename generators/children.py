@@ -141,10 +141,10 @@ class Branch(Gen):
             return self
         return Branch(children = children, **kwargs)
     
-    def _assumeFieldInSet(self, field, set):
-        if set == "Remove" and field == self.name:
+    def _assumeFieldInSet(self, field, setName):
+        if setName == "Remove" and field == self.name:
             return emptyGen
-        return super()._assumeFieldInSet(field,set)
+        return super()._assumeFieldInSet(field,setName)
 
     def _template(self, soup, tag, asked = None, hide = None, isQuestion = False):
         if hide and self.name in hide:

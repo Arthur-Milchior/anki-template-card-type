@@ -24,6 +24,7 @@ class Requirement(SingleChild):
     requireEmpty -- the field must be either requireEmpty or absentOfModel of the model
     inModel -- the field must be present in the model. 
     absentOfModel -- the field must not belong to the model
+    requireQuestion -- None means, no requirement. False means: require answer. True: requires question
     remove -- named descendant to remove.
 
     requirements -- the map of set to use if the other value is not explicitly given.
@@ -35,6 +36,7 @@ class Requirement(SingleChild):
                  requirements = None,
                  requireFilled = None,
                  requireEmpty = None,
+                 requireQuestion = None,
                  inModel = None,
                  absentOfModel = None,
                  remove = None,
@@ -58,6 +60,7 @@ class Requirement(SingleChild):
             else:
                 assert False
             inconsistent = self.isInconsistent(self)
+        self.requireQuestion = requireQuestion
         if inconsistent:
             print("Inconsistant requirements.",file=sys.stderr)
         super().__init__(child,
@@ -77,7 +80,7 @@ class Requirement(SingleChild):
         #used at least for _getNormalForm
         child = fun(self.child)
         if not child:
-            return False
+            return emptyGen
         return Requirements(child = child, toClone = self, *args, **kwargs)
 
     def _getUnRedundate(self):
@@ -85,6 +88,8 @@ class Requirement(SingleChild):
         for requirementName in self.requirements:
             for field in self.requirements[requirementName]:
                 child = child.assumeFieldInSet(requirementName, field)
+        if self.requireQuestion is not None:
+            child = child.assumeFieldInSet("requireQuestion", self.requireQuestion)
         if child == self.child:
             return self
         if not child:
@@ -93,35 +98,49 @@ class Requirement(SingleChild):
                            requirements = self.requirements,
                            normalized = True,
                            unRedundanted = True)
-    
-    def _assumeFieldInSet(self, field, set):
+
+    def _assumeQuestion(self, isQuestion):
+        if self.requireQuestion is None:
+            child = self.child.assumeFieldInSet(isQuestion,"isQuestion")
+            if child == self.child:
+                return self
+            return Requirements(child = child, toClone = self)
+        if self.requireQuestion is not isQuestion:
+            return emptyGen
+        requirements = copy.copy(self.requirements)
+        requirements["requireQuestion"] = None
+        return Requirements(child = self.child, requirements = requirements, toClone = self)
+        
+    def _assumeFieldInSet(self, field, setName):
+        if setName == "requireQuestion":
+            return self._assumeQuestion(field)
         contradictorySets = {"Absent Of Model":{"Filled", "In model"},
                              "In model":{"Absent of model"},
                              "Empty":{"Filled"},
                              "Filled": {"Empty", "Absent of model"},
                              "Remove": frozenset()}
-        for contradictorySet in contradictorySets[set]:
+        for contradictorySet in contradictorySets[setName]:
             if field in contradictorySet:
-                return empty
+                return emptyGen
         
         redudantSets = {"Absent Of Model":"Empty",
                         "In model":None,
                         "Empty":None,
                         "Filled":  "In model",
                         "Remove": None}
-        redudantSet = redudantSets[set]
+        redudantSet = redudantSets[setName]
         requirements = copy.copy(self.requirements)
         change = False
         if redudantSet and field in self.requirements[redudantSet]:
             requirements[redudantSet] = requirements[redudantSet]-{field}
             change = True
-        if field in self.requirements[set]:
-            requirements[set] = requirements[set]-{field}
+        if field in self.requirements[setName]:
+            requirements[setName] = requirements[setName]-{field}
             change = True
         if change: #since self is not redundant, the removed requirement was already taken in consideration.
             child = self.child
         else:
-            child = self.child.assumeFieldInSet(field,set)
+            child = self.child.assumeFieldInSet(field,setName)
             if not child:
                 return emptyGen
             if child == self.child:
@@ -153,7 +172,9 @@ class Requirement(SingleChild):
     
         
         
-    def _template(self, soup, tag, *args, **kwargs):
+    def _template(self, soup, tag, isQuestion = None, *args, **kwargs):
+        if self.isQuestion is not None and self.isQuestion is not isQuestion:
+            return ""
         conditional_span = soup.new_tag("span", createdBy="conditionals")
         t = self.child.template(soup, conditional_span, *args, **kwargs)
         if not t:

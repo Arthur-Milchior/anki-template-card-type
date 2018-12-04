@@ -214,7 +214,7 @@ class Gen:
                                        unRedundanted = True,
                                        toClone = self)
     
-    def assumeFieldInSet(self, field, set):
+    def assumeFieldInSet(self, field, setName):
         """return a copy of self, where the field is assumed to be in the set.
         
         Assume self and descendant unredundant and normalized.
@@ -222,11 +222,11 @@ class Gen:
         "Filled", "Remove".
         Memoize. Don't redefine. Call _restrictFields
         """
-        if (field,set) not in self.__fieldInSets:
-            self.__fieldInSets[(field,set)] = self.getUnRedundate()._assumeFieldInSet(field,set)
+        if (field,setName) not in self.__fieldInSets:
+            self.__fieldInSets[(field,set)] = self.getUnRedundate()._assumeFieldInSet(field,setName)
         return self.__fieldInSets[(field,set)]
     
-    def _assumeFieldInSet(self, field, set):
+    def _assumeFieldInSet(self, field, setName):
         """Similar to assumeFieldInSet. 
         
         Recompute instead of memoizing.

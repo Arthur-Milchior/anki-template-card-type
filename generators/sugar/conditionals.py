@@ -44,6 +44,27 @@ class FilledOrEmpty(MultipleChild):
                 requireEmpty = {self.field}
             )]).getNormalForm()
     
+class QuestionOrAnswer(MultipleChild):
+    def __init__(self,questionCase = answerGen, answerCase = answerGen, *args, **kwargs):
+        self.questionCase = questionCase
+        self.answerCase = answerCase
+        super().__init__( *args, **kwargs)
+
+    def getChildren(self):
+        return frozenset({self.questionCase, self.answerCase})
+        
+    def _getNormalForm(self):
+        super().normalize()
+        return ListElement([
+            Requirements(
+                self.questionCase.getNormalForm(),
+                requireQuestion = True
+                ),
+            Requirements(
+                self.answerCase.getNormalForm(),
+                requireQuestion = False
+            )]).getNormalForm()
+    
 class PresentOrAbsent(MultipleChild):
     def __init__(self,field,presentCase = emptyGen,absentCase = emptyGen, *args, **kwargs):
         self.presentCase = presentCase
