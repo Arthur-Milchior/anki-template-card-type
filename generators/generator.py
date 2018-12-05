@@ -283,7 +283,7 @@ class Gen:
     def template(self, tag, soup, asked = None, hide = None, isQuestion = None):
         """Print the actual template, given the asked questions, list
         of things to hide (as frozen set)."""
-        ret = self.__template.get(tag, soup, asked, hide, isQuestion):
+        ret = self.__template.get(tag, soup, asked, hide, isQuestion)
         if ret is None:
             ret =self._template(tag, soup, asked, hide,isQuestion)
             self.__template[(tag,soup,asked,hide,isQuestion)] = ret

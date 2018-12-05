@@ -2,6 +2,7 @@ from aqt import mw
 from .editTemplate import applyOnAllTemplate
 from anki.hooks import addHook
 from aqt.qt import QAction, QKeySequence
+from aqt.utils import tooltip
 
 def runBrowser(browser, clean):
     mw.checkpoint("Change template")

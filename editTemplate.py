@@ -3,6 +3,7 @@ import collections
 from .config import get
 from aqt import mw
 import re
+from bs4 import BeautifulSoup
 
 def split(text):
     if text:
@@ -61,25 +62,25 @@ def _cleanTemplateTag(templateTag):
     if "objectAbsent" in templateTag.attrs:
         del templateTag.attrs["objectAbsent"]
 
-def applyOnAllTemplateTag(f):
+def applyOnAllTemplateTag(f,soup):
     for templateTag in soup.find_all("span", TemplateVersion = 1):
         f(templateTag)
         
 def cleanSoup(soup):
-    applyOnAllTemplateTag(_cleanTemplateTag)
+    applyOnAllTemplateTag(_cleanTemplateTag, soups)
     
 def compileSoup(soup, isQuestion, model):
     applyOnAllTemplateTag(lambda templateTag:
-                          _templateTagAddText(templateTag, isQuestion,model))
+                          _templateTagAddText(templateTag, isQuestion,model), soup)
 
 def soupFromTemplate(template):
-    """Return the soup, with body encompassing everything to ensure it's valid xml"""
-    return BeautifulSoup("""<body>template</body>""","xml")
+    """Return the soup, with enclose encompassing everything to ensure it's valid xml"""
+    return BeautifulSoup("""<enclose>template</enclose>""", "html.parser")
 def templateFromSoup(soup):
-    """Return the text, from soup, with body removed. Assuming no other
-    body tag appear in prettify."""
+    """Return the text, from soup, with enclose removed. Assuming no other
+    enclose tag appear in prettify."""
     t = soup.prettify()
-    t= re.sub("</?body>", "", t)
+    t= re.sub(".*<enclose>(.*)</?enclose>.*", "\\1", t, flags = re.M|re.DOTALL)
     return
     
 def applyOnAllTemplate(model, clean = False):
