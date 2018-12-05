@@ -1,5 +1,6 @@
 import sys
-# from ..editTemplate import modelToFields
+from ..debug import debug
+
 modelToId_ =dict()
 modelToId_max = 0
 fieldsToId_ = dict()
@@ -280,18 +281,18 @@ class Gen:
     #     """
     #     raise Exception("Context from a Gen")
         
-    def template(self, tag, soup, asked = None, hide = None, isQuestion = None):
+    def template(self, tag, soup, isQuestion, asked = None, hide = None):
         """Print the actual template, given the asked questions, list
         of things to hide (as frozen set)."""
         ret = self.__template.get(tag, soup, asked, hide, isQuestion)
         if ret is None:
             ret =self._template(tag, soup, asked, hide,isQuestion)
             self.__template[(tag,soup,asked,hide,isQuestion)] = ret
-        else:
-            if isinstance(ret,tuple):
-                (text,tag) = ret
-                ret = (text, copy.copy(tag))
-        return self.__template[(tag,soup,asked,hide,isQuestion)]
+        elif isinstance(ret,tuple):
+            (text,tag) = ret
+            ret = (text, copy.copy(tag))
+        debug (f"template({tag}, {soup}, {isQuestion} {asked}, {hide})= {ret}")
+        return ret
 
     def _template(self, *args, **kwargs):
         raise Exception("_template in gen")
