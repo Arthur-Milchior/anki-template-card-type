@@ -2,13 +2,13 @@ import copy
 from .generator import Gen,addTypeToGenerator
 
 class Leaf(Gen):
-    def __init__(self, unRedundanted = True, *args, **kwargs):
+    def __init__(self, unRedundated = True, *args, **kwargs):
         # A leaf can never be redundant alone. 
-        super().__init__(unRedundanted = unRedundanted, *args, **kwargs)
+        super().__init__(unRedundated = unRedundated, *args, **kwargs)
 
     def getChildren(self):
         return frozenset()
-
+        
     def _applyRecursively(self, fun, *args, **kwargs):
         return self
 
@@ -17,18 +17,20 @@ class Empty(Leaf):
     def __init__(self,
                  argument = None, #used because ensureGen may call empty with the argument None.
                  toKeep=False,
-                 unRedundanted = True,
+                 unRedundated = True,
                  normalized = True,
                  *args,
                  **kwargs):
         super().__init__(normalized = normalized,
-                         unRedundanted = unRedundanted,
+                         unRedundated = unRedundated,
                          toKeep = toKeep,
                          *args,
                          **kwargs)
 
     def _template(self, *args, **kwargs):
         return None
+    def __eq__(self,other):
+        return isinstance(other,Leaf)
 
 emptyGen = Empty()
 addTypeToGenerator(type(None),Empty)
@@ -42,13 +44,16 @@ class Literal(Leaf):
                  toClone = None,
                  *args,
                  **kwargs):
-        super().__init__(*args, toKeep = toKeep, unRedundanted = True, toClone = toClone **kwargs)
+        super().__init__(*args, toKeep = toKeep, unRedundated = True, toClone = toClone, **kwargs)
         if text is not None:
             self.text = text
         elif toClone is not None:
             self.text = toClone.text
         else:
             self.text = ""
+
+    def __eq__(self,other):
+        return isinstance(other,Literal) and self.text == other.text
             
     def _isEmpty(self):
         return not text
@@ -69,6 +74,9 @@ class Field(Leaf):
         self.field = field
         super().__init__(normalized = True, toClone = toClone, toKeep = toKeep, *args, **kwargs)
 
+    def __eq__(self,other):
+        return isinstance(other,Field) and self.field == other.field
+    
     def _isEmpty(self):
         return False
     

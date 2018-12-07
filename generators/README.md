@@ -10,7 +10,7 @@ An object of class Generator may have many states.
   kept ? For example, an HTML list may be encoded as a list with
   "<ul>", the elements and "</ul>". If there are no elements, the <ul>
   should not be kept.
-* unRedundanted: whethere the generator contains redundant (or
+* unRedundated: whethere the generator contains redundant (or
   contradictory) informations. For example
   {{#foo}}{{#foo}}bar{{/foo}}plop{{/foo}} is redundant and
   {{#foo}}{{^foo}}bar{{/foo}}plop{{/foo}} is contradictory. The

@@ -4,6 +4,7 @@ from anki.hooks import addHook
 from aqt.qt import QAction, QKeySequence
 from aqt.utils import tooltip
 
+from . import test
 
 def runBrowser(browser, clean):
     mw.checkpoint("Change template")

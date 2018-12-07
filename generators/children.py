@@ -36,13 +36,16 @@ class ListElement(MultipleChild):
                          *args,
                          **kwargs)
 
+    def __eq__(self,other):
+        return isinstance(other,ListElement) and self.elements == other.elements
+    
     def getChildren(self):
         return self.children
     
     def _applyRecursively(self,fun, *args, **kwargs):
         """self, with fun applied to each element. 
 
-        normalized and unRedundanted are passed to class constructor."""
+        normalized and unRedundated are passed to class constructor."""
         elements = []
         change = False
         for element in self.elements:
@@ -121,6 +124,9 @@ class Branch(Gen):
                     break
         super().__init__( toClone = toClone, normalized = normalized or not notNormalChild, *args, **kwargs)
 
+    def __eq__(self,other):
+        return isinstance(other,Branch) and self.name == other.name and self.children == other.children
+    
     def getChildren(self):
         return self.children.values()
     
@@ -150,7 +156,7 @@ class Branch(Gen):
         if hide and self.name in hide:
             return ""
         isAsked = asked and self.name in asked
-        return self.children[isQuestion,isAsked].template(*args, *F*kwargs)
+        return self.children[isQuestion,isAsked].template(*args, **kwargs)
         
     
 # class RecursiveFields(MultipleChild):

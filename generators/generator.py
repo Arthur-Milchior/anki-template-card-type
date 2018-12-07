@@ -69,14 +69,13 @@ class Gen:
     _template(self,soup, tag, asked = None, hide = None, isQuestion = None):
     with soup the soup of the current xml, and tag the container
     currently processed, in which to add currently generated elements.  
-    """
-
+    """    
     def __init__(self,
                  normal = None,
                  normalized = False,
                  toKeep = None,
-                 unRedundanted = False,
-                 unRedundante = None,
+                 unRedundated = False,
+                 unRedundate = None,
                  empty = None,
                  toClone = None):
         """to Clone. We assume that transformations keep the fact that it
@@ -84,7 +83,7 @@ class Gen:
         if not otherwise stated, it is copied from toClone.
 
         normal and normalized should not both be given. 
-        unRedundante and unRedundanted should not both be given. 
+        unRedundate and unRedundated should not both be given. 
         """
         if normalized is not None:
             self.normalized = normalized
@@ -94,7 +93,7 @@ class Gen:
             self.normalized = False
                 
         assert (normalized is False or normal is None)
-        assert (unRedundanted is False or unRedundante is None)
+        assert (unRedundated is False or unRedundate is None)
 
         if self.normalized:
             self._normal = self
@@ -102,12 +101,15 @@ class Gen:
             self._normal = normal
 
 
-        if unRedundanted is not None:
-            self.unRedundanted = unRedundanted
+        if unRedundated is not None:
+            self.unRedundated = unRedundated
         elif toClone is not None:
-            self.unRedundanted = toClone.unRedundanted
+            self.unRedundated = toClone.unRedundated
         else:
-            self.unRedundanted = False
+            self.unRedundated = False
+
+        if self.unRedundated:
+            self._unRedundate == self
 
         if toKeep is not None:
             self.__toKeep = toKeep
@@ -131,6 +133,8 @@ class Gen:
     #     return f"""{self.__class____name__}({self._dic()})"""
     # def _dic(self):
     #     """A dictionnary used for """
+    # def __eq__(self,other):
+    #     return self._normal == other._normal and self.unRedundated == other.unRedundated and self.__empty == other.__empty
     
     def isEmpty(self):
         if self.__empty is None:
@@ -200,7 +204,7 @@ class Gen:
         Memoize. Unreduntate is also set for each descendant of self.
         
         The time is square in the depth of the tree. However, a
-        descendant occurring in mulitple tree to be unredundanted won't
+        descendant occurring in mulitple tree to be unRedundated won't
         have to be considered multiple time, except for the elements
         which are specific to the new tree.
         """
@@ -213,7 +217,7 @@ class Gen:
         reimplemented in normal form. Don't take memoization into account."""
         return self._applyRecursively( (lambda element:
                                         element._getUnRedundate()),
-                                       unRedundanted = True,
+                                       unRedundated = True,
                                        toClone = self)
     
     def assumeFieldInSet(self, field, setName):

@@ -7,23 +7,29 @@ from .generators.child import *
 from .generators.children import *
 from .generators.leaf import *
 
+
+objects = dict()
 def newConf(config):
     global read
     read = False
 
-def get(s):
+def readIfRequired():
     global read
     if not read:
         reread()
         read = True
+        
+def get(s):
+    readIfRequired()
     return objects.get(s)
     
-def set(s,value):
+def _set(s,value):
+    readIfRequired()
     objects[s] = value
 
 read = False
 def reread():
-    global userOption
+    global userOption, objects
     userOption = dict()
     userOption = aqt.mw.addonManager.getConfig(__name__)
     instructions = userOption.get("instructions", [])

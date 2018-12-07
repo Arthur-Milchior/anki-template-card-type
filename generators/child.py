@@ -13,6 +13,8 @@ class SingleChild(Gen):
     def getChildren(self):
         return frozenset({self.child})
     
+    def __eq__(self,other):
+        return isinstance(other,SingleChild) and self.child == other.child
     def _applyRecursively(self, fun, *args, **kwargs):
         return self
          
@@ -71,6 +73,9 @@ class Requirement(SingleChild):
                          **kwargs)
         #self.contradiction = (requireFilled & self.requirements["Absent of model"]InParent()) or (requireEmpty & self.presentInParent())
 
+    def __eq__(self,other):
+        return super().__eq__(other) and isinstance(other,Requirement) and self.requirements == other.requirements
+    
     def isInconsistent(self):
         return ((self.requirements["Filled"] & self.requirements["Empty"]) or
                 (self.requirements["Filled"] & self.requirements["Absent of model"]) or
@@ -97,7 +102,7 @@ class Requirement(SingleChild):
         return Requirement(child = child,
                            requirements = self.requirements,
                            normalized = True,
-                           unRedundanted = True)
+                           unRedundated = True)
 
     def _assumeQuestion(self, isQuestion):
         if self.requireQuestion is None:
@@ -153,7 +158,7 @@ class Requirement(SingleChild):
             return Requirement(child = child,
                                requirements = self.requirements,
                                normalized = True,
-                               unRedundanted = True)
+                               unRedundated = True)
         else:
             return child
 
@@ -231,6 +236,8 @@ class HTML(SingleChild):
             empty = True
         super().__init__(child , toKeep = toKeep, empty = emptyGen, *args, **kwargs)
 
+    def __eq__(self,other):
+        return super().__eq__(other) and isinstance(other,HTML) and self.tag == other.tag and self.attrs == other.attrs
     def _applyRecursively(self, fun, *args, **kwargs):
         child = fun(self.child, *args,**kwargs)
         if child == self.child:
