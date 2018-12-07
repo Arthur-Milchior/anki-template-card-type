@@ -2,16 +2,15 @@
     "instructions":[
         ["definitions","NumberedFields(\"definition\", 16)"],
 
-        ["head",["DecoratedField('variables',suffix=br)", "DecoratedField('context', suffix = br)"]],
+        ["head","[\"DecoratedField('variables',suffix=br)\", \"DecoratedField('context', suffix = br)\"]"],
 
         
 
-        ["extendedHead", ["head", "DecoratedField('assuming',suffix=br)", "namesNotationsDenotedBy"]],
+        ["extendedHead", "[\"head\", \"DecoratedField('assuming',suffix=br)\", \"namesNotationsDenotedBy\"]"],
         ["test", "'test'"],
-
+        
         ["footer",
-         ["Empty('context','{{deck}}')",
-          "Answer(ListFields(['chapter', 'section', 'kind', 'index', 'page'], globalPrefix ='<br/>', localSeparator = '', globalSeparator = ', '))"]
+         "[\"Empty('context','{{deck}}')\",\n\"Answer(ListFields(['chapter', 'section', 'kind', 'index', 'page'], globalPrefix ='<br/>', localSeparator = '', globalSeparator = ', '))\"]"
         ]       
     ]
 }

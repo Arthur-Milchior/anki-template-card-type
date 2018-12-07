@@ -6,7 +6,7 @@ from .generators.sugar.html import *
 from .generators.child import *
 from .generators.children import *
 from .generators.leaf import *
-
+from .generators.generators import ensureGen
 
 objects = dict()
 def newConf(config):
@@ -19,7 +19,7 @@ def readIfRequired():
         reread()
         read = True
         
-def get(s):
+def getObject(s):
     readIfRequired()
     return objects.get(s)
     
@@ -30,7 +30,6 @@ def _set(s,value):
 read = False
 def reread():
     global userOption, objects
-    userOption = dict()
     userOption = aqt.mw.addonManager.getConfig(__name__)
     instructions = userOption.get("instructions", [])
     objects = dict()
@@ -47,12 +46,13 @@ def reread():
     
 # def globalIncreased():
 #     return {**globals(), **objects}
-def define(name, value):
-    r = eval(value, globals(),  objects)
-    objects[name] = r.getUnRedundate()
-    return r
 def evaluate(t):
     exec(t, globals(),locals = objects)
         
+def define(name, value):
+    r = eval(value, globals(),  objects)
+    objects[name] = ensureGen(r).getWithoutRedundance()
+    return r
+
 
 mw.addonManager.setConfigUpdatedAction(__name__,newConf)

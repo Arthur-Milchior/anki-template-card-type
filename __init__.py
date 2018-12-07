@@ -5,6 +5,7 @@ from aqt.qt import QAction, QKeySequence
 from aqt.utils import tooltip
 
 from . import test
+from .debug import debug
 
 def runBrowser(browser, clean):
     mw.checkpoint("Change template")
@@ -18,6 +19,7 @@ def runBrowser(browser, clean):
         mids.add(mid)
     for mid in mids:
         model = mw.col.models.get(mid)
+        #debug(f"""dealing with model ""\"{model}""\".""")
         applyOnAllTemplate(model,clean)
     mw.progress.finish()
     tooltip("Ending "+("cleaning " if clean else "")+"Template")

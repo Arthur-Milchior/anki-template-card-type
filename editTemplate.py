@@ -1,6 +1,6 @@
 import copy
 import collections
-from .config import get
+from .config import getObject
 from aqt import mw
 import re
 from bs4 import BeautifulSoup
@@ -34,7 +34,7 @@ def templateTagGetParams(templateTag, isQuestion):
     """
     debug(f"templateTagGetParams({templateTag.name},{isQuestion})", indent=1)
     params = templateTagGetParams(templateTag,isQuestion)
-    obj = get(templateTag.attrs["object"])
+    obj = getObject(templateTag.attrs["object"])
     if obj is None:
         templateTag.attrs["objectAbsent"] = objName
         print(f"Object {objName} requested but not in the configuration")
@@ -60,7 +60,7 @@ def _templateTagAddText(templateTag,
                model):
     """Assuming templateTag is a template tag"""
     debug(f"""_templateTagAddText({templateTag.name},{isQuestion},{model["name"]})""", indent=1)
-    if copy.contents or not recompile:
+    if templateTag.contents or not recompile:
         return
     text = templateTagToText(isQuestion,model)
     if isinstance(text,tuple):
@@ -102,7 +102,7 @@ def templateFromSoup(soup):
     enclose tag appear in prettify."""
     debug(f"templateFromSoup(soup)", indent=1)
     t = soup.prettify()
-    r= re.sub(f".*<enclose>(.*)</?enclose>.*", "\\1", t, flags = re.M|re.DOTALL)
+    r= re.sub(f".*<enclose>(.*)</?enclose>.*", "\\1", t, flags = re.M|re.DOTALL).strip()
     debug(f"templateFromSoup(soup) returns {r}", indent=-1)
     return r
     
@@ -110,17 +110,17 @@ def applyOnAllTemplate(model, clean = False):
     debug(f"""applyOnAllTemplate({model["name"]})""", indent=1)
     for templateObject in model['tmpls']:
         for key,isQuestion in [(f"afmt",False),(f"qfmt",True),(f"bafmt",False),(f"bqfmt",True)]:
-            debug(f"""applyOnAllTemplate on {key}""", indent=1)
             if key not in templateObject:
-                debug("key not in template", indent=-1)
+                #debug("key not in template", indent=-1)
                 continue
             if  not templateObject[key]:
-                debug("templateObject[key] falsy", indent=-1)
+                #debug("templateObject[key] falsy", indent=-1)
                 continue
             if  templateObject[key].isspace():
-                debug("templateObject[key] is space", indent=-1)
+                #debug("templateObject[key] is space", indent=-1)
                 templateObject[key] == ""
                 continue
+            debug(f"""applyOnAllTemplate on {key}""", indent=1)
             debug(f"""templateObject[key] is "{templateObject[key]}" """)
             originalText = templateObject[key]
             soup = soupFromTemplate(originalText)

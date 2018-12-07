@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import copy
 import sys
-from .generator import Gen, ensureGen, modelToFields
+from .generators import Gen, ensureGen, modelToFields
 from .leaf import emptyGen
 
 
@@ -42,9 +42,9 @@ class Requirement(SingleChild):
                  inModel = None,
                  absentOfModel = None,
                  remove = None,
-                 empty = None,#added to be sure not to have it in **kwargs
+                 isEmpty = None,
                  toClone = None,
-                 normalized = False,
+                 isNormal = False,
                  *args,
                  **kwargs):
         self.requirements = dict()
@@ -66,12 +66,15 @@ class Requirement(SingleChild):
         if inconsistent:
             print("Inconsistant requirements.",file=sys.stderr)
         super().__init__(child,
-                         empty = inconsistant or empty,
+                         isEmpty = inconsistant or isEmpty,
                          toClone = toClone,
-                         normalized = normalized or child.isNormal()
+                         isNormal = isNormal or child.getIsNormal()
                          *args,
                          **kwargs)
         #self.contradiction = (requireFilled & self.requirements["Absent of model"]InParent()) or (requireEmpty & self.presentInParent())
+    
+    def __repr__(self):
+        return f"""Requirement(child = {repr(self.child)}, requirements = {self.requirements}, {self.params()})"""
 
     def __eq__(self,other):
         return super().__eq__(other) and isinstance(other,Requirement) and self.requirements == other.requirements
@@ -88,7 +91,7 @@ class Requirement(SingleChild):
             return emptyGen
         return Requirements(child = child, toClone = self, *args, **kwargs)
 
-    def _getUnRedundate(self):
+    def _getWithoutRedundance(self):
         child = self.child
         for requirementName in self.requirements:
             for field in self.requirements[requirementName]:
@@ -101,8 +104,8 @@ class Requirement(SingleChild):
             return emptyGen
         return Requirement(child = child,
                            requirements = self.requirements,
-                           normalized = True,
-                           unRedundated = True)
+                           isNormal = True,
+                           containsRedundant = True)
 
     def _assumeQuestion(self, isQuestion):
         if self.requireQuestion is None:
@@ -157,8 +160,8 @@ class Requirement(SingleChild):
             requirements["Remove"]):
             return Requirement(child = child,
                                requirements = self.requirements,
-                               normalized = True,
-                               unRedundated = True)
+                               isNormal = True,
+                               containsRedundant = True)
         else:
             return child
 
@@ -213,7 +216,7 @@ class Requirement(SingleChild):
     #     childRestricted = self.child.restrictFields(fields,emptyGen|emptyGen,hasContent|requireFilled)
     #     if not childRestricted:
     #         return emptyGen
-    #     return Requirements(child=childRestricted, requireFilled = self.requirements["Filled"] - considered, emptyGen = (self.requirements["Empty"] - considered) & fields, normalized = True)
+    #     return Requirements(child=childRestricted, requireFilled = self.requirements["Filled"] - considered, emptyGen = (self.requirements["Empty"] - considered) & fields, isNormal = True)
     
 
 class HTML(SingleChild):
@@ -233,8 +236,13 @@ class HTML(SingleChild):
         self.attrs = attrs
         if toKeep is None and not child:
             toKeep = True
-            empty = True
-        super().__init__(child , toKeep = toKeep, empty = emptyGen, *args, **kwargs)
+            isEmpty = True
+        else:
+            isEmpty = False
+        super().__init__(child , toKeep = toKeep, isEmpty = isEmpty, *args, **kwargs)
+    
+    def __repr__(self):
+        return f"""HTML(child = {repr(self.child)}, tag = {self.tag}, attrs = {self.attrs()}, {self.params()})"""
 
     def __eq__(self,other):
         return super().__eq__(other) and isinstance(other,HTML) and self.tag == other.tag and self.attrs == other.attrs

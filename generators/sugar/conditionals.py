@@ -19,7 +19,7 @@ class AtLeastOne(SingleChild):
         child = self.child.getNormalForm()
         for condition in self.fields:
             actual = FilledOrEmpty(condition, filled = child,
-                                     empty = actual).getNormalForm()
+                                     isEmpty = actual).getNormalForm()
         return actual
 
 class FilledOrEmpty(MultipleChild):

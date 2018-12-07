@@ -1,6 +1,7 @@
 import copy
-from .generator import Gen, addTypeToGenerator, ensureGen
+from .generators import Gen, addTypeToGenerator, ensureGen
 from .leaf import Literal, Field, Empty, emptyGen
+from ..debug import debug
 
 class MultipleChild(Gen):
     pass
@@ -8,7 +9,7 @@ class MultipleChild(Gen):
 class ListElement(MultipleChild):
     def __init__(self,
                  elements = None,
-                 normalized = False,
+                 isNormal = False,
                  *args, **kwargs):
 
         """ 
@@ -19,49 +20,65 @@ class ListElement(MultipleChild):
         toKeep = True).
         """
         self.rawElements = elements
-        unnormalizedChild = False
+        self.children = []
+        unisNormalChild = False
         for element in elements:
             if not(element):#don't add empty elements.
                 continue
             element = ensureGen(element)
             if isinstance(element,Gen):
                 self.children.append(element)
-                if not element.isNormal():
-                    unnormalizedChild = True
+                if not element.getIsNormal():
+                    unisNormalChild = True
             else:
                 raise Exception(element, "is neither string nor Gen.")
-        super().__init__(self,
-                         self.children,
-                         normalized = normalized or (not unnormalizedChild),
+        super().__init__(isNormal = isNormal or (not unisNormalChild),
                          *args,
                          **kwargs)
+    
+    def __repr__(self):
+        return f"""ListElement(elements = {repr(self.children)}, {self.params()})"""
 
     def __eq__(self,other):
-        return isinstance(other,ListElement) and self.elements == other.elements
+        return isinstance(other,ListElement) and self.children == other.children
     
     def getChildren(self):
+        #debug(f"{self}.getChildren() = {self.children}")
         return self.children
     
     def _applyRecursively(self,fun, *args, **kwargs):
         """self, with fun applied to each element. 
 
-        normalized and unRedundated are passed to class constructor."""
+        isNormal and versionWithoutRedundancy are passed to class constructor."""
+        #debug(f"{self}._applyRecursively({fun.__name__})",1)
         elements = []
         change = False
-        for element in self.elements:
+        for element in self.children:
+            #debug(f"""applying {fun.__name__} to {element}""")
             element_ = fun(element)
-            if element != element:
+            #debug(f"""returning {element_}""")
+            if element_ != element:
+                #debug(f"""changed""")
                 change = True
-            if element:
-                elements.append(element)
+            else:
+                #debug(f"""not changed""")
+                pass
+            if element_:
+                #debug("Appending it to elements")
+                elements.append(element_)
+            else:
+                #debug(f"""not appending it""")
+                pass
         if not elements:
-            return emptyGen
-        if len(elements) == 1:
-            return elements[0]
-        if change:
-            return ListElement(elements = elements, *args, **kwargs)
+            ret = emptyGen
+        elif len(elements) == 1:
+            ret = elements[0]
+        elif change:
+            ret = ListElement(elements = elements, *args, **kwargs)
         else:
-            return self
+            ret = self
+        #debug(f"self._applyRecursively() returns {ret}",-1)
+        return ret
 
     def _template(self, *args, **kwargs):
         t = ""
@@ -88,7 +105,7 @@ class Branch(Gen):
                  questionNotAsked = None,
                  children = None,
                  toClone = None,
-                 normalized = False,
+                 isNormal = False,
                  *args,
                  **kwargs):
         """
@@ -119,11 +136,14 @@ class Branch(Gen):
                 if value is not None:
                     child = ensureGen(value)
                     self.children[isQuestionAsked] = child
-                    if not child.isNormal():
+                    if not child.getIsNormal():
                         notNormalChild = True
                     break
-        super().__init__( toClone = toClone, normalized = normalized or not notNormalChild, *args, **kwargs)
+        super().__init__( toClone = toClone, isNormal = isNormal or not notNormalChild, *args, **kwargs)
 
+    def __repr__(self):
+        return f"""Branch(name = {self.name}, children = {repr(self.children)}, {self.params()})"""
+    
     def __eq__(self,other):
         return isinstance(other,Branch) and self.name == other.name and self.children == other.children
     

@@ -1,18 +1,20 @@
 import sys
 from ..debug import debug
 
-modelToId_ =dict()
-modelToId_max = 0
-fieldsToId_ = dict()
-idToFields_ = dict()
+modelToHash_ =dict()
+modelToHash_max = 0
+fieldsToHash_ = dict()
+hashToFields_ = dict()
+
 
 def modelToFields(model):
     """The set of fields of the model given in argument"""
-    return frozenset({f["name"] for fld in model.flds})
+    return frozenset({fld["name"] for fld in model["flds"]})
 
 def fieldsToHashFields(fields):
     """A hash for this set of fields. 
     And the original saved set of fields which was used to create this hash."""
+    global modelToHash_max
     hash = fieldsToHash_.get(fields)
     if hash:
         return (hash, hashToFields_[hash])
@@ -28,7 +30,7 @@ def modelToHashFields(model, fields = None):
     
     fields -- if given, the set of fields of the model.
     """
-    pair = (model["hash"], model["mod"])
+    pair = (model["name"], model["mod"])
     if pair in modelToHash_:
         hash = modelToHash_[pair]
         fields = hashToFields_[hash]
@@ -55,9 +57,9 @@ class Gen:
     only of normal generators. (It can be avoided if all object of
     this class are in normal form)
     -- If furthermore, if the class has normal objects, it should implement:
-    --- _getUnRedundate, a method removing redundate constraint, 
+    --- _getWithoutRedundance, a method removing redundante constraint, 
     fields which can't ever appear, and things to delete. Each child
-    are also unredundated.
+    are also unredundanted.
     --- _assumeFieldInSet, given a field and a set, assuming the field
     is in this set, return the corrected version of self
     --- _restrictToModel, remove part which are incompatible with the
@@ -69,96 +71,110 @@ class Gen:
     _template(self,soup, tag, asked = None, hide = None, isQuestion = None):
     with soup the soup of the current xml, and tag the container
     currently processed, in which to add currently generated elements.  
-    """    
+    """
     def __init__(self,
-                 normal = None,
-                 normalized = False,
+                 normalVersion = None,
+                 isNormal = False,
                  toKeep = None,
-                 unRedundated = False,
-                 unRedundate = None,
-                 empty = None,
+                 containsRedundant = True,
+                 versionWithoutRedundancy = None,
+                 isEmpty = None,
                  toClone = None):
         """to Clone. We assume that transformations keep the fact that it
         should be kept, being normal, empty, and not redundant. Thus,
         if not otherwise stated, it is copied from toClone.
 
-        normal and normalized should not both be given. 
-        unRedundate and unRedundated should not both be given. 
+        normal and isNormal should not both be given. 
+        versionWithoutRedundancy and containsRedundant should not both be given. 
         """
-        if normalized is not None:
-            self.normalized = normalized
+        if isNormal is not None:
+            self.isNormal = isNormal
         elif toClone is not None:
-            self.normalized = toClone.normalized
+            self.isNormal = toClone.isNormal
         else:
-            self.normalized = False
+            self.isNormal = False
                 
-        assert (normalized is False or normal is None)
-        assert (unRedundated is False or unRedundate is None)
+        assert (isNormal is False or normalVersion is None)
+        assert ((not containsRedundant) or (versionWithoutRedundancy is None))
 
-        if self.normalized:
-            self._normal = self
-        if normal:
-            self._normal = normal
-
-
-        if unRedundated is not None:
-            self.unRedundated = unRedundated
-        elif toClone is not None:
-            self.unRedundated = toClone.unRedundated
+        if self.isNormal:
+            self.normalVersion = self
         else:
-            self.unRedundated = False
+            self.normalVersion = normalVersion
 
-        if self.unRedundated:
-            self._unRedundate == self
 
-        if toKeep is not None:
-            self.__toKeep = toKeep
+        if containsRedundant is not None:
+            self.containsRedundant = containsRedundant
         elif toClone is not None:
-            self.__toKeep = toClone.__toKeep
+            self.containsRedundant = toClone.containsRedundant
         else:
-            self.__toKeep = True
+            self.containsRedundant = True
+
+        if not self.containsRedundant:
+            self.versionWithoutRedundancy = self
+        else:
+            self.versionWithoutRedundancy = versionWithoutRedundancy
             
-        if empty is not None:
-            self.__empty = empty
+        if toKeep is not None:
+            self.toKeep = toKeep
         elif toClone is not None:
-            self.__empty = toClone.__empty
+            self.toKeep = toClone.toKeep
         else:
-            self.__empty = False
+            self.toKeep = True
+            
+        if isEmpty is not None:
+            self.isEmpty = isEmpty
+        elif toClone is not None:
+            self.isEmpty = toClone.isEmpty
+        else:
+            self.isEmpty = None
         #dicts used for memoization
-        self.__fieldInSets = dict()
-        self.__toModels = dict()
-        self.__templates = dict()
+        self.fieldSetToNotRedundant = dict()
+        self.hashToRestrictedModel = dict()
+        
 
     # def __str__(self):
     #     return f"""{self.__class____name__}({self._dic()})"""
     # def _dic(self):
     #     """A dictionnary used for """
     # def __eq__(self,other):
-    #     return self._normal == other._normal and self.unRedundated == other.unRedundated and self.__empty == other.__empty
+    #     return self.normalVersion == other.normalVersion and self.containsRedundant == other.containsRedundant and self.isEmpty == other.isEmpty
     
-    def isEmpty(self):
-        if self.__empty is None:
-            self.__empty = self._isEmpty()
-        return self.__empty
+    def getIsEmpty(self):
+        #debug(f"({self!r}).getIsEmpty()",1)
+        if self.isEmpty is None:
+            #debug(f"is not yet known")
+            self.isEmpty = self._getIsEmpty()
+        ret = self.isEmpty
+        #debug(f"self.getIsEmpty() is {ret}",-1)
+        return ret
     
-    def _isEmpty(self):
+    def _getIsEmpty(self):
+        #debug(f"({self!r})._getIsEmpty()",1)
+        ret = True
         for child in self.getChildren():
-            if child:
-                return True
-        return False
+            if not child.getIsEmpty():
+                #debug(f"its child ({child!r}) is not empty. Thus self is not either.")
+                ret = False
+                break
+            else:
+                #debug(f"its child ({child!r}) is empty")
+                pass
+        #debug(f"self._getIsEmpty() is {ret}",-1)
+        return ret
 
     def __bool__(self):
-        return not self.isEmpty()
+        return not self.getIsEmpty()
 
-    def toKeep(self):
+    def getToKeep(self):
         """In a list, does the presence of this element justify the fact that this element is kept.
 
         It memoize, so don't call when you intend to change children.
         Implemented only for classes which can be normal.
         """
-        if self.__toKeep is None:
-            self.__toKeep = bool(self._toKeep())
-        return self.__toKeep
+        if self.toKeep is None:
+            self.toKeep = bool(self._toKeep())
+        return self.toKeep
 
     def _toKeep(self):
         for element in self.getChildren():
@@ -173,8 +189,8 @@ class Gen:
     #     It may rise an exception if the class only generate normal elements."""
     #     raise Exception("_toKeep a Gen")
 
-    def isNormal(self):
-        return self._normalized
+    def getIsNormal(self):
+        return self.isNormal
 
     def getNormalForm(self):
         """Compute the normal form, memoize it.  
@@ -184,53 +200,58 @@ class Gen:
 
         Don't reimplement this, implement _getNormalForm.
         """
-        if self._normal is None:
-            self._normal = self._getNormalForm()
-        return self._normal
+        #debug(f"""getNormalForm({self!r})""",1)
+        if self.normalVersion is None:
+            self.normalVersion = self._getNormalForm()
+        ret = self.normalVersion
+        #debug(f"""getNormalForm() returns {ret}""",-1)
+        return ret
     
-    def _getNormalForm(self, ):
+    def _getNormalForm(self):
         """(Re)Compute the normal form.
         Assuming self is not already normal, otherwise an exception may be raised."""
         return self._applyRecursively((lambda element:
                                        element._getNormalForm()),
-                                      normalized = True,
+                                      isNormal = True,
                                       toClone = self)
        
 
-    def getUnRedundate(self):
+    def getWithoutRedundance(self):
         """Remove redundant, like {{#foo}}{{#foo}}, {{#foo}}{{^foo}}
-        on the normalized form of self.
+        on the isNormal form of self.
         
         Memoize. Unreduntate is also set for each descendant of self.
         
         The time is square in the depth of the tree. However, a
-        descendant occurring in mulitple tree to be unRedundated won't
+        descendant occurring in mulitple tree to be containsRedundant won't
         have to be considered multiple time, except for the elements
         which are specific to the new tree.
         """
-        if self._unRedundate is None:
-            self._unRedundate = self.getNormalForm()._getUnRedundate()
-        return self._unRedundate
+        if self.versionWithoutRedundancy is None:
+            normalForm = self.getNormalForm()
+            assert isinstance(normalForm, Gen)
+            self.versionWithoutRedundancy = normalForm._getWithoutRedundance()
+        return self.versionWithoutRedundancy
             
-    def _getUnRedundate(self):
-        """Similar to getUnRedundate. Assume normalized. Have to be
+    def _getWithoutRedundance(self):
+        """Similar to getWithoutRedundance. Assume isNormal. Have to be
         reimplemented in normal form. Don't take memoization into account."""
         return self._applyRecursively( (lambda element:
-                                        element._getUnRedundate()),
-                                       unRedundated = True,
+                                        element._getWithoutRedundance()),
+                                       containsRedundant = False,
                                        toClone = self)
     
     def assumeFieldInSet(self, field, setName):
         """return a copy of self, where the field is assumed to be in the set.
         
-        Assume self and descendant unredundant and normalized.
+        Assume self and descendant unredundant and isNormal.
         set should be one of "Absent of model", "In model", "Empty",
         "Filled", "Remove".
         Memoize. Don't redefine. Call _restrictFields
         """
-        if (field,setName) not in self.__fieldInSets:
-            self.__fieldInSets[(field,set)] = self.getUnRedundate()._assumeFieldInSet(field,setName)
-        return self.__fieldInSets[(field,set)]
+        if (field,setName) not in self.fieldSetToNotRedundant:
+            self.fieldSetToNotRedundant[(field,set)] = self.getWithoutRedundance()._assumeFieldInSet(field,setName)
+        return self.fieldSetToNotRedundant[(field,set)]
     
     def _assumeFieldInSet(self, field, setName):
         """Similar to assumeFieldInSet. 
@@ -250,9 +271,9 @@ class Gen:
         don't reimplement.
         """
         (hash, fields) = modelToHashFields(model, fields = fields)
-        if hash not in self.__models:
-            self.__models[hash] = self._restrictToModel(model, fields)
-        return self.__models[hash]
+        if hash not in self.hashToRestrictedModel:
+            self.hashToRestrictedModel[hash] = self._restrictToModel(model, fields)
+        return self.hashToRestrictedModel[hash]
     
     def _restrictToModel(self, model, fields = None):
         """Similar to restrictToModel. Do the computation and don't
@@ -268,18 +289,18 @@ class Gen:
     #     emptyGen -- the set of fields garanteed to be emptyGen (i.e. foo, when under {{^foo}})
     #     hasContent -- the set of fields garanteed to have some content (i.e. foo, when under {{#foo}})
 
-    #     raise an exception if the generator is not normalized.
+    #     raise an exception if the generator is not isNormal.
     #     call _restrictFields, which does the actual job.
     #     Do not memoize
 
-    #     Assume normalized."""
+    #     Assume isNormal."""
     #     if self.isNormal():
     #         return self._restrictFields(fields)
     #     else:
-    #         raise Exception("Restricting a note not normalized",self)
+    #         raise Exception("Restricting a note not isNormal",self)
 
     # def _restrictFields(self, fields, emptyGen, hasContent)
-    #     """Similar to restrictFields, assuming normalized. This is the
+    #     """Similar to restrictFields, assuming isNormal. This is the
     #     method which should be redefined.
 
     #     """
@@ -288,6 +309,7 @@ class Gen:
     def template(self, tag, soup, isQuestion, asked = None, hide = None):
         """Print the actual template, given the asked questions, list
         of things to hide (as frozen set)."""
+        debug (f"template({tag}, {soup}, {isQuestion} {asked}, {hide})",1)
         ret = self.__template.get(tag, soup, asked, hide, isQuestion)
         if ret is None:
             ret =self._template(tag, soup, asked, hide,isQuestion)
@@ -295,21 +317,54 @@ class Gen:
         elif isinstance(ret,tuple):
             (text,tag) = ret
             ret = (text, copy.copy(tag))
-        debug (f"template({tag}, {soup}, {isQuestion} {asked}, {hide})= {ret}")
+        debug (f"template()= {ret}",-1)
         return ret
 
     def _template(self, *args, **kwargs):
         raise Exception("_template in gen")
 
+    def __repr__(self):
+        return f"Generator({self.params()})"
+    
+    def params(self, show = False):
+        if not show:
+            return ""
+        if self.normalVersion == self:
+            normal = "self"
+        else:
+            normal = repr(self.normalVersion)
+        if self.versionWithoutRedundancy == self:
+            versionWithoutRedundancy = "self"
+        else:
+            versionWithoutRedundancy = repr(self.versionWithoutRedundancy)
+        return f"normal = {normal}, isNormal = {self.isNormal}, toKeep = {self.toKeep}, containsRedundant = {self.containsRedundant}, versionWithoutRedundancy = {versionWithoutRedundancy}, isEmpty = {self.isEmpty}"
 
 typeToGenerator= dict()
+
 def addTypeToGenerator(type,generator):
     typeToGenerator[type]=generator
+    
 def ensureGen(element):
+    """Element if it is a Gen, or construct it. The type is chosen
+    according to typeToGenerator.
+
+    """
+    #debug(f"ensureGen({element!r})", 1)
+    ret = None
     if isinstance(element,Gen):
-        return element
+        #debug(f"is already a generator")
+        ret = element
     for typ in typeToGenerator:
-        if isinstance(ensure, str):
-            return typeToGenerator[typ](ensure)
-    assert False
+        if isinstance(element, typ):
+            gen = typeToGenerator[typ]
+            ret = gen(element)
+            #debug(f"has type {typ}, thus use type {gen} and become {ret!r}")
+        else:
+            #debug(f"has not type {type}")
+            pass
+    if ret is None:
+        #debug("has no type we can consider")
+        assert False
+    #debug("", -1)
+    return ret
 

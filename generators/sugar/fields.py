@@ -12,7 +12,7 @@ class DecoratedField(Leaf):
                  symbol = None,
                  answer = None,
                  question = None,
-                 empty = None,
+                 isEmpty = None,
                  separator = ": ",
                  toKeep = True,
                  absenceCase = emptyGen,
