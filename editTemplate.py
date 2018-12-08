@@ -13,9 +13,6 @@ def split(text):
         return None
 
 
-
-templateTagParams = collections.namedtuple("templateTagParams",["obj", "asked", "hide", "isQuestion"])
-
 def _templateTagGetParams(templateTag, isQuestion):
     """Return templateTagParams for the given templateTag. With object
     name and not the object itself."""
@@ -23,90 +20,113 @@ def _templateTagGetParams(templateTag, isQuestion):
     asked = split(templateTag.attrs.get("asked"))
     hide = split(templateTag.attrs.get("hide"))
     objName = templateTag.attrs.get("object")
-    params = templateTagParams(objName, asked,hide, isQuestion)
-    debug(f"_templateTagGetParams({templateTag.name},{isQuestion}) returns {params}", indent=-1)
-    return params
+    ret = (objName, asked, hide, isQuestion)
+    debug(f"_templateTagGetParams({templateTag.name},{isQuestion}) returns {ret}", indent=-1)
+    return ret
 
-def templateTagGetParams(templateTag, isQuestion):
+def templateTagGetParams(templateTag, isQuestion, objects):
     """Return templateTagParams for the given templateTag with object, or None if it does not exists.
     
     add objectAbsent to templateTag if the object is absent. Remove it otherwise.
     """
-    debug(f"templateTagGetParams({templateTag.name},{isQuestion})", indent=1)
-    params = templateTagGetParams(templateTag,isQuestion)
-    obj = getObject(templateTag.attrs["object"])
+    debug(f"templateTagGetParams({templateTag},{isQuestion})", indent=1)
+    (objName, asked, hide, isQuestion) = _templateTagGetParams(templateTag,isQuestion)
+    obj = objects.get(objName)
     if obj is None:
-        templateTag.attrs["objectAbsent"] = objName
-        print(f"Object {objName} requested but not in the configuration")
+        debug(f"""Adding "objectabsent ={objName}" to "{templateTag}".""",-1)
+        templateTag.attrs["objectabsent"] = objName
         return None
     elif "objectAbsent" in templateTag.attrs:
         del templateTag.attrs["objectAbsent"]
-    params = _templateTagGetParams(templateTag,isQuestion)
-    params.obj = obj
-    debug(f"templateTagGetParams({templateTag.name},{isQuestion}) returns {params}", indent=-1)
-    return params
+    ret = (obj, asked, hide, isQuestion)
+    debug(f"templateTagGetParams() returns {ret}", indent=-1)
+    return ret
 
-def templateTagToText(templateTag,isQuestion, model):
-    debug(f"""templateTagToText({templateTag.name},{isQuestion},model["name"])""", indent=1)
-    params = templateTagGetParams(templateTag,isQuestion)
-    obj = params.obj
-    ret = obj.restrictToModel(model).template(obj.asked,obj.hide,isQuestion)
-    debug(f"""templateTagToText({templateTag.name},{isQuestion},model["name"]) returns {ret}""", indent=-1)
+def templateTagToText(templateTag,soup, isQuestion, model, objects):
+    """
+    
+    """
+    debug(f"""templateTagToText({templateTag},{isQuestion},{model["name"]})""", indent=1)
+    params = templateTagGetParams(templateTag, isQuestion, objects)
+    if params is None:
+        ret = None
+    else:
+        (obj, asked, hide, isQuestion) = params
+        ret = obj.restrictToModel(model).template(templateTag, soup, isQuestion, asked, hide)
+    debug(f"""templateTagToText() returns {ret}""", indent=-1)
     return ret
     
 
-def _templateTagAddText(templateTag,
-               isQuestion,
-               model):
-    """Assuming templateTag is a template tag"""
-    debug(f"""_templateTagAddText({templateTag.name},{isQuestion},{model["name"]})""", indent=1)
-    if templateTag.contents or not recompile:
-        return
-    text = templateTagToText(isQuestion,model)
+def _templateTagAddText(templateTag,soup,
+                        isQuestion,
+                        model,
+                        objects, 
+                        recompile = False):
+    """Assuming templateTag is a template tag. Return the text for this tag, or none if the object is missing."""
+    #debug(f"""_templateTagAddText({templateTag},{isQuestion},{model["name"]}, {recompile})""", indent=1)
+    if templateTag.contents:
+        if not recompile:
+            #debug("already have content, and not asked to recompile", -1)
+            return
+        else:
+            templateTag.contents = []
+    text = templateTagToText(templateTag,soup,isQuestion,model, objects)
     if isinstance(text,tuple):
         (text,tag) = text
-    debug(f"""_templateTagAddText({templateTag.name},{isQuestion},{model["name"]}) returns "{text}".""", indent=-1)
+    #debug(f"""_templateTagAddText({templateTag.name},{isQuestion},{model["name"]}) returns "{text}".""", indent=-1)
     return text
     
 def _cleanTemplateTag(templateTag):
     """templateTag is a template tag"""
-    debug(f"_cleanTemplateTag({templateTag.name})")
+    #debug(f"_cleanTemplateTag({templateTag.name})")
     templateTag.clear()
     if "objectAbsent" in templateTag.attrs:
         del templateTag.attrs["objectAbsent"]
 
+def tagsToEdit(soup):
+    return soup.find_all(f"span", templateversion = 1)
+    
+
 def applyOnAllTemplateTag(f,soup):
-    debug(f"applyOnAllTemplateTag({f.__name__},soup)")
-    for templateTag in soup.find_all(f"span", templateversion = 1):
-        debug("found tag {templateTag}")
+    #debug(f"applyOnAllTemplateTag({f.__name__},soup)")
+    for templateTag in findTagToEdit(soup):
+        #debug("found tag {templateTag}")
         f(templateTag)
         
 def cleanSoup(soup):
-    debug(f"cleanSoup(soup)")
+    #debug(f"cleanSoup(soup)")
     applyOnAllTemplateTag(_cleanTemplateTag, soups)
     
-def compileSoup(soup, isQuestion, model):
-    debug(f"""compileSoup(soup,{isQuestion},{model["name"]})""")
+def compileSoup(soup, isQuestion, model,objects):
+    #debug(f"""compileSoup(soup,{isQuestion},{model["name"]})""")
     applyOnAllTemplateTag(lambda templateTag:
-                          _templateTagAddText(templateTag, isQuestion,model), soup)
+                          _templateTagAddText(templateTag, soup, isQuestion,model,objects), soup)
 
+
+def addEnclose(html):
+    return f"""<enclose>{html}</enclose>"""
+
+def removeEnclose(html):
+    return re.sub(f".*<enclose>(.*)</?enclose>.*", "\\1", html, flags = re.M|re.DOTALL).strip()
+
+    
 def soupFromTemplate(template):
     """Return the soup, with enclose encompassing everything to ensure it's valid xml"""
-    debug(f"soupFromTemplate({template})", indent=1)
-    r= BeautifulSoup(f"""<enclose>{template}</enclose>""", "html.parser")
-    debug(f"soupFromTemplate() to {r}", indent=-1)
+    #debug(f"soupFromTemplate({template})", indent=1)
+    r= BeautifulSoup(addEnclose(template), "html.parser")
+    #debug(f"soupFromTemplate() to {r}", indent=-1)
     return r
 
-def templateFromSoup(soup):
+def templateFromSoup(soup,prettify = True):
     """Return the text, from soup, with enclose removed. Assuming no other
     enclose tag appear in prettify."""
-    debug(f"templateFromSoup(soup)", indent=1)
-    t = soup.prettify()
-    r= re.sub(f".*<enclose>(.*)</?enclose>.*", "\\1", t, flags = re.M|re.DOTALL).strip()
-    debug(f"templateFromSoup(soup) returns {r}", indent=-1)
+    #debug(f"templateFromSoup(soup)", indent=1)
+    t = soup.prettify() if prettify else str(soup)
+    r= removeEnclose(t)
+    #debug(f"templateFromSoup(soup) returns {r}", indent=-1)
     return r
     
-def applyOnAllTemplate(model, clean = False):
+def applyOnAllTemplate(model, objects, clean = False):
     debug(f"""applyOnAllTemplate({model["name"]})""", indent=1)
     for templateObject in model['tmpls']:
         for key,isQuestion in [(f"afmt",False),(f"qfmt",True),(f"bafmt",False),(f"bqfmt",True)]:
@@ -127,7 +147,7 @@ def applyOnAllTemplate(model, clean = False):
             if clean:
                 cleanSoup(soup)
             else:
-                compileSoup(soup, isQuestion, model)
+                compileSoup(soup, isQuestion, model, objects)
             newText = templateFromSoup(soup)
             templateObject[key] = newText
             debug(f"from {originalText} to {newText}", indent=-1)

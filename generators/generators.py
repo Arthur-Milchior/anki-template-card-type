@@ -131,6 +131,7 @@ class Gen:
         #dicts used for memoization
         self.fieldSetToNotRedundant = dict()
         self.hashToRestrictedModel = dict()
+        self.tagAskedHideIsQuestionToTemplate = dict()
         
 
     # def __str__(self):
@@ -229,7 +230,8 @@ class Gen:
         """
         if self.versionWithoutRedundancy is None:
             normalForm = self.getNormalForm()
-            assert isinstance(normalForm, Gen)
+            if not isinstance(normalForm, Gen):
+                raise Exception(f"""normalForm of "{self}" is "{normalForm}", not of type Gen""")
             self.versionWithoutRedundancy = normalForm._getWithoutRedundance()
         return self.versionWithoutRedundancy
             
@@ -310,10 +312,10 @@ class Gen:
         """Print the actual template, given the asked questions, list
         of things to hide (as frozen set)."""
         debug (f"template({tag}, {soup}, {isQuestion} {asked}, {hide})",1)
-        ret = self.__template.get(tag, soup, asked, hide, isQuestion)
+        ret = self.tagAskedHideIsQuestionToTemplate.get((tag, asked, hide, isQuestion))
         if ret is None:
-            ret =self._template(tag, soup, asked, hide,isQuestion)
-            self.__template[(tag,soup,asked,hide,isQuestion)] = ret
+            ret =self._template(tag, asked, hide, isQuestion)
+            self.tagAskedHideIsQuestionToTemplate[(tag, asked, hide, isQuestion)] = ret
         elif isinstance(ret,tuple):
             (text,tag) = ret
             ret = (text, copy.copy(tag))

@@ -6,6 +6,7 @@ from aqt.utils import tooltip
 
 from . import test
 from .debug import debug
+from .config import readIfRequired, objects
 
 def runBrowser(browser, clean):
     mw.checkpoint("Change template")
@@ -20,7 +21,8 @@ def runBrowser(browser, clean):
     for mid in mids:
         model = mw.col.models.get(mid)
         #debug(f"""dealing with model ""\"{model}""\".""")
-        applyOnAllTemplate(model,clean)
+        readIfRequired()
+        applyOnAllTemplate(model,clean,objects)
     mw.progress.finish()
     tooltip("Ending "+("cleaning " if clean else "")+"Template")
 

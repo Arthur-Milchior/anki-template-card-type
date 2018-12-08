@@ -2,6 +2,9 @@ from .generators.leaf import Literal, emptyGen, Field, Empty
 from .config import getObject
 import aqt
 import json
+from copy import copy
+
+from .editTemplate import soupFromTemplate, templateFromSoup, tagsToEdit, _templateTagAddText
 
 from .generators.children import ListElement
 from .generators.generators import ensureGen
@@ -20,13 +23,13 @@ def assertEqual(left, right):
     rightEval = eval(right)
     if leftEval == rightEval:
         return
-    debug(f"{left} evaluates as {leftEval}.\n{right} evaluates as {rightEval}. They are distinct.")
+    debug(f"""{left} evaluates as \n"{leftEval}".\n"{rightEval}"\n is the value of {right}, they are distinct.""")
     raise Exception
 
 jsonTest = """{
     "instructions":[
         ["test", "'test'"],
-        ["foo","[\\"foo\\",None, Field(\\"foo\\")]"]
+        ["foo","[\\"foo\\",None, Field(\\"Front\\")]"]
     ]
 }"""
 
@@ -88,9 +91,8 @@ assertEqual("foofoo", "foofooNormal")
 assertEqual("foofoo.restrictToModel(model)", "literalFoo")
 assertEqual("foofront.restrictToModel(model)", "foofront")
 
-# fooList = ensureGen([Field('foo')])
-# print(f"ensureGen([Field('foo')]) is {fooList!r}")
-# assert fooList ,  ListElement([Field("foo")]))
+fooList = ensureGen([Field('foo')])
+assert fooList
 
 
 objects = dict()
@@ -106,12 +108,49 @@ for instruction in instructions:
     else:
         assert False
 test = objects["test"]
-assert test == literalTest
-assert test == test.getNormalForm()
-assert test == test.getWithoutRedundance()
+assertEqual("test", "literalTest")
+assertEqual("test", "test.getNormalForm()")
+assertEqual("test", "test.getWithoutRedundance()")
+
+
+#########HTML
+noHtml = "foo1"
+assertEqual("templateFromSoup(soupFromTemplate(noHtml))","noHtml")
+
+noTemplate = """<p>foo2</p>"""
+soupNo = soupFromTemplate(noTemplate)
+assertEqual("""templateFromSoup(soupNo,prettify = False)""","""noTemplate""")
+assertEqual("len(tagsToEdit(soupNo))","0")
+_templateTagAddText(soupNo.p, soupNo, True, model, objects, recompile = True)
+
+htmlTest = """<span object="test" templateversion="1">foo4</span>"""
+soupTest = soupFromTemplate(htmlTest)
+assertEqual("""templateFromSoup(soupTest,prettify = False)""","""htmlTest""")
+assertEqual("len(tagsToEdit(soupTest))","1")
+_templateTagAddText(soupTest.span, soupTest, True, model, objects, recompile = True)
+htmlTestCompiled = """<span object="test" templateversion="1">test</span>"""
+assertEqual("""templateFromSoup(soupTest,prettify = False)""","""htmlTestCompiled""")
+
+htmlBar = """<span object="bar" templateversion="1">foo5</span>"""
+soupBar = soupFromTemplate(htmlBar)
+assertEqual("""templateFromSoup(soupBar,prettify = False)""","""htmlBar""")
+assertEqual("len(tagsToEdit(soupBar))","1")
+_templateTagAddText(soupBar.span, soupBar, True, model, objects, recompile = True)
+htmlBarCompiled = """<span object="bar" objectabsent="bar" templateversion="1"></span>"""
+assertEqual("""templateFromSoup(soupBar,prettify = False)""","""htmlBarCompiled""")
+
+htmlFoo = """<span object="foo" templateversion="1"></span>"""
+soupHtml = soupFromTemplate(htmlFoo)
+assertEqual("""templateFromSoup(soupHtml,prettify = False)""","""htmlFoo""")
+assertEqual("len(tagsToEdit(soupHtml))","1")
+_templateTagAddText(soupHtml.span, soupHtml, True, model, objects, recompile = True)
+htmlFooCompiled = """<span object="foo" templateversion="1">foo{{Front}}</span>"""
+assertEqual("""templateFromSoup(soupHtml,prettify = False)""","""htmlFooCompiled""")
+
+
 
 # test = getObject("test")
-# assert test == Literal("test")
+# assertEqual(" test ", "Literal("test")")
 # assert test == test.getNormalForm()
 # assert test == test.getWithoutRedundance()
 
