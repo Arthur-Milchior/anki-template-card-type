@@ -9,7 +9,7 @@ class Image(HTML):
         super().__init__("img",{"src":url})
 
 class Table(HTML):
-    def __init__(self, content, trAttrs = [], tdAttrs = [], *args, **kwargs):
+    def __init__(self, content, trAttrs = [], tdAttrs = [],  **kwargs):
         """
         A table with content stated. If content is emptyGen, its normal
         form is an Empty object.
@@ -28,22 +28,22 @@ class Table(HTML):
                               child = ListElement(elements = line)
             ))
         super().__init__("table", child = ListElement(elements =
-        table), *args, **kwargs)
+        table),  **kwargs)
 
 def _fixedTag(tag):
     class FIXED(HTML):
-        def __init__(self, *args, **kwargs):
-            super().__init__(tag, *args, **kwargs)
+        def __init__(self,  **kwargs):
+            super().__init__(tag,  **kwargs)
     return FIXED
 SPAN = _fixedTag("span")
 DIV = _fixedTag("div")
 P = _fixedTag("p")
 # class SPAN(HTML):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__("span", *args, **kwargs)
+#     def __init__(self,  **kwargs):
+#         super().__init__("span",  **kwargs)
 # class DIV(HTML):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__("div", *args, **kwargs)
+#     def __init__(self,  **kwargs):
+#         super().__init__("div",  **kwargs)
 # class P(HTML):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__("p", *args, **kwargs)
+#     def __init__(self,  **kwargs):
+#         super().__init__("p",  **kwargs)

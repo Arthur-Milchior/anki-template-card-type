@@ -1,26 +1,32 @@
-from ..children import MultipleChild, ListElement
+from ..children import MultipleChild, ListElement, Branch
 from ..child import SingleChild, Requirement
 from ..leaf import Empty, emptyGen, Leaf, Literal, Field
-from .conditionals import PresentOrAbsent 
+from .conditionals import PresentOrAbsent
+from ..generators import ensureGen
+from ...debug import debug, assertType
 from html import escape
 
 class DecoratedField(Leaf):
+    def __repr__(self):
+        return f"""DecoratedField("{self.field}","{self.prefix}","{self.suffix}","{self.symbol}","{self.answer}","{self.question}","{self.separator}","{self.toKeep}","{self.absenceCase}","{self.emptyCase}","{self.params()}")"""
+                 
     def __init__(self,
                  field,
-                 prefix = emptyGen,
-                 suffix = emptyGen,
+                 prefix = None,
+                 suffix = None,
                  symbol = None,
                  answer = None,
                  question = None,
-                 isEmpty = None,
                  separator = ": ",
                  toKeep = True,
-                 absenceCase = emptyGen,
-                 emptyCase = emptyGen,
-                 *args, **kwargs):
+                 isEmpty = False,
+                 absenceCase = None,
+                 emptyCase = None,
+                  **kwargs):
         """
         keyword arguments:
-        field -- a field name. Corresponding to the information requested here.
+        field -- a field name. Corresponding to the information
+                 requested here. It may already be a Field instance.
         separator -- Text to show between prefix and field value. Never emphazed.
         prefix/suffix -- Text with which to start/end everything.
         symbol -- Text to show before the field content. If not provided, it's value is "field". Emphasized on uqestions.
@@ -30,49 +36,57 @@ class DecoratedField(Leaf):
         * Normal form of answer is: "symbol separator emphasize({{field}})" 
         * Normal form of everything else is: "symbol separator {{field}}".
         """
-    
-        self.field = field
-        self.separator = separator
-        self.suffix = suffix
-        self.prefix = prefix 
-        self.symbol = symbol if symbol else field
+        if isinstance(field,str):
+            field = Field(field)
+        assert assertType(field,Field)
+        self.field = field 
+        self.separator = ensureGen(separator)
+        self.suffix = ensureGen(suffix)
+        self.prefix = ensureGen(prefix)
+        self.symbol = ensureGen(symbol) if symbol else ensureGen(field)
         self.question = question
         self.answer = answer
-        self.absenceCase = absenceCase
-        self.emptyCase = emptyCase
-        super().__init__(*args,
-                         toKeep = toKeep,
-                         **kwargs)
+        self.absenceCase = ensureGen(absenceCase)
+        self.emptyCase = ensureGen(emptyCase)
+        super().__init__(
+            toKeep = toKeep,
+            isEmpty = isEmpty,
+            **kwargs)
 
     def _getNormalForm(self):
         children = dict()
-        longPrefix = f"{self.prefix}{self.symbol}{self.separator}"
-        default = ListElement([Literal(longPrefix),Field(field),Literal(self.suffix)])
-        questionAsked = self.question if self.question is not None else Literal(f"""{longPrefix}???{self.suffix}""")#TODO Emphasize
-        answerAsked = self.answer if self.answer is not None else default#TODO Emphasize
-        cases = Branch(name = self.field,
+        default = ListElement([self.prefix, self.symbol, self.separator, self.field, self.suffix])
+        if self.question is not None:
+            questionAsked = ensureGen(self.question)
+        else:
+            questionAsked = ListElement([self.prefix, self.symbol, self.separator, Literal("???"), self.suffix])#TODO Emphasize
+        if self.answer is not None:
+            answerAsked = ensureGen(self.answer)
+        else:
+            answerAsked = default#TODO Emphasize
+        cases = Branch(name = self.field.field,
                        default = default,
                        questionAsked = questionAsked,
                        answerAsked = answerAsked,
                        toClone = self,
-                       normalized = True)
+                       isNormal = True)
         requirement = Requirement(child = cases,
-                                  requirement = self.field,
+                                  requireFilled = {self.field.field},
                                   toClone = self,
-                                  normalized = True)
+                                  isNormal = True)
         r = requirement
         if self.emptyCase:
-            r = FilledOrEmpty(field = self.field,
+            r = FilledOrEmpty(field = self.field.field,
                                 filledCase = r,
                                 emptyCase = self.emptyCase,
                                 toClone = self,
-                                normalized = True)
+                                isNormal = True)
         if self.absenceCase:
-            r = PresentOrAbsent(field = self.field,
+            r = PresentOrAbsent(field = self.field.field,
                                 presentCase = r,
                                 absenceCase = self.absenceCase,
                                 toClone = self,
-                                normalized = True)
+                                isNormal = True)
         return r.getNormalForm()
 
     
@@ -105,21 +119,25 @@ class ListFields(MultipleChild):#(RecursiveFields)
            --- A pair with a the description to use and the field name (e.g. ("Variable", variable1)
 
     """
-    # fields is normalized and contains only Field objectc
+    # fields is normal and contains only Field objectc
     # Currently, we don't use the fact that it is RecursiveFields
+    def __repr__(self):
+        return f"""ListFields("{self.fields}","{self.globalPrefix}","{self.globalSeparator}","{self.globalSuffix}","{self.localPrefix}","{self.localSeparator}","{self.localSuffix}","{self.hideSuccessor}")"""
+        
     def __init__(self,
                  fields,
                  globalPrefix = emptyGen,
                  globalSeparator = emptyGen,
                  globalSuffix = emptyGen,
+                 toKeep = True,
+                 isEmpty = False,
                  localPrefix = emptyGen,
                  localSeparator = emptyGen,
                  localSuffix = emptyGen,
                  hideSuccessor = False,
-                 *args,
                  **kwargs):
         self.globalPrefix = globalPrefix
-        self.globalsuffix = globalSuffix
+        self.globalSuffix = globalSuffix
         self.globalSeparator = globalSeparator
         self.localPrefix = localPrefix
         self.localSuffix = localSuffix
@@ -128,7 +146,10 @@ class ListFields(MultipleChild):#(RecursiveFields)
         self.fields = []
         for field in fields:
             self._addField(field)
-        super().__init__(fields, *args, **kwargs)
+        super().__init__(
+            toKeep = toKeep,
+            isEmpty = isEmpty,
+            **kwargs)
 
             
     def _addField(self,field):
@@ -151,6 +172,8 @@ class ListFields(MultipleChild):#(RecursiveFields)
                                     prefix = self.localPrefix,
                                     separator = self.localSeparator,
                                     suffix = self.localSuffix))
+    def getChildren(self):
+        return self.fields
             
 
     def _getNormalForm(self):
@@ -194,15 +217,20 @@ class ListFields(MultipleChild):#(RecursiveFields)
 #         """
 
 class NumberedFields(ListFields):
+    def __repr__(self):
+        return f"""NumberedFields("{self.fieldPrefix}","{self.greater}")"""
+    
     #can not be normal
     """Similar to ListFields, where the fields are of the form
     fieldPrefix, followed by an integer between 1 and greater. """
-    def __init__(self,fieldPrefix, greater, *args, **kwargs):
+    def __init__(self,fieldPrefix, greater,  **kwargs):
         fields = []
+        self.fieldPrefix = fieldPrefix
+        self.greater = greater
         assert(isinstance(fieldPrefix, str))
         assert(isinstance(greater, int))
         for i in range(1,greater+1):
             s = f"""{fieldPrefix}{i}"""
             fields.append(s)
-        super().__init__(fields, *args, **kwargs)
+        super().__init__(fields,  **kwargs)
 

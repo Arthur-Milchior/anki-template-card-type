@@ -2,6 +2,24 @@ from ..child import SingleChild
 from ..leaf import emptyGen
 from ..children import MultipleChild, ListElement
 
+class FilledOrEmpty(ListElement):
+    def __repr__(self):
+        return """FilledOrEmpty({self.field},{self.filledCase},{self.emptyCase})"""
+    
+    def __init__(self,field,filledCase = emptyGen, emptyCase = emptyGen,  **kwargs):
+        self.filledCase = filledCase
+        self.emptyCase = emptyCase
+        self.field = field
+        super().__init__([
+            Requirements(
+                self.filledCase.getNormalForm(),
+                requireFilledCase = {self.field}
+            ),
+            Requirements(
+                self.emptyCase.getNormalForm(),
+                requireEmpty = {self.field}
+            )],  **kwargs)
+        
 class AtLeastOne(SingleChild):
     """Show the child if there is at least one condition.
 
@@ -10,6 +28,9 @@ class AtLeastOne(SingleChild):
     <table>
 
     """
+    def __repr__(self):
+        return f"""AtLeastOne({self.child},{self.fields})"""
+
     def __init__(self,child, fields):
         super().__init__(child)
         self.fields = fields
@@ -22,29 +43,24 @@ class AtLeastOne(SingleChild):
                                      isEmpty = actual).getNormalForm()
         return actual
 
-class FilledOrEmpty(MultipleChild):
-    def __init__(self,field,filledCase = emptyGen, emptyCase = emptyGen, *args, **kwargs):
-        self.filledCase = filledCase
-        self.emptyCase = emptyCase
-        self.field = field
-        super().__init__([
-            Requirements(
-                self.filledCase.getNormalForm(),
-                requireFilledCase = {self.field}
-            ),
-            Requirements(
-                self.emptyCase.getNormalForm(),
-                requireEmpty = {self.field}
-            )], *args, **kwargs)
 class Filled(FilledOrEmpty):
-    def __init__(self, field, child, *args, **kwargs):
-        super().__init__(field, filledCase = child, *args, **kwargs)
-class Empty(FilledOrEmpty):
-    def __init__(self, field, child, *args, **kwargs):
-        super().__init__(field, emptyCase = child, *args, **kwargs)
+    def __repr__(self):
+        return f"""Filled({self.field},{self.child})"""
     
-class QuestionOrAnswer(MultipleChild):
-    def __init__(self, questionCase = emptyGen, answerCase = emptyGen, *args, **kwargs):
+    def __init__(self, field, child,  **kwargs):
+        super().__init__(field, filledCase = child,  **kwargs)
+        
+class Empty(FilledOrEmpty):
+    def __repr__(self):
+        return f"""Empty({self.field},{self.child})"""
+    def __init__(self, field, child,  **kwargs):
+        super().__init__(field, emptyCase = child,  **kwargs)
+    
+class QuestionOrAnswer(ListElement):
+    def __repr__(self):
+        return f"""QuestionOrAnswer({self.field},{self.questionCase},{self.answerCase})"""
+    
+    def __init__(self, questionCase = emptyGen, answerCase = emptyGen,  **kwargs):
         self.questionCase = questionCase
         self.answerCase = answerCase
         super().__init__([
@@ -55,18 +71,27 @@ class QuestionOrAnswer(MultipleChild):
             Requirements(
                 self.answerCase.getNormalForm(),
                 requireQuestion = False
-            )], *args, **kwargs)
+            )],  **kwargs)
+        
 class Question(QuestionOrAnswer):
-    def __init__(self, child, *args, **kwargs):
-        super().__init__(questionCase = child, *args, **kwargs)
+    def __repr__(self):
+        return f"""Question({self.field},{self.child})"""
+    def __init__(self, child,  **kwargs):
+        super().__init__(questionCase = child,  **kwargs)
+
 class Answer(QuestionOrAnswer):
-    def __init__(self, child, *args, **kwargs):
-        super().__init__(answerCase = child, *args, **kwargs)
+    def __repr__(self):
+        return f"""Answer({self.field},{self.child})"""
+    def __init__(self, child,  **kwargs):
+        super().__init__(answerCase = child,  **kwargs)
         
     
         
-class PresentOrAbsent(MultipleChild):
-    def __init__(self, field, presentCase = emptyGen, absentCase = emptyGen, *args, **kwargs):
+class PresentOrAbsent(ListElement):
+    def __repr__(self):
+        return f"""PresentOrAbsent({self.field},{self.presentCase},{self.absentCase})"""
+    
+    def __init__(self, field, presentCase = emptyGen, absentCase = emptyGen,  **kwargs):
         self.presentCase = presentCase
         self.absentCase = absentCase
         self.field = field
@@ -80,11 +105,17 @@ class PresentOrAbsent(MultipleChild):
                     self.absentCase.getNormalForm(),
                     absentOfModel = {self.field}
                 )]
-            ,*args, **kwargs)
+            , **kwargs)
     
 class Present(PresentOrAbsent):
-    def __init__(self, field, child, *args, **kwargs):
-        super().__init__(field, presentCase = child, *args, **kwargs)
+    def __repr__(self):
+        return f"""Present({self.field},{self.child})"""
+    
+    def __init__(self, field, child,  **kwargs):
+        super().__init__(field, presentCase = child,  **kwargs)
+        
 class Absent(PresentOrAbsent):
-    def __init__(self, field, child, *args, **kwargs):
-        super().__init__(field, absentCase = child, *args, **kwargs)
+    def __repr__(self):
+        return f"""Absent({self.field},{self.child})"""
+    def __init__(self, field, child,  **kwargs):
+        super().__init__(field, absentCase = child,  **kwargs)

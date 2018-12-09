@@ -1,38 +1,39 @@
 import copy
 from .generators import Gen,addTypeToGenerator, modelToFields
-from ..debug import debug
+from ..debug import debug, assertType
 
 class Leaf(Gen):
-    def __init__(self, containsRedundant = True, *args, **kwargs):
+    def __init__(self,  containsRedundant = True, **kwargs):
         # A leaf can never be redundant alone. 
-        super().__init__(containsRedundant = containsRedundant, *args, **kwargs)
+        super().__init__(containsRedundant = containsRedundant,  **kwargs)
         
     def getChildren(self):
         return frozenset()
         
-    def _applyRecursively(self, fun, *args, **kwargs):
+    def _applyRecursively(self, fun,  **kwargs):
         return self
 
 class Empty(Leaf):
     """A generator without any content"""
     def __init__(self,
-                 argument = None,
+                 *args,#required, because EnsureGen may give an argument
                  toKeep=False,
                  containsRedundant = True,
                  isNormal = True,
-                 *args,
+                 isEmpty = True,
                  **kwargs):
         super().__init__(isNormal = isNormal,
                          containsRedundant = containsRedundant,
                          toKeep = toKeep,
-                         *args,
+                         isEmpty = isEmpty,
                          **kwargs)
 
     def __repr__(self):
         return f"""Empty({self.params()})"""
 
-    def _template(self, *args, **kwargs):
+    def _template(self, *args,  **kwargs):
         return None
+    
     def __eq__(self,other):
         #debug(f"{self!r} == {other!r}",1)
         l = isinstance(other,Empty)
@@ -54,9 +55,8 @@ class Literal(Leaf):
                  toKeep = False,
                  toClone = None,
                  isEmpty = None,
-                 *args,
                  **kwargs):
-        super().__init__(*args,
+        super().__init__(
                          toKeep = toKeep,
                          containsRedundant = True,
                          toClone = toClone,
@@ -64,7 +64,7 @@ class Literal(Leaf):
                          **kwargs)
         if text is not None:
             self.text = text
-        elif toClone is not None:
+        elif toClone is not None and isinstance(toClone,Literal):
             self.text = toClone.text
         else:
             self.text = ""
@@ -89,6 +89,7 @@ class Literal(Leaf):
     def _template(self, tag, *args, **kwargs):
         tag.append(self.text)
         return self.text
+    
 addTypeToGenerator(str,Literal)
 
 class Field(Leaf):
@@ -97,11 +98,11 @@ class Field(Leaf):
                  toKeep = True,
                  toClone = None,
                  isEmpty = False,
-                 *args,
                  **kwargs):
         if field is not None:
+            assert assertType(field,str)
             self.field = field
-        elif toClone is not None:
+        elif toClone is not None and isinstance(toClone,Field):
             self.field = toClone.field
         else:
             assert False
@@ -110,7 +111,7 @@ class Field(Leaf):
                          isEmpty = isEmpty,
                          toClone = toClone,
                          toKeep = toKeep,
-                         *args,
+                         
                          **kwargs)
 
     def __eq__(self,other):
@@ -124,7 +125,7 @@ class Field(Leaf):
             return emptyGen
         return self
     
-    def restrictToModel(self, model, fields = None):
+    def _restrictToModel(self, model, fields = None):
         #debug(f"""{self}.restrictToModel({model["name"]}, {fields})""",1)
         if not fields:
             fields = modelToFields(model)

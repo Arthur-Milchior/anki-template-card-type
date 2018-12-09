@@ -1,5 +1,5 @@
 import sys
-from ..debug import debug
+from ..debug import debug, assertType
 
 modelToHash_ =dict()
 modelToHash_max = 0
@@ -73,6 +73,7 @@ class Gen:
     currently processed, in which to add currently generated elements.  
     """
     def __init__(self,
+                 *,
                  normalVersion = None,
                  isNormal = False,
                  toKeep = None,
@@ -87,6 +88,8 @@ class Gen:
         normal and isNormal should not both be given. 
         versionWithoutRedundancy and containsRedundant should not both be given. 
         """
+        if toClone:
+            assert isinstance(toClone,Gen)
         if isNormal is not None:
             self.isNormal = isNormal
         elif toClone is not None:
@@ -101,6 +104,7 @@ class Gen:
             self.normalVersion = self
         else:
             self.normalVersion = normalVersion
+            assert normalVersion is None or assertType(normalVersion,Gen)
 
 
         if containsRedundant is not None:
@@ -114,20 +118,21 @@ class Gen:
             self.versionWithoutRedundancy = self
         else:
             self.versionWithoutRedundancy = versionWithoutRedundancy
+            assert versionWithoutRedundancy is None or assertType(normalVersion,Gen)
             
-        if toKeep is not None:
-            self.toKeep = toKeep
-        elif toClone is not None:
-            self.toKeep = toClone.toKeep
-        else:
-            self.toKeep = True
+        # if toKeep is not None:
+        self.toKeep = toKeep
+        # elif toClone is not None:
+        #   self.toKeep = toClone.getToKeep()
+        # else:
+        #     self.toKeep = True
             
-        if isEmpty is not None:
-            self.isEmpty = isEmpty
-        elif toClone is not None:
-            self.isEmpty = toClone.isEmpty
-        else:
-            self.isEmpty = None
+        # if isEmpty is not None:
+        self.isEmpty = isEmpty
+        # elif toClone is not None:
+        #     self.isEmpty = toClone.isEmpty
+        # else:
+        #     self.isEmpty = None
         #dicts used for memoization
         self.fieldSetToNotRedundant = dict()
         self.hashToRestrictedModel = dict()
@@ -142,30 +147,37 @@ class Gen:
     #     return self.normalVersion == other.normalVersion and self.containsRedundant == other.containsRedundant and self.isEmpty == other.isEmpty
     
     def getIsEmpty(self):
-        #debug(f"({self!r}).getIsEmpty()",1)
+        debug(f"getIsEmpty({self})",1)
         if self.isEmpty is None:
-            #debug(f"is not yet known")
+            debug(f"whether it is empty is not yet known")
             self.isEmpty = self._getIsEmpty()
-        ret = self.isEmpty
-        #debug(f"self.getIsEmpty() is {ret}",-1)
-        return ret
+            debug(f"getIsEmpty() is {self.isEmpty}",-1)
+        else:
+            debug(f"whether it is empty is known to be {self.isEmpty}",-1)
+            pass
+        return self.isEmpty
     
     def _getIsEmpty(self):
-        #debug(f"({self!r})._getIsEmpty()",1)
+        debug(f"_getIsEmpty({self})",1)
         ret = True
-        for child in self.getChildren():
+        children = self.getChildren()
+        debug(f"Children are {children}")
+        for child in children:
             if not child.getIsEmpty():
-                #debug(f"its child ({child!r}) is not empty. Thus self is not either.")
+                debug(f"its child ({child}) is not empty. Thus self is not either.")
                 ret = False
                 break
             else:
-                #debug(f"its child ({child!r}) is empty")
+                debug(f"its child ({child}) is empty")
                 pass
-        #debug(f"self._getIsEmpty() is {ret}",-1)
+        debug(f"self._getIsEmpty() is {ret}",-1)
         return ret
 
     def __bool__(self):
-        return not self.getIsEmpty()
+        debug(f"""__bool__({self})""",1)
+        ret = not self.getIsEmpty()
+        debug(f"""__bool__() returns {ret}""",-1)
+        return ret
 
     def getToKeep(self):
         """In a list, does the presence of this element justify the fact that this element is kept.
@@ -179,7 +191,7 @@ class Gen:
 
     def _toKeep(self):
         for element in self.getChildren():
-            if element.toKeep():
+            if element.getToKeep():
                 return True
         return False
     
@@ -201,9 +213,11 @@ class Gen:
 
         Don't reimplement this, implement _getNormalForm.
         """
-        #debug(f"""getNormalForm({self!r})""",1)
+        #debug(f"""getNormalForm({self})""",1)
         if self.normalVersion is None:
+            #debug("Normal form must be computed")
             self.normalVersion = self._getNormalForm()
+            assert assertType(self.normalVersion,Gen)
         ret = self.normalVersion
         #debug(f"""getNormalForm() returns {ret}""",-1)
         return ret
@@ -233,15 +247,16 @@ class Gen:
             if not isinstance(normalForm, Gen):
                 raise Exception(f"""normalForm of "{self}" is "{normalForm}", not of type Gen""")
             self.versionWithoutRedundancy = normalForm._getWithoutRedundance()
+            assert assertType(self.versionWithoutRedundancy, Gen)
         return self.versionWithoutRedundancy
             
     def _getWithoutRedundance(self):
         """Similar to getWithoutRedundance. Assume isNormal. Have to be
         reimplemented in normal form. Don't take memoization into account."""
-        return self._applyRecursively( (lambda element:
-                                        element._getWithoutRedundance()),
-                                       containsRedundant = False,
-                                       toClone = self)
+        return self._applyRecursively((lambda element:
+                                       element._getWithoutRedundance()),
+                                      containsRedundant = False,
+                                      toClone = self)
     
     def assumeFieldInSet(self, field, setName):
         """return a copy of self, where the field is assumed to be in the set.
@@ -252,7 +267,9 @@ class Gen:
         Memoize. Don't redefine. Call _restrictFields
         """
         if (field,setName) not in self.fieldSetToNotRedundant:
-            self.fieldSetToNotRedundant[(field,set)] = self.getWithoutRedundance()._assumeFieldInSet(field,setName)
+            assumed = self.getWithoutRedundance()._assumeFieldInSet(field,setName)
+            assert assertType(assumed, Gen)
+            self.fieldSetToNotRedundant[(field,set)] = assumed
         return self.fieldSetToNotRedundant[(field,set)]
     
     def _assumeFieldInSet(self, field, setName):
@@ -272,10 +289,21 @@ class Gen:
         memoized. 
         don't reimplement.
         """
+        debug(f"""restrictToModel({self})""",1)
         (hash, fields) = modelToHashFields(model, fields = fields)
         if hash not in self.hashToRestrictedModel:
-            self.hashToRestrictedModel[hash] = self._restrictToModel(model, fields)
-        return self.hashToRestrictedModel[hash]
+            debug(f"""hash {hash} not memoized. It must be computed.""")
+            if not self.hashToRestrictedModel:
+                debug("In fact hashToRestrictedModel is empty")
+            restricted = self.getWithoutRedundance()._restrictToModel(model, fields)
+            assert assertType(restricted, Gen)
+            self.hashToRestrictedModel[hash] = restricted
+        else:
+            debug(f"""hash {hash} already memoized.""")
+            pass
+        ret = self.hashToRestrictedModel[hash]
+        debug(f"""restrictToModel() returns "{ret}".""",-1)
+        return ret
     
     def _restrictToModel(self, model, fields = None):
         """Similar to restrictToModel. Do the computation and don't
@@ -311,19 +339,19 @@ class Gen:
     def template(self, tag, soup, isQuestion, asked = None, hide = None):
         """Print the actual template, given the asked questions, list
         of things to hide (as frozen set)."""
-        debug (f"template({tag}, {soup}, {isQuestion} {asked}, {hide})",1)
+        #debug (f"template({tag}, {soup}, {isQuestion} {asked}, {hide})",1)
         ret = self.tagAskedHideIsQuestionToTemplate.get((tag, asked, hide, isQuestion))
         if ret is None:
-            ret =self._template(tag, asked, hide, isQuestion)
+            ret =self._template(tag, soup, isQuestion, asked= asked,hide= hide)
             self.tagAskedHideIsQuestionToTemplate[(tag, asked, hide, isQuestion)] = ret
         elif isinstance(ret,tuple):
             (text,tag) = ret
             ret = (text, copy.copy(tag))
-        debug (f"template()= {ret}",-1)
+        #debug (f"template()= {ret}",-1)
         return ret
 
-    def _template(self, *args, **kwargs):
-        raise Exception("_template in gen")
+    def _template(self, tag, soup, isQuestion, asked, hide, **kwargs):
+        raise Exception(f"""_template in gen for: "{self}".""")
 
     def __repr__(self):
         return f"Generator({self.params()})"
@@ -351,7 +379,7 @@ def ensureGen(element):
     according to typeToGenerator.
 
     """
-    #debug(f"ensureGen({element!r})", 1)
+    #debug(f"ensureGen({element})", 1)
     ret = None
     if isinstance(element,Gen):
         #debug(f"is already a generator")
@@ -360,7 +388,7 @@ def ensureGen(element):
         if isinstance(element, typ):
             gen = typeToGenerator[typ]
             ret = gen(element)
-            #debug(f"has type {typ}, thus use type {gen} and become {ret!r}")
+            #debug(f"has type {typ}, thus use type {gen} and become {ret}")
         else:
             #debug(f"has not type {type}")
             pass

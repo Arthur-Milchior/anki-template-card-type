@@ -1,7 +1,7 @@
 import copy
 from .generators import Gen, addTypeToGenerator, ensureGen
 from .leaf import Literal, Field, Empty, emptyGen
-from ..debug import debug
+from ..debug import debug, assertType
 
 class MultipleChild(Gen):
     pass
@@ -10,7 +10,7 @@ class ListElement(MultipleChild):
     def __init__(self,
                  elements = None,
                  isNormal = False,
-                 *args, **kwargs):
+                  **kwargs):
 
         """ 
         Keyword arguments:
@@ -33,7 +33,7 @@ class ListElement(MultipleChild):
             else:
                 raise Exception(element, "is neither string nor Gen.")
         super().__init__(isNormal = isNormal or (not unisNormalChild),
-                         *args,
+                         
                          **kwargs)
     
     def __repr__(self):
@@ -46,7 +46,7 @@ class ListElement(MultipleChild):
         #debug(f"{self}.getChildren() = {self.children}")
         return self.children
     
-    def _applyRecursively(self,fun, *args, **kwargs):
+    def _applyRecursively(self,fun,  **kwargs):
         """self, with fun applied to each element. 
 
         isNormal and versionWithoutRedundancy are passed to class constructor."""
@@ -74,7 +74,7 @@ class ListElement(MultipleChild):
         elif len(elements) == 1:
             ret = elements[0]
         elif change:
-            ret = ListElement(elements = elements, *args, **kwargs)
+            ret = ListElement(elements = elements,  **kwargs)
         else:
             ret = self
         #debug(f"self._applyRecursively() returns {ret}",-1)
@@ -103,10 +103,9 @@ class Branch(Gen):
                  notAsked = None,
                  questionAsked = None,
                  questionNotAsked = None,
-                 children = None,
+                 children = dict(),
                  toClone = None,
                  isNormal = False,
-                 *args,
                  **kwargs):
         """
         The value of self.children[isQuestion,isAsked] is:
@@ -120,7 +119,7 @@ class Branch(Gen):
         """
         if name is not None:
             self.name = name
-        elif toClone is not None:
+        elif toClone is not None and  isinstance(toClone,Branch):
             self.name = toClone.name
         else:
             assert False
@@ -139,7 +138,7 @@ class Branch(Gen):
                     if not child.getIsNormal():
                         notNormalChild = True
                     break
-        super().__init__( toClone = toClone, isNormal = isNormal or not notNormalChild, *args, **kwargs)
+        super().__init__( toClone = toClone, isNormal = isNormal or not notNormalChild,  **kwargs)
 
     def __repr__(self):
         return f"""Branch(name = {self.name}, children = {repr(self.children)}, {self.params()})"""
@@ -150,15 +149,16 @@ class Branch(Gen):
     def getChildren(self):
         return self.children.values()
     
-    def _applyRecursively(fun, **kwargs):
+    def _applyRecursively(self,fun, **kwargs):
         children = dict()
         change = False
         shouldKeep = False
         for isQuestionAsked in self.children:
             tmp = fun(self.children[isQuestionAsked])
+            assert assertType(tmp,Gen)
             if tmp != self.children[isQuestionAsked]:
                 change = True
-            if tmp.toKeep():
+            if tmp.getToKeep():
                 shouldKeep = True
             children[isQuestionAsked] = tmp
         if not shouldKeep:
@@ -172,11 +172,11 @@ class Branch(Gen):
             return emptyGen
         return super()._assumeFieldInSet(field,setName)
 
-    def _template(self, *args, **kwargs):
+    def _template(self, tag, soup, isQuestion, asked, hide, **kwargs):
         if hide and self.name in hide:
             return ""
         isAsked = asked and self.name in asked
-        return self.children[isQuestion,isAsked].template(*args, **kwargs)
+        return self.children[isQuestion,isAsked].template( **kwargs)
         
     
 # class RecursiveFields(MultipleChild):
@@ -187,9 +187,9 @@ class Branch(Gen):
 #                  fields,
 #                  descriptions ,
 #                  hideSuccessor = False,
-#                  *args,
+#                  
 #                  **kwargs):
-#         super().__init__(*args, **kwargs)
+#         super().__init__( **kwargs)
 #         self.fields = fields
 #         self.descriptionsOriginal =copy.deepcopy(descriptions)
 #         self.descriptions = descriptions

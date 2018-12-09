@@ -15,7 +15,7 @@ An object of class Generator may have many states.
   {{#foo}}{{#foo}}bar{{/foo}}plop{{/foo}} is redundant and
   {{#foo}}{{^foo}}bar{{/foo}}plop{{/foo}} is contradictory. The
   unredundated version would be {{#foo}}barplop{{/foo}} and
-  {{#foo}}plop{{/foo}} respectively. Only normalized element may be
+  {{#foo}}plop{{/foo}} respectively. Only normal element may be
   unredundated, it is not possible to test redundancy in non-core elements.
 * empty: whether this generator may actually show any content in some
   case. Empty, an empty list, etc... are empty. Those generator should

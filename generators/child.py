@@ -1,21 +1,22 @@
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 import copy
 import sys
 from .generators import Gen, ensureGen, modelToFields
 from .leaf import emptyGen
-
+from ..tag import singleTag, tagContent
+from ..debug import debug, assertType
 
 class SingleChild(Gen):
-    def __init__(self, child, *args, **kwargs):
+    def __init__(self, child, **kwargs):
         self.child = ensureGen(child)
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
 
     def getChildren(self):
         return frozenset({self.child})
     
     def __eq__(self,other):
         return isinstance(other,SingleChild) and self.child == other.child
-    def _applyRecursively(self, fun, *args, **kwargs):
+    def _applyRecursively(self, fun, **kwargs):
         return self
          
 class Requirement(SingleChild):
@@ -45,31 +46,30 @@ class Requirement(SingleChild):
                  isEmpty = None,
                  toClone = None,
                  isNormal = False,
-                 *args,
                  **kwargs):
         self.requirements = dict()
-        for (name, param) in {("Filled",requireFilled),
-                              ("Remove",requireremove),
+        for (name, param) in [("Filled",requireFilled),
+                              ("Remove",remove),
                               ("Empty",requireEmpty),
                               ("In model",inModel),
-                              ("Absent of model", absentOfModel)}:
+                              ("Absent of model", absentOfModel)]:
             if param is not None:
                 self.requirements[name] = frozenset(param)
             elif requirements is not None:
                 self.requirements[name] = frozenset(requirements.get(name,frozenset()))
-            elif toClone is not None:
-                self.requirements[name] = toClone.requirements[name]
+            elif toClone is not None and isinstance(toClone,Requirement):
+                req = toClone.requirements[name]
+                self.requirements[name] = req
             else:
-                assert False
-            inconsistent = self.isInconsistent(self)
+                self.requirements[name] = frozenset()
+        inconsistent = self.isInconsistent()
         self.requireQuestion = requireQuestion
         if inconsistent:
             print("Inconsistant requirements.",file=sys.stderr)
         super().__init__(child,
-                         isEmpty = inconsistant or isEmpty,
+                         isEmpty = inconsistent or isEmpty,
                          toClone = toClone,
-                         isNormal = isNormal or child.getIsNormal()
-                         *args,
+                         isNormal = isNormal or child.getIsNormal(),
                          **kwargs)
         #self.contradiction = (requireFilled & self.requirements["Absent of model"]InParent()) or (requireEmpty & self.presentInParent())
     
@@ -84,12 +84,12 @@ class Requirement(SingleChild):
                 (self.requirements["Filled"] & self.requirements["Absent of model"]) or
                 (self.requirements["In model"] & self.requirements["Absent of model"]))
     
-    def _applyRecursively(self, fun, *args, **kwargs):
+    def _applyRecursively(self, fun, **kwargs):
         #used at least for _getNormalForm
         child = fun(self.child)
         if not child:
             return emptyGen
-        return Requirements(child = child, toClone = self, *args, **kwargs)
+        return Requirements(child = child, toClone = self, **kwargs)
 
     def _getWithoutRedundance(self):
         child = self.child
@@ -165,26 +165,38 @@ class Requirement(SingleChild):
         else:
             return child
 
-    def restrictToModel(self,model,fields = None):
-        fields = fields or modeToFields(model)
-        if self.requirements["In model"] - fields or self.requirements["Absent of model"]&fields:
+    def _restrictToModel(self,model,fields = None):
+        debug(f"""Requirement._restrictToModel({self},{model},{fields})""",1)
+        if fields is None:
+            fields =  modelToFields(model)
+            debug(f"""Fields become {fields} """)
+        shouldBeInModel = self.requirements["In model"] - fields
+        if shouldBeInModel:
+            debug(f"""should be in model: {shouldBeInModel}. Thus empty.""")
+            return emptyGen
+        shouldBeAbsent = self.requirements["Absent of model"]&fields
+        if shouldBeAbsent:
+            debug(f"""should be absent: {shouldBeAbsent}. Thus empty.""")
             return emptyGen
         child = self.child.restrictToModel(model, fields = fields)
         if not child:
-            return emptyGen()
-        return Requirement(child = child,
-                           requirements = self.requirements,
-                           requireFilled = self.requirements["Filled"],
-                           requireEmpty = self.requirements["Empty"] - fields)
+            debug(f"""Child false: {child}, thus empty""")
+            return emptyGen
+        ret = Requirement(child = child,
+                          requirements = self.requirements,
+                          requireFilled = self.requirements["Filled"],
+                          requireEmpty = self.requirements["Empty"] - fields)
+        debug(f"Requirement._restrictToModel() returns {ret}",-1)
+        return ret
 
     
         
         
-    def _template(self, tag, soup, isQuestion, *args, **kwargs):
+    def _template(self, tag, soup, isQuestion, **kwargs):
         if self.isQuestion is not None and self.isQuestion is not isQuestion:
             return ""
         conditional_span = soup.new_tag("span", createdBy="conditionals")
-        t = self.child.template( conditional_span, soup, isQuestion, *args, **kwargs)
+        t = self.child.template( conditional_span, soup, isQuestion, **kwargs)
         if not t:
             conditional_span.decompose()
             return ""
@@ -227,8 +239,7 @@ class HTML(SingleChild):
     If child is an Empty object, then toKeep is assumed to be
     true."""
 
-    def __init__(self, tag, child = None, attrs={}, toKeep = None,
-                 *args, **kwargs):
+    def __init__(self, tag, child = None, attrs={}, toKeep = None, **kwargs):
         self.emptyTag = child is None
         if self.emptyTag:
             child = emptyGen
@@ -239,34 +250,39 @@ class HTML(SingleChild):
             isEmpty = True
         else:
             isEmpty = False
-        super().__init__(child , toKeep = toKeep, isEmpty = isEmpty, *args, **kwargs)
+        super().__init__(child , toKeep = toKeep, isEmpty = isEmpty, **kwargs)
     
     def __repr__(self):
         return f"""HTML(child = {repr(self.child)}, tag = {self.tag}, attrs = {self.attrs()}, {self.params()})"""
 
     def __eq__(self,other):
         return super().__eq__(other) and isinstance(other,HTML) and self.tag == other.tag and self.attrs == other.attrs
-    def _applyRecursively(self, fun, *args, **kwargs):
-        child = fun(self.child, *args,**kwargs)
+    
+    def _applyRecursively(self, fun, **kwargs):
+        child = fun(self.child, **kwargs)
         if child == self.child:
             return self
         return HTML(tag, child=child, attrs=self.attrs(),toClone = self)
 
-    def _template(self, tag, soup, *args, **kwargs):
+    def _template(self, tag, soup, **kwargs):
         newtag = soup.new_tag(tag, attrs = self.attrs)
-        tag = f"""<{self.tag}"""
-        for param in self.attrs:
-            value = self.attrs[param]
-            tag+= f""" {param}="{escape(value)}" """
-        
         if self.emptyTag:
-            t = f"""{tag}/>"""
+            t = singleTag(self.tag,self.attrs)
         else:
-            t = self.child._template(newtag,soup,*args, **kwargs)
+            t = tagContent(t,self.tag,self.attrs)
+        tag.append(newtag)
+        return t, newtag
+
+    def _template(self, tag, soup, **kwargs):
+        newtag = soup.new_tag(tag, attrs = self.attrs)
+        if self.emptyTag:
+            t = singleTag(self.tag,self.attrs)
+        else:
+            t = self.child._template(newtag,soup, **kwargs)
             if not t: 
                 newtag.decompose()
-                return ""
-            t = f"""{tag}>{t}</{self.tag}>"""
+                return "", NavigableString("")
+            t = tagContent(self.tag, self.attrs, t)
         tag.append(newtag)
         return t, newtag
         

@@ -1,16 +1,36 @@
 import re
+from inspect import stack
 
 indentation = 0
-def debug(text, indent=0):
+def debug(text, indentToAdd=0):
     global indentation
-    if indent>0:
+    indentToPrint = indentation
+    if indentToAdd>0:
         sep = "{"
-    elif indent==0:
+    elif indentToAdd==0:
         sep = ""
     else:
         sep = "}"
-    space = " "*indentation
+        indentToPrint -=1
+    space = " "*indentToPrint
     newline = "\n"
     print (f"""{space}{sep}{re.sub(newline,newline+space,text)}""")
-    indentation +=indent
+    indentation +=indentToAdd
     pass
+
+
+def assertEqual(left, right):
+    glob = stack()[1].frame.f_globals
+    leftEval = eval(left,glob)
+    rightEval = eval(right,glob)
+    if leftEval == rightEval:
+        return True
+    debug(f"""{left} evaluates as \n"{leftEval}".\n"{rightEval}"\n is the value of {right}, they are distinct.""")
+    return False
+
+def assertType(element,typ):
+    if isinstance(element,typ):
+        return True
+    else:
+        debug(f""" "{element}"'s type is {type(element)}, which is not a subtype of {typ}""")
+        return False

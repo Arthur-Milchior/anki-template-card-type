@@ -4,7 +4,7 @@
 
         ["head","[\"DecoratedField('variables',suffix=br)\", \"DecoratedField('context', suffix = br)\"]"],
 
-        
+        ["front", "DecoratedField('Front')"],
 
         ["extendedHead", "[\"head\", \"DecoratedField('assuming',suffix=br)\", \"namesNotationsDenotedBy\"]"],
         ["test", "'test'"],

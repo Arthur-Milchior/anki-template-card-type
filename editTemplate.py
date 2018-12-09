@@ -1,60 +1,15 @@
+from .tag import tagContent
 import copy
 import collections
-from .config import getObject
+import sys
+from .config import objects
 from aqt import mw
 import re
 from bs4 import BeautifulSoup
 from .debug import debug
-
-def split(text):
-    if text:
-        return text.split(",")
-    else:
-        return None
+from .templates.templates import clean, compile_
 
 
-def _templateTagGetParams(templateTag, isQuestion):
-    """Return templateTagParams for the given templateTag. With object
-    name and not the object itself."""
-    debug(f"_templateTagGetParams({templateTag.name},{isQuestion})", indent=1)
-    asked = split(templateTag.attrs.get("asked"))
-    hide = split(templateTag.attrs.get("hide"))
-    objName = templateTag.attrs.get("object")
-    ret = (objName, asked, hide, isQuestion)
-    debug(f"_templateTagGetParams({templateTag.name},{isQuestion}) returns {ret}", indent=-1)
-    return ret
-
-def templateTagGetParams(templateTag, isQuestion, objects):
-    """Return templateTagParams for the given templateTag with object, or None if it does not exists.
-    
-    add objectAbsent to templateTag if the object is absent. Remove it otherwise.
-    """
-    debug(f"templateTagGetParams({templateTag},{isQuestion})", indent=1)
-    (objName, asked, hide, isQuestion) = _templateTagGetParams(templateTag,isQuestion)
-    obj = objects.get(objName)
-    if obj is None:
-        debug(f"""Adding "objectabsent ={objName}" to "{templateTag}".""",-1)
-        templateTag.attrs["objectabsent"] = objName
-        return None
-    elif "objectAbsent" in templateTag.attrs:
-        del templateTag.attrs["objectAbsent"]
-    ret = (obj, asked, hide, isQuestion)
-    debug(f"templateTagGetParams() returns {ret}", indent=-1)
-    return ret
-
-def templateTagToText(templateTag,soup, isQuestion, model, objects):
-    """
-    
-    """
-    debug(f"""templateTagToText({templateTag},{isQuestion},{model["name"]})""", indent=1)
-    params = templateTagGetParams(templateTag, isQuestion, objects)
-    if params is None:
-        ret = None
-    else:
-        (obj, asked, hide, isQuestion) = params
-        ret = obj.restrictToModel(model).template(templateTag, soup, isQuestion, asked, hide)
-    debug(f"""templateTagToText() returns {ret}""", indent=-1)
-    return ret
     
 
 def _templateTagAddText(templateTag,soup,
@@ -70,44 +25,15 @@ def _templateTagAddText(templateTag,soup,
             return
         else:
             templateTag.contents = []
-    text = templateTagToText(templateTag,soup,isQuestion,model, objects)
-    if isinstance(text,tuple):
-        (text,tag) = text
-    #debug(f"""_templateTagAddText({templateTag.name},{isQuestion},{model["name"]}) returns "{text}".""", indent=-1)
-    return text
-    
-def _cleanTemplateTag(templateTag):
-    """templateTag is a template tag"""
-    #debug(f"_cleanTemplateTag({templateTag.name})")
-    templateTag.clear()
-    if "objectAbsent" in templateTag.attrs:
-        del templateTag.attrs["objectAbsent"]
-
-def tagsToEdit(soup):
-    return soup.find_all(f"span", templateversion = 1)
-    
-
-def applyOnAllTemplateTag(f,soup):
-    #debug(f"applyOnAllTemplateTag({f.__name__},soup)")
-    for templateTag in findTagToEdit(soup):
-        #debug("found tag {templateTag}")
-        f(templateTag)
-        
-def cleanSoup(soup):
-    #debug(f"cleanSoup(soup)")
-    applyOnAllTemplateTag(_cleanTemplateTag, soups)
-    
-def compileSoup(soup, isQuestion, model,objects):
-    #debug(f"""compileSoup(soup,{isQuestion},{model["name"]})""")
-    applyOnAllTemplateTag(lambda templateTag:
-                          _templateTagAddText(templateTag, soup, isQuestion,model,objects), soup)
 
 
-def addEnclose(html):
-    return f"""<enclose>{html}</enclose>"""
+def addEnclose(content):
+    return tagContent("enclose", content = content)
 
 def removeEnclose(html):
-    return re.sub(f".*<enclose>(.*)</?enclose>.*", "\\1", html, flags = re.M|re.DOTALL).strip()
+    withoutEnclose = re.sub(r".*<enclose>(.*)</?enclose>.*", r"\1", html, flags = re.M|re.DOTALL)
+    lineRemoved = re.sub(r"^ ","",withoutEnclose, flags = re.M)[1:-1]
+    return lineRemoved
 
     
 def soupFromTemplate(template):
@@ -117,40 +43,80 @@ def soupFromTemplate(template):
     #debug(f"soupFromTemplate() to {r}", indent=-1)
     return r
 
-def templateFromSoup(soup,prettify = True):
+def templateFromSoup(soup, prettify = True):
     """Return the text, from soup, with enclose removed. Assuming no other
     enclose tag appear in prettify."""
-    #debug(f"templateFromSoup(soup)", indent=1)
-    t = soup.prettify() if prettify else str(soup)
-    r= removeEnclose(t)
-    #debug(f"templateFromSoup(soup) returns {r}", indent=-1)
-    return r
-    
-def applyOnAllTemplate(model, objects, clean = False):
-    debug(f"""applyOnAllTemplate({model["name"]})""", indent=1)
+ #debug(f"""templateFromSoup("{soup}","{prettify}")""", indent=1)
+    if prettify:
+ #debug("Prettify")
+        text = soup.prettify()
+    else:
+ #debug("str")
+        text = str(soup)
+ #debug(f"""soup as text is "{text}".""")
+    #assert prettify or "\n" not in text
+    text= removeEnclose(text)
+ #debug(f"""soup as text without enclosed is "{text}" """)
+    #assert prettify or "\n" not in text
+ #debug(f"templateFromSoup() returns {text}", indent=-1)
+    return text
+
+def shouldProcess(template,key):
+    if key not in template:
+        #debug(f"key not in template", indent=-1)
+        return False
+    if  not template[key]:
+        #debug(f"template[key] falsy", indent=-1)
+        return False
+    if  template[key].isspace():
+        #debug(f"template[key] is space", indent=-1)
+        template[key] == ""
+        return False
+    return True
+
+def process(template, key, toClean, prettify = True, **kwargs):
+    originalText = template[key]
+    soup = soupFromTemplate(originalText)
+    if toClean:
+        clean(soup)
+    else:
+        compile_(soup, **kwargs)
+    text =templateFromSoup(soup, prettify = prettify)
+    #assert prettify or "\n" not in text
+    return soup, text
+
+def processIfRequired(template, key, *args, **kwargs):
+    #debug(f"""processIfRequired({template.get(key)})""",1)
+    if shouldProcess(template, key):
+        #debug(f"Process is required")
+        ret= process(template, key, *args, **kwargs)
+    else:
+        #debug(f"Process is not required")
+        ret= None, ""
+    soup,text = ret
+    #assert prettify or "\n" not in text
+    #debug(f"",-1)
+    return ret
+
+def compileModel(model, objects = objects, toClean = False, recompile = True, prettify = True):
+    #debug(f"""compileModel({model["name"]}, {objects.keys()}, {toClean}, {recompile})""", indent=1)
     for templateObject in model['tmpls']:
-        for key,isQuestion in [(f"afmt",False),(f"qfmt",True),(f"bafmt",False),(f"bqfmt",True)]:
-            if key not in templateObject:
-                #debug("key not in template", indent=-1)
-                continue
-            if  not templateObject[key]:
-                #debug("templateObject[key] falsy", indent=-1)
-                continue
-            if  templateObject[key].isspace():
-                #debug("templateObject[key] is space", indent=-1)
-                templateObject[key] == ""
-                continue
-            debug(f"""applyOnAllTemplate on {key}""", indent=1)
-            debug(f"""templateObject[key] is "{templateObject[key]}" """)
-            originalText = templateObject[key]
-            soup = soupFromTemplate(originalText)
-            if clean:
-                cleanSoup(soup)
-            else:
-                compileSoup(soup, isQuestion, model, objects)
-            newText = templateFromSoup(soup)
-            templateObject[key] = newText
-            debug(f"from {originalText} to {newText}", indent=-1)
+        for questionKey, answerKey in [(f"qfmt","afmt"),(f"bqfmt","bafmt")]:
+            questionSoup, questionText = processIfRequired(templateObject, questionKey, toClean = toClean, isQuestion = True, model = model, objects = objects, prettify = prettify)
+            if questionText:
+ #debug(f"from {templateObject[questionKey]} to {questionText}. Soup is {str(questionSoup)}.")
+                templateObject[questionKey] = questionText
+            answerSoup, answerText = processIfRequired(templateObject, answerKey, toClean = toClean, isQuestion = False, model = model, objects = objects, FrontSoup = questionSoup, prettify = prettify)
+            if answerText: 
+ #debug(f"from {templateObject[answerKey]} to {answerText}. Soup is {str(answerSoup)}.")
+                #assert prettify or "\n" not in answerText
+                templateObject[answerKey] = answerText
+            
+    #debug(f"", indent=-1)
+    return model
+
+def compileAndSaveModel(*args,**kwargs):
+    model = compileModel(*args,**kwargs)
     mw.col.models.save(model, templates = True)
     mw.col.models.flush()
-    debug("", indent=-1)
+    #debug(f"", indent=-1)
