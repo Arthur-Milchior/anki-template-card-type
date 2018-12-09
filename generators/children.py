@@ -175,8 +175,11 @@ class Branch(Gen):
     def _template(self, tag, soup, isQuestion, asked, hide, **kwargs):
         if hide and self.name in hide:
             return ""
-        isAsked = asked and self.name in asked
-        return self.children[isQuestion,isAsked].template( **kwargs)
+        if asked is None:
+            isAsked = False
+        else:
+            isAsked = self.name in asked
+        return self.children[isQuestion,isAsked].template(tag,soup, isQuestion, asked, hide, **kwargs)
         
     
 # class RecursiveFields(MultipleChild):

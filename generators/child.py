@@ -166,35 +166,33 @@ class Requirement(SingleChild):
             return child
 
     def _restrictToModel(self,model,fields = None):
-        debug(f"""Requirement._restrictToModel({self},{model},{fields})""",1)
+        #debug(f"""Requirement._restrictToModel({self},{model},{fields})""",1)
         if fields is None:
             fields =  modelToFields(model)
-            debug(f"""Fields become {fields} """)
+            #debug(f"""Fields become {fields} """)
         shouldBeInModel = self.requirements["In model"] - fields
         if shouldBeInModel:
-            debug(f"""should be in model: {shouldBeInModel}. Thus empty.""")
+            #debug(f"""should be in model: {shouldBeInModel}. Thus empty.""")
             return emptyGen
         shouldBeAbsent = self.requirements["Absent of model"]&fields
         if shouldBeAbsent:
-            debug(f"""should be absent: {shouldBeAbsent}. Thus empty.""")
+            #debug(f"""should be absent: {shouldBeAbsent}. Thus empty.""")
             return emptyGen
         child = self.child.restrictToModel(model, fields = fields)
         if not child:
-            debug(f"""Child false: {child}, thus empty""")
+            #debug(f"""Child false: {child}, thus empty""")
             return emptyGen
         ret = Requirement(child = child,
                           requirements = self.requirements,
                           requireFilled = self.requirements["Filled"],
                           requireEmpty = self.requirements["Empty"] - fields)
-        debug(f"Requirement._restrictToModel() returns {ret}",-1)
+        #debug(f"Requirement._restrictToModel() returns {ret}",-1)
         return ret
 
     
         
         
     def _template(self, tag, soup, isQuestion, **kwargs):
-        if self.isQuestion is not None and self.isQuestion is not isQuestion:
-            return ""
         conditional_span = soup.new_tag("span", createdBy="conditionals")
         t = self.child.template( conditional_span, soup, isQuestion, **kwargs)
         if not t:
@@ -253,7 +251,7 @@ class HTML(SingleChild):
         super().__init__(child , toKeep = toKeep, isEmpty = isEmpty, **kwargs)
     
     def __repr__(self):
-        return f"""HTML(child = {repr(self.child)}, tag = {self.tag}, attrs = {self.attrs()}, {self.params()})"""
+        return f"""HTML(child = {repr(self.child)}, tag = {self.tag}, attrs = {self.attrs}, {self.params()})"""
 
     def __eq__(self,other):
         return super().__eq__(other) and isinstance(other,HTML) and self.tag == other.tag and self.attrs == other.attrs

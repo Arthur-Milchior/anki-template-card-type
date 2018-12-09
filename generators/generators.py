@@ -147,36 +147,36 @@ class Gen:
     #     return self.normalVersion == other.normalVersion and self.containsRedundant == other.containsRedundant and self.isEmpty == other.isEmpty
     
     def getIsEmpty(self):
-        debug(f"getIsEmpty({self})",1)
+        #debug(f"getIsEmpty({self})",1)
         if self.isEmpty is None:
-            debug(f"whether it is empty is not yet known")
+            #debug(f"whether it is empty is not yet known")
             self.isEmpty = self._getIsEmpty()
-            debug(f"getIsEmpty() is {self.isEmpty}",-1)
+            #debug(f"getIsEmpty() is {self.isEmpty}",-1)
         else:
-            debug(f"whether it is empty is known to be {self.isEmpty}",-1)
+            #debug(f"whether it is empty is known to be {self.isEmpty}",-1)
             pass
         return self.isEmpty
     
     def _getIsEmpty(self):
-        debug(f"_getIsEmpty({self})",1)
+        #debug(f"_getIsEmpty({self})",1)
         ret = True
         children = self.getChildren()
-        debug(f"Children are {children}")
+        #debug(f"Children are {children}")
         for child in children:
             if not child.getIsEmpty():
-                debug(f"its child ({child}) is not empty. Thus self is not either.")
+                #debug(f"its child ({child}) is not empty. Thus self is not either.")
                 ret = False
                 break
             else:
-                debug(f"its child ({child}) is empty")
+                #debug(f"its child ({child}) is empty")
                 pass
-        debug(f"self._getIsEmpty() is {ret}",-1)
+        #debug(f"self._getIsEmpty() is {ret}",-1)
         return ret
 
     def __bool__(self):
-        debug(f"""__bool__({self})""",1)
+        #debug(f"""__bool__({self})""",1)
         ret = not self.getIsEmpty()
-        debug(f"""__bool__() returns {ret}""",-1)
+        #debug(f"""__bool__() returns {ret}""",-1)
         return ret
 
     def getToKeep(self):
@@ -289,20 +289,21 @@ class Gen:
         memoized. 
         don't reimplement.
         """
-        debug(f"""restrictToModel({self})""",1)
+        #debug(f"""restrictToModel({self})""",1)
         (hash, fields) = modelToHashFields(model, fields = fields)
         if hash not in self.hashToRestrictedModel:
-            debug(f"""hash {hash} not memoized. It must be computed.""")
+            #debug(f"""hash {hash} not memoized. It must be computed.""")
             if not self.hashToRestrictedModel:
-                debug("In fact hashToRestrictedModel is empty")
+                #debug("In fact hashToRestrictedModel is empty")
+                pass
             restricted = self.getWithoutRedundance()._restrictToModel(model, fields)
             assert assertType(restricted, Gen)
             self.hashToRestrictedModel[hash] = restricted
         else:
-            debug(f"""hash {hash} already memoized.""")
+            #debug(f"""hash {hash} already memoized.""")
             pass
         ret = self.hashToRestrictedModel[hash]
-        debug(f"""restrictToModel() returns "{ret}".""",-1)
+        #debug(f"""restrictToModel() returns "{ret}".""",-1)
         return ret
     
     def _restrictToModel(self, model, fields = None):

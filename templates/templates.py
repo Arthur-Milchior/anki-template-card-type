@@ -1,5 +1,6 @@
 from . import templates
-from ..debug import debug
+from ..debug import debug, assertType
+import bs4
 
 kindOfTemplate = dict()
 def addKindOfTemplate(name, f):
@@ -15,9 +16,10 @@ def getFunctionFromKind(kind):
 
 def tagsToEdit(tag):
     #debug(f"tagsToEdit({tag})",1)
-    parent = tag.parent
-    tagToUse = parent if parent else tag
-    ret = tagToUse.find_all(template = (lambda x: x))
+    assert assertType(tag, [bs4.element.Tag, bs4.BeautifulSoup])
+    ret = tag.find_all(template = (lambda x: x))
+    if tag.attrs.get("template"):
+        ret.insert(0,self)
     #debug(f"{ret}",-1)
     return ret
 
@@ -29,6 +31,7 @@ def getModule(tag):
 
 def compile_(tag, **kwargs):
     #debug(f"compile_({tag})",+1)
+    assert assertType(tag, [bs4.element.Tag, bs4.BeautifulSoup])
     for tag_ in tagsToEdit(tag):
         #debug(f"found {tag_} to compile",+1)
         tag_.contents = []

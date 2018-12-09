@@ -21,16 +21,23 @@ def debug(text, indentToAdd=0):
 
 def assertEqual(left, right):
     glob = stack()[1].frame.f_globals
-    leftEval = eval(left,glob)
-    rightEval = eval(right,glob)
+    loc = stack()[1].frame.f_locals
+    # try:
+    leftEval = eval(left,glob, loc)
+    # except NameError as n:
+    #     print(f"""glob is {glob}""")
+    #     raise
+    rightEval = eval(right,glob,loc)
     if leftEval == rightEval:
         return True
     debug(f"""{left} evaluates as \n"{leftEval}".\n"{rightEval}"\n is the value of {right}, they are distinct.""")
     return False
 
-def assertType(element,typ):
-    if isinstance(element,typ):
-        return True
-    else:
-        debug(f""" "{element}"'s type is {type(element)}, which is not a subtype of {typ}""")
-        return False
+def assertType(element,types):
+    if not isinstance(types,list):
+        types = [types]
+    for typ in types:
+        if isinstance(element,typ):
+            return True
+    debug(f""" "{element}"'s type is {type(element)}, which is not a subtype of {types}""")
+    return False

@@ -4,7 +4,8 @@ import aqt
 import json
 from copy import copy
 
-from ..editTemplate import soupFromTemplate, templateFromSoup, compileModel
+from ..templates.soupAndHtml import soupFromTemplate, templateFromSoup
+from ..editTemplate import compileModel
 from ..templates.templates import tagsToEdit
 
 from ..generators.children import ListElement
@@ -20,5 +21,6 @@ from ..generators.leaf import *
 from ..generators.generators import ensureGen
 
 from ..templates.templates import compile_, clean
+from .data.jsons import testObjects
 
-from .data import *
+from . import data

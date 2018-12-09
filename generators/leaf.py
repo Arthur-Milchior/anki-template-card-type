@@ -22,6 +22,7 @@ class Empty(Leaf):
                  isNormal = True,
                  isEmpty = True,
                  **kwargs):
+        debug("Generating empty")
         super().__init__(isNormal = isNormal,
                          containsRedundant = containsRedundant,
                          toKeep = toKeep,
