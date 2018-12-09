@@ -36,6 +36,10 @@ class DecoratedField(Leaf):
         * Normal form of answer is: "symbol separator emphasize({{field}})" 
         * Normal form of everything else is: "symbol separator {{field}}".
         """
+        if symbol is not None:
+            self.symbol = ensureGen(symbol)
+        else:
+            self.symbol = ensureGen(field)
         if isinstance(field,str):
             field = Field(field)
         assert assertType(field,Field)
@@ -43,7 +47,6 @@ class DecoratedField(Leaf):
         self.separator = ensureGen(separator)
         self.suffix = ensureGen(suffix)
         self.prefix = ensureGen(prefix)
-        self.symbol = ensureGen(symbol) if symbol else ensureGen(field)
         self.question = question
         self.answer = answer
         self.absenceCase = ensureGen(absenceCase)

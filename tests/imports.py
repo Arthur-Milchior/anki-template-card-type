@@ -22,5 +22,6 @@ from ..generators.generators import ensureGen
 
 from ..templates.templates import compile_, clean
 from .data.jsons import testObjects
+from .data.models import model
 
 from . import data

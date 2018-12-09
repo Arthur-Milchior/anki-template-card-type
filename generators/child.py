@@ -208,14 +208,14 @@ class Requirement(SingleChild):
                 conditional_span.insert(0,before)
                 conditional_span.append(after)
                 t = f"{before}{t}{after}"
-        tag.append(conditional_span)
+        tag.contents.extend(conditional_span.contents)
         if self.requirements["Remove"]:
             raise Exception("Asking to require to remove something")
         if  self.requirements["In model"]:
             raise Exception("Asking to require the presence of a thing in model")
         if self.requirements["Absent of model"]:
             raise Exception("Asking to require the absence of a thing in model")
-        return t, conditional_span
+        #return t, conditional_span
 
     
 

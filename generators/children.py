@@ -176,10 +176,19 @@ class Branch(Gen):
         if hide and self.name in hide:
             return ""
         if asked is None:
+            debug("asked is None, this isAsked is False")
             isAsked = False
         else:
-            isAsked = self.name in asked
-        return self.children[isQuestion,isAsked].template(tag,soup, isQuestion, asked, hide, **kwargs)
+            debug(f"asked is {asked}")
+            if self.name in asked:
+                debug(f"name {self.name} belongs to asked")
+                isAsked = True
+            else:
+                debug(f"name {self.name} does not belong to asked")
+                isAsked = False
+            debug(f"isQuestion:{isQuestion}, isAsked: {isAsked}")
+        ret = self.children[isQuestion,isAsked].template(tag,soup, isQuestion, asked, hide, **kwargs)
+        #return ret
         
     
 # class RecursiveFields(MultipleChild):
