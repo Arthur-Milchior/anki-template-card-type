@@ -10,7 +10,8 @@ class ListElement(MultipleChild):
     def __init__(self,
                  elements = None,
                  isNormal = False,
-                  **kwargs):
+                 locals_ = None,
+                 **kwargs):
 
         """ 
         Keyword arguments:
@@ -25,7 +26,7 @@ class ListElement(MultipleChild):
         for element in elements:
             if not(element):#don't add empty elements.
                 continue
-            element = ensureGen(element)
+            element = ensureGen(element, locals_)
             if isinstance(element,Gen):
                 self.children.append(element)
                 if not element.getIsNormal():
@@ -81,10 +82,11 @@ class ListElement(MultipleChild):
         return ret
 
     def _template(self, *args, **kwargs):
-        t = ""
+        #t = ""
         for child in self.children:
-            t+= child.template(*args, **kwargs)
-        return t
+            #t+=
+            child.template(*args, **kwargs)
+        #return t
     
 addTypeToGenerator(list,ListElement)
 class Branch(Gen):
@@ -106,6 +108,7 @@ class Branch(Gen):
                  children = dict(),
                  toClone = None,
                  isNormal = False,
+                 locals_ = None,
                  **kwargs):
         """
         The value of self.children[isQuestion,isAsked] is:
@@ -133,7 +136,7 @@ class Branch(Gen):
         for isQuestionAsked in tmp:
             for value in tmp[isQuestionAsked]:
                 if value is not None:
-                    child = ensureGen(value)
+                    child = ensureGen(value, locals_)
                     self.children[isQuestionAsked] = child
                     if not child.getIsNormal():
                         notNormalChild = True
@@ -172,22 +175,22 @@ class Branch(Gen):
             return emptyGen
         return super()._assumeFieldInSet(field,setName)
 
-    def _template(self, tag, soup, isQuestion, asked, hide, **kwargs):
-        if hide and self.name in hide:
+    def _template(self, tag, soup, isQuestion = None, asked = None, hide = None, **kwargs):
+        assert isQuestion is not None
+        assert asked is not None
+        assert hide is not None
+        if self.name in hide:
             return ""
-        if asked is None:
-            debug("asked is None, this isAsked is False")
-            isAsked = False
+        #debug(f"asked is {asked}")
+        if self.name in asked:
+            #debug(f"name {self.name} belongs to asked")
+            isAsked = True
         else:
-            debug(f"asked is {asked}")
-            if self.name in asked:
-                debug(f"name {self.name} belongs to asked")
-                isAsked = True
-            else:
-                debug(f"name {self.name} does not belong to asked")
-                isAsked = False
-            debug(f"isQuestion:{isQuestion}, isAsked: {isAsked}")
-        ret = self.children[isQuestion,isAsked].template(tag,soup, isQuestion, asked, hide, **kwargs)
+            #debug(f"name {self.name} does not belong to asked")
+            isAsked = False
+        choosenChild = self.children[isQuestion,isAsked]
+        #debug(f"isQuestion:{isQuestion}, isAsked: {isAsked}, thus choosing child {choosenChild}")
+        ret = choosenChild.template(tag,soup, isQuestion = isQuestion, asked = asked, hide = hide, **kwargs)
         #return ret
         
     

@@ -1,5 +1,6 @@
 import sys
 from ..debug import debug, assertType
+import types
 
 modelToHash_ =dict()
 modelToHash_max = 0
@@ -291,6 +292,8 @@ class Gen:
         """
         #debug(f"""restrictToModel({self})""",1)
         (hash, fields) = modelToHashFields(model, fields = fields)
+        self.model = model
+        self.fields = fields
         if hash not in self.hashToRestrictedModel:
             #debug(f"""hash {hash} not memoized. It must be computed.""")
             if not self.hashToRestrictedModel:
@@ -337,13 +340,17 @@ class Gen:
     #     """
     #     raise Exception("Context from a Gen")
         
-    def template(self, tag, soup, isQuestion, asked = None, hide = None):
+    def template(self, tag, soup, isQuestion = None, asked = None, hide = None, **kwargs):
         """Print the actual template, given the asked questions, list
         of things to hide (as frozen set)."""
         #debug (f"template({tag}, {soup}, {isQuestion} {asked}, {hide})",1)
+        assert soup is not None
+        assert isQuestion is not None
+        assert asked is not None
+        assert hide is not None
         ret = self.tagAskedHideIsQuestionToTemplate.get((tag, asked, hide, isQuestion))
         if ret is None:
-            ret =self._template(tag, soup, isQuestion, asked= asked,hide= hide)
+            ret =self._template(tag, soup, isQuestion = isQuestion, asked = asked, hide = hide, **kwargs)
             self.tagAskedHideIsQuestionToTemplate[(tag, asked, hide, isQuestion)] = ret
         elif isinstance(ret,tuple):
             (text,tag) = ret
@@ -351,7 +358,7 @@ class Gen:
         #debug (f"template()= {ret}",-1)
         return ret
 
-    def _template(self, tag, soup, isQuestion, asked, hide, **kwargs):
+    def _template(self, tag, soup, isQuestion = None, asked = None, hide = None, **kwargs):
         raise Exception(f"""_template in gen for: "{self}".""")
 
     def __repr__(self):
@@ -375,13 +382,26 @@ typeToGenerator= dict()
 def addTypeToGenerator(type,generator):
     typeToGenerator[type]=generator
     
-def ensureGen(element):
+def ensureGen(element, locals_ = None):
     """Element if it is a Gen, or construct it. The type is chosen
     according to typeToGenerator.
 
     """
     #debug(f"ensureGen({element})", 1)
     ret = None
+    if locals_ is None:
+        locals_ = dict()
+    funs = []
+    recCall = 0
+    element_original = element
+    while isinstance(element,types.FunctionType) or isinstance(element,types.BuiltinFunctionType):
+        funs.append(element)
+        recCall+=1
+        element = eval("element()",globals(),)
+        if recCall == 10:
+            raise Exception(f"10 successive recursive call during processing of {element_original}. 10 th is {element}")
+        if element in funs:
+            raise Exception(f"Loop during processing of {element_original}, raising multiple time {elements}.")
     if isinstance(element,Gen):
         #debug(f"is already a generator")
         ret = element

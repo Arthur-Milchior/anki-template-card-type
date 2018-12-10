@@ -19,7 +19,7 @@ def _templateTagAddText(templateTag,soup,
                         objects, 
                         recompile = False):
     """Assuming templateTag is a template tag. Return the text for this tag, or none if the object is missing."""
-    #debug(f"""_templateTagAddText({templateTag},{isQuestion},{model["name"]}, {recompile})""", indent=1)
+    #debug(f"""_templateTagAddText({templateTag},{isQuestion},{model["name"]}, {recompile})""", 1)
     if templateTag.contents:
         if not recompile:
             #debug("already have content, and not asked to recompile", -1)
@@ -34,13 +34,13 @@ def _templateTagAddText(templateTag,soup,
 
 def shouldProcess(template,key):
     if key not in template:
-        #debug(f"key not in template", indent=-1)
+        #debug(f"key not in template", -1)
         return False
     if  not template[key]:
-        #debug(f"template[key] falsy", indent=-1)
+        #debug(f"template[key] falsy", -1)
         return False
     if  template[key].isspace():
-        #debug(f"template[key] is space", indent=-1)
+        #debug(f"template[key] is space", -1)
         template[key] == ""
         return False
     return True
@@ -51,7 +51,7 @@ def process(template, key, toClean, prettify = True, **kwargs):
     if toClean:
         clean(soup)
     else:
-        compile_(soup, **kwargs)
+        compile_(soup, soup, **kwargs)
     text =templateFromSoup(soup, prettify = prettify)
     #assert prettify or "\n" not in text
     return soup, text
@@ -70,7 +70,7 @@ def processIfRequired(template, key, *args, **kwargs):
     return ret
 
 def compileModel(model, objects = objects, toClean = False, recompile = True, prettify = True):
-    #debug(f"""compileModel({model["name"]}, {objects.keys()}, {toClean}, {recompile})""", indent=1)
+    #debug(f"""compileModel({model["name"]}, {objects.keys()}, {toClean}, {recompile})""", 1)
     for templateObject in model['tmpls']:
         for questionKey, answerKey in [(f"qfmt","afmt"),(f"bqfmt","bafmt")]:
             questionSoup, questionText = processIfRequired(templateObject, questionKey, toClean = toClean, isQuestion = True, model = model, objects = objects, prettify = prettify)
@@ -83,11 +83,11 @@ def compileModel(model, objects = objects, toClean = False, recompile = True, pr
                 #assert prettify or "\n" not in answerText
                 templateObject[answerKey] = answerText
             
-    #debug(f"", indent=-1)
+    #debug(f"", -1)
     return model
 
 def compileAndSaveModel(*args,**kwargs):
     model = compileModel(*args,**kwargs)
     mw.col.models.save(model, templates = True)
     mw.col.models.flush()
-    #debug(f"", indent=-1)
+    #debug(f"", -1)

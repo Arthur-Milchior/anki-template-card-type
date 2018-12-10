@@ -2,7 +2,7 @@
     "instructions":[
         ["definitions","NumberedFields(\"definition\", 16)"],
 
-        ["head","[\"DecoratedField('variables',suffix=br)\", \"DecoratedField('context', suffix = br)\"]"],
+        ["head","[DecoratedField('variables',suffix=br), DecoratedField('context', suffix = br)]"],
 
         ["front", "DecoratedField('Front')"],
 
@@ -10,7 +10,7 @@
         ["test", "'test'"],
         
         ["footer",
-         "[\"Empty('context','{{deck}}')\",\n\"Answer(ListFields(['chapter', 'section', 'kind', 'index', 'page'], globalPrefix ='<br/>', localSeparator = '', globalSeparator = ', '))\"]"
+         "[\"EmptyField('context','{{deck}}')\",\n\"Answer(ListFields(['chapter', 'section', 'kind', 'index', 'page'], globalPrefix ='<br/>', localSeparator = '', globalSeparator = ', '))\"]"
         ]       
     ]
 }

@@ -4,7 +4,8 @@ jsonTest = """{
     "instructions":[
         ["test", "'test'"],
         ["foo","[\\"foo\\",None, Field(\\"Question\\")]"],
-        ["Question", "DecoratedField('Question')"]
+        ["Question", "DecoratedField('Question')"],
+        ["definitions","NumberedFields(\"definition\", 16)"]
     ]
 }"""
 testObjects = dict()

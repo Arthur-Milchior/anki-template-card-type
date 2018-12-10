@@ -1,6 +1,7 @@
 import copy
 from .generators import Gen,addTypeToGenerator, modelToFields
 from ..debug import debug, assertType
+from bs4 import NavigableString
 
 class Leaf(Gen):
     def __init__(self,  containsRedundant = True, **kwargs):
@@ -15,14 +16,22 @@ class Leaf(Gen):
 
 class Empty(Leaf):
     """A generator without any content"""
+    instance = None
     def __init__(self,
                  *args,#required, because EnsureGen may give an argument
                  toKeep=False,
                  containsRedundant = True,
                  isNormal = True,
                  isEmpty = True,
+                 createOther = False,
+                 init = False,
                  **kwargs):
-        debug("Generating empty")
+        if createOther:
+            pass
+        elif Empty.instance is None and init:
+            Empty.instance = self
+        else:
+            raise Exception("Calling Empty")
         super().__init__(isNormal = isNormal,
                          containsRedundant = containsRedundant,
                          toKeep = toKeep,
@@ -30,7 +39,10 @@ class Empty(Leaf):
                          **kwargs)
 
     def __repr__(self):
-        return f"""Empty({self.params()})"""
+        if self == emptyGen:
+            return "emptyGen"
+        else:
+            return f"""Empty(createOther = True, {self.params()})"""
 
     def _template(self, *args,  **kwargs):
         return None
@@ -45,7 +57,7 @@ class Empty(Leaf):
         #debug("",-1)
         return l
 
-emptyGen = Empty()
+emptyGen = Empty(init = True)
 addTypeToGenerator(type(None),Empty)
 
 class Literal(Leaf):
@@ -88,8 +100,9 @@ class Literal(Leaf):
         return ret
     
     def _template(self, tag, *args, **kwargs):
-        tag.append(self.text)
-        return self.text
+        debug(f"appending text {self.text} to {tag}")
+        tag.append(NavigableString(self.text))
+        #return self.text
     
 addTypeToGenerator(str,Literal)
 

@@ -34,7 +34,7 @@ assert assertEqual("none", "none.getWithoutRedundance()")
 assert none.getIsEmpty()
 assert not none.getToKeep()
 assert not none
-assert assertEqual("emptyGen", "Empty()")
+assert assertEqual("emptyGen", "Empty(createOther = True)")
 
 
 foofoo_ = ensureGen(["foo",emptyGen,fieldFoo])

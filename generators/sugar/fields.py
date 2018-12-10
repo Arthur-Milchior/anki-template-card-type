@@ -1,7 +1,7 @@
 from ..children import MultipleChild, ListElement, Branch
 from ..child import SingleChild, Requirement
 from ..leaf import Empty, emptyGen, Leaf, Literal, Field
-from .conditionals import PresentOrAbsent
+from .conditionals import PresentOrAbsentField,FilledOrEmptyField
 from ..generators import ensureGen
 from ...debug import debug, assertType
 from html import escape
@@ -22,6 +22,7 @@ class DecoratedField(Leaf):
                  isEmpty = False,
                  absenceCase = None,
                  emptyCase = None,
+                 locals_ = None,
                   **kwargs):
         """
         keyword arguments:
@@ -37,20 +38,20 @@ class DecoratedField(Leaf):
         * Normal form of everything else is: "symbol separator {{field}}".
         """
         if symbol is not None:
-            self.symbol = ensureGen(symbol)
+            self.symbol = ensureGen(symbol, locals_)
         else:
-            self.symbol = ensureGen(field)
+            self.symbol = ensureGen(field, locals_)
         if isinstance(field,str):
             field = Field(field)
         assert assertType(field,Field)
         self.field = field 
-        self.separator = ensureGen(separator)
-        self.suffix = ensureGen(suffix)
-        self.prefix = ensureGen(prefix)
+        self.separator = ensureGen(separator, locals_)
+        self.suffix = ensureGen(suffix, locals_)
+        self.prefix = ensureGen(prefix, locals_)
         self.question = question
         self.answer = answer
-        self.absenceCase = ensureGen(absenceCase)
-        self.emptyCase = ensureGen(emptyCase)
+        self.absenceCase = ensureGen(absenceCase, locals_)
+        self.emptyCase = ensureGen(emptyCase, locals_)
         super().__init__(
             toKeep = toKeep,
             isEmpty = isEmpty,
@@ -60,11 +61,11 @@ class DecoratedField(Leaf):
         children = dict()
         default = ListElement([self.prefix, self.symbol, self.separator, self.field, self.suffix])
         if self.question is not None:
-            questionAsked = ensureGen(self.question)
+            questionAsked = ensureGen(self.question, locals_)
         else:
             questionAsked = ListElement([self.prefix, self.symbol, self.separator, Literal("???"), self.suffix])#TODO Emphasize
         if self.answer is not None:
-            answerAsked = ensureGen(self.answer)
+            answerAsked = ensureGen(self.answer, locals_)
         else:
             answerAsked = default#TODO Emphasize
         cases = Branch(name = self.field.field,
@@ -79,13 +80,13 @@ class DecoratedField(Leaf):
                                   isNormal = True)
         r = requirement
         if self.emptyCase:
-            r = FilledOrEmpty(field = self.field.field,
+            r = FilledOrEmptyField(field = self.field.field,
                                 filledCase = r,
                                 emptyCase = self.emptyCase,
                                 toClone = self,
                                 isNormal = True)
         if self.absenceCase:
-            r = PresentOrAbsent(field = self.field.field,
+            r = PresentOrAbsentField(field = self.field.field,
                                 presentCase = r,
                                 absenceCase = self.absenceCase,
                                 toClone = self,

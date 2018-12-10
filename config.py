@@ -65,7 +65,7 @@ def define(name, value):
     #debug(f"define() find {r}")
     # r = ensureGen(r).getNormalForm()
     # #debug(f"define()'s normal form is {r}")
-    r = ensureGen(r).getWithoutRedundance()
+    r = ensureGen(r,objects).getWithoutRedundance()
     objects[name] = r
     #debug(f"define() returns {r}",-1 )
     return r

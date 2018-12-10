@@ -2,9 +2,9 @@ from ..child import SingleChild
 from ..leaf import emptyGen
 from ..children import MultipleChild, ListElement
 
-class FilledOrEmpty(ListElement):
+class FilledOrEmptyField(ListElement):
     def __repr__(self):
-        return """FilledOrEmpty({self.field},{self.filledCase},{self.emptyCase})"""
+        return """FilledOrEmptyField({self.field},{self.filledCase},{self.emptyCase})"""
     
     def __init__(self,field,filledCase = emptyGen, emptyCase = emptyGen,  **kwargs):
         self.filledCase = filledCase
@@ -20,7 +20,7 @@ class FilledOrEmpty(ListElement):
                 requireEmpty = {self.field}
             )],  **kwargs)
         
-class AtLeastOne(SingleChild):
+class AtLeastOneField(SingleChild):
     """Show the child if there is at least one condition.
 
     The child is repeated as many time in the card's template as they
@@ -29,7 +29,7 @@ class AtLeastOne(SingleChild):
 
     """
     def __repr__(self):
-        return f"""AtLeastOne({self.child},{self.fields})"""
+        return f"""AtLeastOneField({self.child},{self.fields})"""
 
     def __init__(self,child, fields):
         super().__init__(child)
@@ -39,26 +39,26 @@ class AtLeastOne(SingleChild):
         actual = emptyGen
         child = self.child.getNormalForm()
         for condition in self.fields:
-            actual = FilledOrEmpty(condition, filled = child,
+            actual = FilledOrEmptyField(condition, filled = child,
                                      isEmpty = actual).getNormalForm()
         return actual
 
-class Filled(FilledOrEmpty):
+class FilledField(FilledOrEmptyField):
     def __repr__(self):
-        return f"""Filled({self.field},{self.child})"""
+        return f"""FilledField({self.field},{self.child})"""
     
     def __init__(self, field, child,  **kwargs):
         super().__init__(field, filledCase = child,  **kwargs)
         
-class Empty(FilledOrEmpty):
+class EmptyField(FilledOrEmptyField):
     def __repr__(self):
-        return f"""Empty({self.field},{self.child})"""
+        return f"""EmptyField({self.field},{self.child})"""
     def __init__(self, field, child,  **kwargs):
         super().__init__(field, emptyCase = child,  **kwargs)
     
-class QuestionOrAnswer(ListElement):
+class QuestionOrAnswerField(ListElement):
     def __repr__(self):
-        return f"""QuestionOrAnswer({self.field},{self.questionCase},{self.answerCase})"""
+        return f"""QuestionOrAnswerFieldField({self.field},{self.questionCase},{self.answerCase})"""
     
     def __init__(self, questionCase = emptyGen, answerCase = emptyGen,  **kwargs):
         self.questionCase = questionCase
@@ -73,23 +73,23 @@ class QuestionOrAnswer(ListElement):
                 requireQuestion = False
             )],  **kwargs)
         
-class Question(QuestionOrAnswer):
+class QuestionField(QuestionOrAnswerField):
     def __repr__(self):
-        return f"""Question({self.field},{self.child})"""
+        return f"""QuestionField({self.field},{self.child})"""
     def __init__(self, child,  **kwargs):
         super().__init__(questionCase = child,  **kwargs)
 
-class Answer(QuestionOrAnswer):
+class AnswerField(QuestionOrAnswerField):
     def __repr__(self):
-        return f"""Answer({self.field},{self.child})"""
+        return f"""AnswerField({self.field},{self.child})"""
     def __init__(self, child,  **kwargs):
         super().__init__(answerCase = child,  **kwargs)
         
     
         
-class PresentOrAbsent(ListElement):
+class PresentOrAbsentFieldField(ListElement):
     def __repr__(self):
-        return f"""PresentOrAbsent({self.field},{self.presentCase},{self.absentCase})"""
+        return f"""PresentOrAbsentFieldField({self.field},{self.presentCase},{self.absentCase})"""
     
     def __init__(self, field, presentCase = emptyGen, absentCase = emptyGen,  **kwargs):
         self.presentCase = presentCase
@@ -107,15 +107,15 @@ class PresentOrAbsent(ListElement):
                 )]
             , **kwargs)
     
-class Present(PresentOrAbsent):
+class PresentField(PresentOrAbsentField):
     def __repr__(self):
-        return f"""Present({self.field},{self.child})"""
+        return f"""PresentField({self.field},{self.child})"""
     
     def __init__(self, field, child,  **kwargs):
         super().__init__(field, presentCase = child,  **kwargs)
         
-class Absent(PresentOrAbsent):
+class AbsentField(PresentOrAbsentField):
     def __repr__(self):
-        return f"""Absent({self.field},{self.child})"""
+        return f"""AbsentField({self.field},{self.child})"""
     def __init__(self, field, child,  **kwargs):
         super().__init__(field, absentCase = child,  **kwargs)

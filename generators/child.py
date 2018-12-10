@@ -7,12 +7,12 @@ from ..tag import singleTag, tagContent
 from ..debug import debug, assertType
 
 class SingleChild(Gen):
-    def __init__(self, child, **kwargs):
-        self.child = ensureGen(child)
+    def __init__(self, child, locals_ = None, **kwargs):
+        self.child = ensureGen(child, locals_)
         super().__init__(**kwargs)
 
     def getChildren(self):
-        return frozenset({self.child})
+        return [self.child]
     
     def __eq__(self,other):
         return isinstance(other,SingleChild) and self.child == other.child
@@ -189,25 +189,25 @@ class Requirement(SingleChild):
         #debug(f"Requirement._restrictToModel() returns {ret}",-1)
         return ret
 
-    
-        
-        
-    def _template(self, tag, soup, isQuestion, **kwargs):
+    def _template(self, tag, soup, isQuestion = None, **kwargs):
+        #debug(f"""Requirement._template("{self}","{tag}","{isQuestion}",{kwargs})""",1)
+        assert isinstance(isQuestion,bool)
+        assert soup is not None
         conditional_span = soup.new_tag("span", createdBy="conditionals")
-        t = self.child.template( conditional_span, soup, isQuestion, **kwargs)
-        if not t:
-            conditional_span.decompose()
-            return ""
+        #t =
+        self.child.template( conditional_span, soup, isQuestion = isQuestion, **kwargs)
         for (set, symbol) in [
                 (self.requirements["Filled"],"#"),
                 (self.requirements["Empty"],"^")
         ]:
             for element in set:
-                before = f"""{{{{{symbol}{element}}}}}"""
-                after = f"""{{{{/{element}}}}}"""
+                before = NavigableString(f"""{{{{{symbol}{element}}}}}""")
+                after = NavigableString(f"""{{{{/{element}}}}}""")
+                #debug(f"Enclosing {conditional_span} by {before}/{after}")
                 conditional_span.insert(0,before)
                 conditional_span.append(after)
-                t = f"{before}{t}{after}"
+                #t = f"{before}{t}{after}"
+        #debug(f"Extending {tag} by {conditional_span}")
         tag.contents.extend(conditional_span.contents)
         if self.requirements["Remove"]:
             raise Exception("Asking to require to remove something")
@@ -215,6 +215,7 @@ class Requirement(SingleChild):
             raise Exception("Asking to require the presence of a thing in model")
         if self.requirements["Absent of model"]:
             raise Exception("Asking to require the absence of a thing in model")
+        #debug(f"",-1)
         #return t, conditional_span
 
     

@@ -22,6 +22,7 @@ def compile_(tag, soup = None, FrontSoup = None, FrontHtml = None,  **kwargs):
     #debug("",-1)
 
 def clean(tag):
+    tag.clean()
     pass
     
 templates.addKindOfTemplate("Front Side", sys.modules[__name__])
