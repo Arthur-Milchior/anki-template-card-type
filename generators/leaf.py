@@ -2,6 +2,7 @@ import copy
 from .generators import Gen,addTypeToGenerator, modelToFields
 from ..debug import debug, assertType
 from bs4 import NavigableString
+from html import escape
 
 class Leaf(Gen):
     def __init__(self,  containsRedundant = True, **kwargs):
@@ -58,7 +59,7 @@ class Empty(Leaf):
         return l
 
 emptyGen = Empty(init = True)
-addTypeToGenerator(type(None),Empty)
+addTypeToGenerator(type(None),lambda x: emptyGen)
 
 class Literal(Leaf):
     """A text to be printed, as-is, unconditionally."""
@@ -100,8 +101,8 @@ class Literal(Leaf):
         return ret
     
     def _template(self, tag, *args, **kwargs):
-        debug(f"appending text {self.text} to {tag}")
-        tag.append(NavigableString(self.text))
+        #debug(f"appending text {self.text} to {tag}")
+        tag.append(NavigableString(escape(self.text)))
         #return self.text
     
 addTypeToGenerator(str,Literal)

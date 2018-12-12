@@ -7,5 +7,5 @@ def compile_(tag, soup = None, isQuestion = None, model = None, objects = None, 
 
 def clean(tag):
     pass
-    
-templates.addKindOfTemplate("example", sys.modules[__name__])
+
+Template(["example"], compile_, clean)

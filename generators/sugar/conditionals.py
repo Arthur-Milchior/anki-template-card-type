@@ -1,6 +1,8 @@
 from ..child import SingleChild
 from ..leaf import emptyGen
 from ..children import MultipleChild, ListElement
+from ..child import Requirement
+from .sugar import NotNormal
 
 class FilledOrEmptyField(ListElement):
     def __repr__(self):
@@ -11,38 +13,56 @@ class FilledOrEmptyField(ListElement):
         self.emptyCase = emptyCase
         self.field = field
         super().__init__([
-            Requirements(
+            Requirement(
                 self.filledCase.getNormalForm(),
-                requireFilledCase = {self.field}
+                requireFilled = {self.field}
             ),
-            Requirements(
+            Requirement(
                 self.emptyCase.getNormalForm(),
                 requireEmpty = {self.field}
             )],  **kwargs)
         
-class AtLeastOneField(SingleChild):
-    """Show the child if there is at least one condition.
 
-    The child is repeated as many time in the card's template as they
-    are fields. So use this only for small text, such as
-    <table>
+class AtLeastNField(SingleChild, NotNormal):
+    """Show the child if at least n of the fields have content.
 
+    If there are m fields, then the length of the text generated is
+    O(m choose n). For n=1, it means the text is linear in the number
+    of fields. For n=2, it means the text is square in the number of fields.
+
+    So use this only for small text, such as
+    <table>.
     """
-    def __repr__(self):
-        return f"""AtLeastOneField({self.child},{self.fields})"""
-
-    def __init__(self,child, fields):
+    def __init__(self, child, fields, n=1):
         super().__init__(child)
+        self.n = n
         self.fields = fields
+        
+    def __repr__(self):
+        return f"""AtLeastNField({self.child},{self.fields},{self.n})"""
 
     def _getNormalForm(self):
+        if self.n = 0:
+            return self.child.getNormalForm()
+        seen = set()
+        seen_card = 0
         actual = emptyGen
-        child = self.child.getNormalForm()
         for condition in self.fields:
-            actual = FilledOrEmptyField(condition, filled = child,
-                                     isEmpty = actual).getNormalForm()
-        return actual
+            if seen_card >= self.n-1:
+                actual = FilledOrEmptyField(condition,
+                                            filledCase = AtLeastNField(self.child, seen, self.n-1),
+                                            emptyCase = actual)
+            seen_card +=1
+            seen.add(condition)
+        return actual.getNormalForm()
 
+class AtLeastOneField(AtLeastNField):
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args, n=1,**kwargs)
+class AtLeastTwoField(AtLeastTwoField):
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args, n=2,**kwargs)
+        
 class FilledField(FilledOrEmptyField):
     def __repr__(self):
         return f"""FilledField({self.field},{self.child})"""
@@ -58,17 +78,17 @@ class EmptyField(FilledOrEmptyField):
     
 class QuestionOrAnswerField(ListElement):
     def __repr__(self):
-        return f"""QuestionOrAnswerFieldField({self.field},{self.questionCase},{self.answerCase})"""
+        return f"""QuestionOrAnswerField({self.field},{self.questionCase},{self.answerCase})"""
     
     def __init__(self, questionCase = emptyGen, answerCase = emptyGen,  **kwargs):
         self.questionCase = questionCase
         self.answerCase = answerCase
         super().__init__([
-            Requirements(
+            Requirement(
                 self.questionCase.getNormalForm(),
                 requireQuestion = True
             ),
-            Requirements(
+            Requirement(
                 self.answerCase.getNormalForm(),
                 requireQuestion = False
             )],  **kwargs)
@@ -85,11 +105,9 @@ class AnswerField(QuestionOrAnswerField):
     def __init__(self, child,  **kwargs):
         super().__init__(answerCase = child,  **kwargs)
         
-    
-        
-class PresentOrAbsentFieldField(ListElement):
+class PresentOrAbsentField(ListElement):
     def __repr__(self):
-        return f"""PresentOrAbsentFieldField({self.field},{self.presentCase},{self.absentCase})"""
+        return f"""PresentOrAbsentField({self.field},{self.presentCase},{self.absentCase})"""
     
     def __init__(self, field, presentCase = emptyGen, absentCase = emptyGen,  **kwargs):
         self.presentCase = presentCase
@@ -97,11 +115,11 @@ class PresentOrAbsentFieldField(ListElement):
         self.field = field
         elements = super().__init__(
             [
-                Requirements(
+                Requirement(
                     self.presentCase.getNormalForm(),
                     inModel = {self.field}
                 ),
-                Requirements(
+                Requirement(
                     self.absentCase.getNormalForm(),
                     absentOfModel = {self.field}
                 )]

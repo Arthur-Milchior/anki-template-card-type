@@ -270,8 +270,8 @@ class Gen:
         if (field,setName) not in self.fieldSetToNotRedundant:
             assumed = self.getWithoutRedundance()._assumeFieldInSet(field,setName)
             assert assertType(assumed, Gen)
-            self.fieldSetToNotRedundant[(field,set)] = assumed
-        return self.fieldSetToNotRedundant[(field,set)]
+            self.fieldSetToNotRedundant[(field,setName)] = assumed
+        return self.fieldSetToNotRedundant[(field,setName)]
     
     def _assumeFieldInSet(self, field, setName):
         """Similar to assumeFieldInSet. 
@@ -279,7 +279,7 @@ class Gen:
         Recompute instead of memoizing.
         """
         return self._applyRecursively( (lambda element:
-                                        element.assumeFieldInSet(field,set)),
+                                        element.assumeFieldInSet(field,setName)),
                                        toClone = self)
 
     def restrictToModel(self,model, fields = None):
@@ -293,7 +293,7 @@ class Gen:
         #debug(f"""restrictToModel({self})""",1)
         (hash, fields) = modelToHashFields(model, fields = fields)
         self.model = model
-        self.fields = fields
+        self.fieldsInModel = fields
         if hash not in self.hashToRestrictedModel:
             #debug(f"""hash {hash} not memoized. It must be computed.""")
             if not self.hashToRestrictedModel:
@@ -345,7 +345,7 @@ class Gen:
         of things to hide (as frozen set)."""
         #debug (f"template({tag}, {soup}, {isQuestion} {asked}, {hide})",1)
         assert soup is not None
-        assert isQuestion is not None
+        assert assertType(isQuestion, bool)
         assert asked is not None
         assert hide is not None
         ret = self.tagAskedHideIsQuestionToTemplate.get((tag, asked, hide, isQuestion))

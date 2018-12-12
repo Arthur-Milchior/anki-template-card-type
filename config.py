@@ -1,13 +1,6 @@
 import aqt
 from aqt import mw
-from .generators.sugar.conditionals import *
-from .generators.sugar.fields import *
-from .generators.sugar.html import *
-from .generators.child import *
-from .generators.children import *
-from .generators.leaf import *
-from .generators.generators import ensureGen
-from .debug import debug
+from .imports import *
 
 objects = dict()
 def newConf(config):
@@ -49,19 +42,23 @@ def reread(objects=objects):
             (name,value) = instruction
             define(name, value)
         elif isinstance(instruction,str):
-            evaluate(instruction)
+            execute(instruction)
         else:
             assert False
     #debug("reread", -1)
 
-def evaluate(t):
-    #debug(f"evaluate({t})",1 )
+def execute(t):
+    #debug(f"execute({t})",1 )
     exec(t, globals(),locals = objects)
     #debug(f"reread()",-1 )
+
+def evaluate(t, objects = objects):
+    #debug(f"""evaluating "{t}" """)
+    return eval(t, globals(), objects)
         
 def define(name, value):
     #debug(f"define({name},{value})",1 )
-    r = eval(value, globals(),  objects)
+    r = evaluate(value)
     #debug(f"define() find {r}")
     # r = ensureGen(r).getNormalForm()
     # #debug(f"define()'s normal form is {r}")

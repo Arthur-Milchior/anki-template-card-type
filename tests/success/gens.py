@@ -1,4 +1,5 @@
 from ..imports import *
+from ..data import *
 assert assertEqual("literalTest" , """Literal("test")""")
 assert assertEqual("literalTest", "literalTest.getNormalForm()")
 assert assertEqual("literalTest", "literalTest.getWithoutRedundance()")

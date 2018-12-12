@@ -1,13 +1,15 @@
+import collections
+import copy
+import re
+import sys
+from bs4 import BeautifulSoup
+
+from aqt import mw
+
+from .config import objects
+from .debug import debug
 from .tag import tagContent
 from .templates.soupAndHtml import templateFromSoup, soupFromTemplate
-import copy
-import collections
-import sys
-from .config import objects
-from aqt import mw
-import re
-from bs4 import BeautifulSoup
-from .debug import debug
 from .templates.templates import clean, compile_
 
 

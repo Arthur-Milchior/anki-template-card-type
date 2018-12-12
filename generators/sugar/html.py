@@ -9,7 +9,7 @@ class Image(HTML):
         super().__init__("img",{"src":url})
 
 class Table(HTML):
-    def __init__(self, content, trAttrs = [], tdAttrs = [],  **kwargs):
+    def __init__(self, content, trAttrs = {}, tdAttrs = {},  **kwargs):
         """
         A table with content stated. If content is emptyGen, its normal
         form is an Empty object.
@@ -38,12 +38,18 @@ def _fixedTag(tag):
 SPAN = _fixedTag("span")
 DIV = _fixedTag("div")
 P = _fixedTag("p")
-# class SPAN(HTML):
-#     def __init__(self,  **kwargs):
-#         super().__init__("span",  **kwargs)
-# class DIV(HTML):
-#     def __init__(self,  **kwargs):
-#         super().__init__("div",  **kwargs)
-# class P(HTML):
-#     def __init__(self,  **kwargs):
-#         super().__init__("p",  **kwargs)
+TR = _fixedTag("tr")
+TD = _fixedTag("td")
+
+class _LIST(HTML):
+    def __init__(self, elements, enclosing = None, **kwargs):
+        assert enclosing is not None
+        self.elements = elements
+        lis = [HTML("li",child = element) for element in elements]
+        super().__init__("ul", child = lis, **kwargs)
+class OL(HTML):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, enclosing = "ol", **kwargs)
+class UL(HTML):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, enclosing = "ul", **kwargs)

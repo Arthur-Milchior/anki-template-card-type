@@ -1,19 +1,26 @@
 from ..debug import debug, assertType
 import bs4
 
-kindOfTemplate = dict()
-def addKindOfTemplate(name, f):
-    """If template as argument "name", then f is applied to the tag.
+class Template:
+    kindOfTemplate = dict()
+    def __init__(self, names, compile_, clean):
+        for name in names:
+            Template.kindOfTemplate[name.lower()] = self
+        self.compile_=compile_
+        self.clean = clean
 
-    t should take as first argument: tag, potentially other arguments."""
-    #debug(f"Adding {name}")
-    kindOfTemplate[name.lower()]=f
+# def addKindOfTemplate(name, f):
+#     """If template as argument "name", then f is applied to the tag.
+
+#     t should take as first argument: tag, potentially other arguments."""
+#     #debug(f"Adding {name}")
+#     kindOfTemplate[name.lower()]=f
 
 def getFunctionFromKind(kind):
     """Given a kind, the method to call to generate the content."""
-    r = kindOfTemplate.get(kind.lower())
+    r = Template.kindOfTemplate.get(kind.lower())
     if r is None:
-        raise Exception(f"Kind {kind} is called, but not present in templates.template.kindOfTemplate")
+        raise Exception(f"""Kind "{kind}" is called, but not present in templates.template.kindOfTemplate. It contains only Template {Template.kindOfTemplate}""")
     return r
 
 

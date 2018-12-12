@@ -29,14 +29,14 @@ class ListElement(MultipleChild):
             element = ensureGen(element, locals_)
             if isinstance(element,Gen):
                 self.children.append(element)
+                #debug(f"Adding child {element}")
                 if not element.getIsNormal():
                     unisNormalChild = True
             else:
                 raise Exception(element, "is neither string nor Gen.")
         super().__init__(isNormal = isNormal or (not unisNormalChild),
-                         
                          **kwargs)
-    
+ 
     def __repr__(self):
         return f"""ListElement(elements = {repr(self.children)}, {self.params()})"""
 
@@ -93,7 +93,8 @@ class Branch(Gen):
     """The class which expands differently in function of the question/hidden value.
 
     name -- the name of this question.
-    children[isQuestion][isAsked] -- the field to show on the side question/answer of card (depending on isQuestion). Depending on whether this value is asked or not."""
+    children[isQuestion][isAsked] -- the field to show on the side question/answer of card (depending on isQuestion). Depending on whether this value is asked or not."
+    cascadeAsked -- a set of things which will also be considered to be asked if this is asked."""
     def __init__(self,
                  name = None,
                  default = None,
@@ -109,6 +110,7 @@ class Branch(Gen):
                  toClone = None,
                  isNormal = False,
                  locals_ = None,
+                 cascadeAsked = None,
                  **kwargs):
         """
         The value of self.children[isQuestion,isAsked] is:
@@ -127,6 +129,7 @@ class Branch(Gen):
         else:
             assert False
         self.children = dict()
+        self.cascadeAsked = cascadeAsked
         tmp = dict()
         tmp[True,True]= [questionAsked, asked, question, children.get((True,True)), default, emptyGen]
         tmp[True,False] = [questionNotAsked, notAsked, question, children.get((True,False)), default, emptyGen]
@@ -135,7 +138,7 @@ class Branch(Gen):
         notNormalChild = False
         for isQuestionAsked in tmp:
             for value in tmp[isQuestionAsked]:
-                if value is not None:
+                if value:
                     child = ensureGen(value, locals_)
                     self.children[isQuestionAsked] = child
                     if not child.getIsNormal():
@@ -176,7 +179,7 @@ class Branch(Gen):
         return super()._assumeFieldInSet(field,setName)
 
     def _template(self, tag, soup, isQuestion = None, asked = None, hide = None, **kwargs):
-        assert isQuestion is not None
+        assert assertType(isQuestion, bool)
         assert asked is not None
         assert hide is not None
         if self.name in hide:
@@ -185,6 +188,8 @@ class Branch(Gen):
         if self.name in asked:
             #debug(f"name {self.name} belongs to asked")
             isAsked = True
+            if self.cascadeAsked:
+                asked = asked | self.cascadeAsked
         else:
             #debug(f"name {self.name} does not belong to asked")
             isAsked = False

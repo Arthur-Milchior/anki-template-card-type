@@ -23,7 +23,7 @@ def assertEqual(left, right):
     glob = stack()[1].frame.f_globals
     loc = stack()[1].frame.f_locals
     # try:
-    leftEval = eval(left,glob, loc)
+    leftEval = eval(left, glob, loc)
     # except NameError as n:
     #     print(f"""glob is {glob}""")
     #     raise

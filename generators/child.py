@@ -84,20 +84,20 @@ class Requirement(SingleChild):
                 (self.requirements["Filled"] & self.requirements["Absent of model"]) or
                 (self.requirements["In model"] & self.requirements["Absent of model"]))
     
-    def _applyRecursively(self, fun, **kwargs):
+    def _applyRecursively(self, fun, toClone = None, **kwargs):
         #used at least for _getNormalForm
         child = fun(self.child)
         if not child:
             return emptyGen
-        return Requirements(child = child, toClone = self, **kwargs)
+        return Requirement(child = child, toClone = toClone or self, **kwargs)
 
     def _getWithoutRedundance(self):
         child = self.child
         for requirementName in self.requirements:
             for field in self.requirements[requirementName]:
-                child = child.assumeFieldInSet(requirementName, field)
+                child = child.assumeFieldInSet(field, requirementName)
         if self.requireQuestion is not None:
-            child = child.assumeFieldInSet("requireQuestion", self.requireQuestion)
+            child = child.assumeFieldInSet(self.requireQuestion,"requireQuestion")
         if child == self.child:
             return self
         if not child:
@@ -109,15 +109,15 @@ class Requirement(SingleChild):
 
     def _assumeQuestion(self, isQuestion):
         if self.requireQuestion is None:
-            child = self.child.assumeFieldInSet(isQuestion,"isQuestion")
+            child = self.child.assumeFieldInSet(isQuestion,"requireQuestion")
             if child == self.child:
                 return self
-            return Requirements(child = child, toClone = self)
+            return Requirement(child = child, toClone = self)
         if self.requireQuestion is not isQuestion:
             return emptyGen
         requirements = copy.copy(self.requirements)
         requirements["requireQuestion"] = None
-        return Requirements(child = self.child, requirements = requirements, toClone = self)
+        return Requirement(child = self.child, requirements = requirements, toClone = self)
         
     def _assumeFieldInSet(self, field, setName):
         if setName == "requireQuestion":
@@ -227,7 +227,7 @@ class Requirement(SingleChild):
     #     childRestricted = self.child.restrictFields(fields,emptyGen|emptyGen,hasContent|requireFilled)
     #     if not childRestricted:
     #         return emptyGen
-    #     return Requirements(child=childRestricted, requireFilled = self.requirements["Filled"] - considered, emptyGen = (self.requirements["Empty"] - considered) & fields, isNormal = True)
+    #     return Requirement(child=childRestricted, requireFilled = self.requirements["Filled"] - considered, emptyGen = (self.requirements["Empty"] - considered) & fields, isNormal = True)
     
 
 class HTML(SingleChild):

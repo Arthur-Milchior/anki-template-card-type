@@ -4,15 +4,17 @@ import os
 
 try:
     from aqt import mw
-    from .editTemplate import compileAndSaveModel
     from anki.hooks import addHook
     from aqt.qt import QAction, QKeySequence
     from aqt.utils import tooltip
     
     from . import templates
-    from . import tests
-    from .debug import debug
     from .config import readIfRequired, objects
+    from .debug import debug
+    from .imports import *
+    from . import tests
+    
+    from .editTemplate import compileAndSaveModel
     
     def runBrowser(browser, toClean):
         mw.checkpoint("Change template")

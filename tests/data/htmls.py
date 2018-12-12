@@ -4,7 +4,7 @@ from .jsons import testObjects
 from ..imports import *
 
 class TestHTML:
-    def  __init__(self,source, compiled, numberOfTagToEdit = None, model = model, **kwargs):
+    def  __init__(self,source, compiled, *, numberOfTagToEdit = None, model = model, **kwargs):
         self.source = source
         self.model = model
         self.compiled = compiled
@@ -28,24 +28,24 @@ noTemplateHtml = """<p>
 </p>"""
 htmls.append(TestHTML(noTemplateHtml,noTemplateHtml, numberOfTagToEdit = 0, objects = testObjects, isQuestion = True))
 
-htmlTestObject = """<span object="test" template="eval">
+htmlTestObject = """<span name="test" template="conf">
  foo4
 </span>"""
-htmlTestObjectCompiled = """<span object="test" template="eval">
+htmlTestObjectCompiled = """<span name="test" template="conf">
  test
 </span>"""
 htmls.append(TestHTML(htmlTestObject, htmlTestObjectCompiled, numberOfTagToEdit = 1, objects = testObjects, isQuestion = True))
 
-htmlBarObject = """<span object="bar" template="eval">
+htmlBarObject = """<span name="bar" template="conf">
  foo5
 </span>"""
-htmlBarObjectCompiled = """<span object="bar" objectabsent="bar" template="eval">
+htmlBarObjectCompiled = """<span name="bar" objectabsent="bar" template="conf">
 </span>"""
 htmls.append(TestHTML(htmlBarObject, htmlBarObjectCompiled, numberOfTagToEdit = 1, objects = testObjects, isQuestion = True))
 
-htmlFooObject = """<span object="foo" template="eval">
+htmlFooObject = """<span name="foo" template="conf">
 </span>"""
-htmlFooObjectCompiled = """<span object="foo" template="eval">
+htmlFooObjectCompiled = """<span name="foo" template="conf">
  foo
  {{Question}}
 </span>"""
@@ -54,13 +54,13 @@ htmls.append(TestHTML(htmlFooObject, htmlFooObjectCompiled, numberOfTagToEdit = 
 htmlFront = """<span template="Front Side">
 </span>"""
 htmlAnswerTestCompiled = """<span template="Front Side">
- <span object="test" template="eval">
+ <span name="test" template="conf">
   test
  </span>
 </span>"""
 htmls.append(TestHTML(htmlFront, htmlAnswerTestCompiled, FrontHtml = htmlTestObject, numberOfTagToEdit = 1, objects = testObjects, isQuestion = False))
-htmlQuestion = """<span asked="Question" object="Question" template="eval"/>"""
-htmlQuestionCompiled = """<span asked="Question" object="Question" template="eval">
+htmlQuestion = """<span asked="Question" name="Question" template="conf"/>"""
+htmlQuestionCompiled = """<span asked="Question" name="Question" template="conf">
  {{#Question}}
  Question
  :
@@ -69,14 +69,12 @@ htmlQuestionCompiled = """<span asked="Question" object="Question" template="eva
 </span>"""
 
 df =DecoratedField('Question')
-print(f"df is: {df}")
 modelApplied = df.restrictToModel(model)
-print(f"df becomes: {modelApplied}")
 
 
 htmls.append(TestHTML(htmlQuestion, htmlQuestionCompiled, objects = testObjects, isQuestion = True))
 htmlAnswerCompiled = """<span template="Front Side">
- <span asked="Question" object="Question" template="eval">
+ <span asked="Question" name="Question" template="conf">
   {{#Question}}
   Question
   :
@@ -85,3 +83,155 @@ htmlAnswerCompiled = """<span template="Front Side">
  </span>
 </span>"""
 htmls.append(TestHTML(htmlFront, htmlAnswerCompiled, FrontHtml = htmlQuestion, objects = testObjects, isQuestion = False))
+
+
+definition1Template ="""<span asked="Definition1" name='ListElement([DecoratedField("Definition1"),DecoratedField("Definition2")])' template="eval"/>"""
+definition1Question ="""<span asked="Definition1" name='ListElement([DecoratedField("Definition1"),DecoratedField("Definition2")])' template="eval">
+ {{#Definition1}}
+ Definition1
+ :
+ ???
+ {{/Definition1}}
+ {{#Definition2}}
+ Definition2
+ :
+ {{Definition2}}
+ {{/Definition2}}
+</span>"""
+definition1Answer ="""<span template="Front Side">
+ <span asked="Definition1" name='ListElement([DecoratedField("Definition1"),DecoratedField("Definition2")])' template="eval">
+  {{#Definition1}}
+  Definition1
+  :
+  {{Definition1}}
+  {{/Definition1}}
+  {{#Definition2}}
+  Definition2
+  :
+  {{Definition2}}
+  {{/Definition2}}
+ </span>
+</span>"""
+TestHTML(definition1Template, definition1Question, objects = testObjects, isQuestion = True)
+TestHTML(htmlFront, definition1Answer, FrontHtml = definition1Template, objects = testObjects, isQuestion = False)
+
+definition1Template ="""<span asked="Definition1" name="TwoDefsEasy" template="eval"/>"""
+definition1Question ="""<span asked="Definition1" name="TwoDefsEasy" template="eval">
+ {{#Definition1}}
+ Definition1
+ :
+ ???
+ {{/Definition1}}
+ {{#Definition2}}
+ Definition2
+ :
+ {{Definition2}}
+ {{/Definition2}}
+</span>"""
+definition1Answer ="""<span template="Front Side">
+ <span asked="Definition1" name="TwoDefsEasy" template="eval">
+  {{#Definition1}}
+  Definition1
+  :
+  {{Definition1}}
+  {{/Definition1}}
+  {{#Definition2}}
+  Definition2
+  :
+  {{Definition2}}
+  {{/Definition2}}
+ </span>
+</span>"""
+TestHTML(definition1Template, definition1Question, objects = testObjects, isQuestion = True)
+TestHTML(htmlFront, definition1Answer, FrontHtml = definition1Template, objects = testObjects, isQuestion = False)
+
+definition1Template ="""<span asked="Definition1" name="ListFields(['Definition1', 'Definition2'])" template="eval"/>"""
+definition1Question ="""<span asked="Definition1" name="ListFields(['Definition1', 'Definition2'])" template="eval">
+ {{#Definition1}}
+ Definition1
+ :
+ ???
+ {{/Definition1}}
+ {{#Definition2}}
+ Definition2
+ :
+ {{Definition2}}
+ {{/Definition2}}
+</span>"""
+definition1Answer ="""<span template="Front Side">
+ <span asked="Definition1" name="ListFields(['Definition1', 'Definition2'])" template="eval">
+  {{#Definition1}}
+  Definition1
+  :
+  {{Definition1}}
+  {{/Definition1}}
+  {{#Definition2}}
+  Definition2
+  :
+  {{Definition2}}
+  {{/Definition2}}
+ </span>
+</span>"""
+TestHTML(definition1Template, definition1Question, objects = testObjects, isQuestion = True)
+TestHTML(htmlFront, definition1Answer, FrontHtml = definition1Template, objects = testObjects, isQuestion = False)
+
+definition1Template ="""<span asked="Definition1" name="TwoDefsMiddle" template="eval"/>"""
+definition1Question ="""<span asked="Definition1" name="TwoDefsMiddle" template="eval">
+ {{#Definition1}}
+ Definition1
+ :
+ ???
+ {{/Definition1}}
+ {{#Definition2}}
+ Definition2
+ :
+ {{Definition2}}
+ {{/Definition2}}
+</span>"""
+definition1Answer ="""<span template="Front Side">
+ <span asked="Definition1" name="TwoDefsMiddle" template="eval">
+  {{#Definition1}}
+  Definition1
+  :
+  {{Definition1}}
+  {{/Definition1}}
+  {{#Definition2}}
+  Definition2
+  :
+  {{Definition2}}
+  {{/Definition2}}
+ </span>
+</span>"""
+TestHTML(definition1Template, definition1Question, objects = testObjects, isQuestion = True)
+TestHTML(htmlFront, definition1Answer, FrontHtml = definition1Template, objects = testObjects, isQuestion = False)
+
+definition1Template ="""<span asked="Definition1" name="TwoDefsHard" template="eval"/>"""
+definition1Question ="""<span asked="Definition1" name="TwoDefsHard" template="eval">
+ {{#Definition1}}
+ Definition1
+ :
+ ???
+ {{/Definition1}}
+ {{#Definition2}}
+ Definition2
+ :
+ {{Definition2}}
+ {{/Definition2}}
+</span>"""
+definition1Answer ="""<span template="Front Side">
+ <span asked="Definition1" name="TwoDefsHard" template="eval">
+  {{#Definition1}}
+  Definition1
+  :
+  {{Definition1}}
+  {{/Definition1}}
+  {{#Definition2}}
+  Definition2
+  :
+  {{Definition2}}
+  {{/Definition2}}
+ </span>
+</span>"""
+TestHTML(definition1Template, definition1Question, objects = testObjects, isQuestion = True)
+TestHTML(htmlFront, definition1Answer, FrontHtml = definition1Template, objects = testObjects, isQuestion = False)
+
