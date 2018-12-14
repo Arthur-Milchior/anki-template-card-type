@@ -1,8 +1,18 @@
 import re
 from inspect import stack
 
+shouldDebug = False
+def startDebug():
+    global shouldDebug
+    shouldDebug = True
+def endDebug():
+    global shouldDebug
+    shouldDebug = False
+    
 indentation = 0
 def debug(text, indentToAdd=0):
+    if not shouldDebug:
+        return
     global indentation
     indentToPrint = indentation
     if indentToAdd>0:
@@ -11,11 +21,13 @@ def debug(text, indentToAdd=0):
         sep = ""
     else:
         sep = "}"
-        indentToPrint -=1
+        indentToPrint +=indentToAdd
     space = " "*indentToPrint
     newline = "\n"
     print (f"""{space}{sep}{re.sub(newline,newline+space,text)}""")
     indentation +=indentToAdd
+    if indentToAdd<0:
+        print()
     pass
 
 
@@ -30,7 +42,7 @@ def assertEqual(left, right):
     rightEval = eval(right,glob,loc)
     if leftEval == rightEval:
         return True
-    debug(f"""{left} evaluates as \n"{leftEval}".\n"{rightEval}"\n is the value of {right}, they are distinct.""")
+    print(f"""{left} evaluates as \n"{leftEval}".\n"{rightEval}"\n is the value of {right}, they are distinct.""")
     return False
 
 def assertType(element,types):
@@ -39,5 +51,5 @@ def assertType(element,types):
     for typ in types:
         if isinstance(element,typ):
             return True
-    debug(f""" "{element}"'s type is {type(element)}, which is not a subtype of {types}""")
+    print(f""" "{element}"'s type is {type(element)}, which is not a subtype of {types}""")
     return False

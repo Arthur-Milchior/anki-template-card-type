@@ -1,49 +1,137 @@
 from .imports import *
 from .data.htmls import TestHTML
 from bs4 import BeautifulSoup
-from html import escape 
+from html import escape
+from .data.templates import testTemplate, emptyHtml
 debug("current")
 
-# lf = ListFields(['Definition1', 'Definition2'])
-# # print(f"Initial lf is {lf}")
-# normal = lf.getNormalForm()
-# # print(f"Normal lf is {normal}")
-# withoutRedundance = lf.getWithoutRedundance()
-# # print(f"withoutRedundance lf is {withoutRedundance}")
-
-definition1Template ="""<span asked="Definition1" name="TwoDefsHard" template="eval"/>"""
-definition1Question ="""<span asked="Definition1" name="TwoDefsHard" template="eval">
- {{#Definition1}}
- Definition1
- :
- ???
- {{/Definition1}}
- {{#Definition2}}
- Definition2
- :
- {{Definition2}}
- {{/Definition2}}
-</span>"""
-definition1Answer ="""<span template="Front Side">
- <span asked="Definition1" name="TwoDefsHard" template="eval">
-  {{#Definition1}}
-  Definition1
-  :
-  {{Definition1}}
-  {{/Definition1}}
-  {{#Definition2}}
-  Definition2
-  :
-  {{Definition2}}
-  {{/Definition2}}
- </span>
-</span>"""
-TestHTML(definition1Template, definition1Question, objects = testObjects, isQuestion = True)
-TestHTML(htmlFront, definition1Answer, FrontHtml = definition1Template, objects = testObjects, isQuestion = False)
-
-# test = definition1Template%("""ListElement([DecoratedField(&quot;Definition1&quot;),DecoratedField(&quot;Definition2&quot;)])""")
-# b = BeautifulSoup(test,"html.parser")
-# print(test)
-# print(b)
+# def test(source, model = model, objects = testObjects, isQuestion = True, asked = frozenset(), hide = frozenset(), **kwargs):
+#     soup = soupFromTemplate("<test/>")
+#     source.getNormalForm().getWithoutRedundance().restrictToModel(model).template(soup.test, soup = soup, isQuestion = isQuestion, asked = asked, hide = hide, **kwargs)
+#     return templateFromSoup(soup, prettify = True)
+# tf = TableFields(['Definition1', 'Definition2'])
 
 
+startDebug()
+# tableFieldsTemplate = testTemplate(TableFields(["Question","Back","Absent"]))
+# tableFieldsHtml = """<test>
+#  <table>
+#   <tr>
+#    <td>
+#     Question
+#    </td>
+#    <td>
+#     {{Question}}
+#    </td>
+#   </tr>
+#   <tr>
+#    <td>
+#     Back
+#    </td>
+#    <td>
+#     {{Back}}
+#    </td>
+#   </tr>
+#  </table>
+# </test>"""
+
+
+# tableFieldsTemplate = testTemplate(
+#     HTML(tag = "table",
+#          child = ListElement(
+#              elements = [
+#                  Requirement(
+#                      child = HTML(tag = "tr",
+#                                   child = ListElement(elements = [HTML(child = "Question", tag = "td"), HTML(child = Field(field = "Question", ), tag = "td")], )
+#                      ),
+#                      requireFilled = frozenset({Field(field = "Question", )})
+#                  ),
+#                  Requirement(
+#                      child = HTML(
+#                          tag = "tr",
+#                          child = ListElement(elements = [HTML(child = "Back", tag = "td"), HTML(child = Field(field = "Back", ), tag = "td")], )),
+#                      requireFilled = frozenset({Field(field = "Back", )})),
+#                  Requirement(
+#                      child = HTML(tag = "tr",
+#                                   child = ListElement(elements = [HTML(child = "Absent", tag = "td"), HTML(child = Field(field = "Absent", ), tag = "td")], )),
+#                      requireFilled = frozenset({Field(field = "Absent", )})),
+#              ],
+#          ),
+#     )
+# )
+# tableFieldsHtml = """<test>
+#  <table>
+#   <tr>
+#    <td>
+#     Question
+#    </td>
+#    <td>
+#     {{Question}}
+#    </td>
+#   </tr>
+#   <tr>
+#    <td>
+#     Back
+#    </td>
+#    <td>
+#     {{Back}}
+#    </td>
+#   </tr>
+#  </table>
+# </test>"""
+
+
+# tableFieldsTemplate = testTemplate(
+#     ListElement(
+#         elements = [
+#             Requirement(
+#                 child = HTML(tag = "tr",
+#                              child = ListElement(elements = [HTML(child = "Question", tag = "td"), HTML(child = Field(field = "Question", ), tag = "td")], )
+#                 ),
+#                 requireFilled = frozenset({Field(field = "Question", )})
+#             ),
+#             Requirement(
+#                 child = HTML(
+#                     tag = "tr",
+#                     child = ListElement(elements = [HTML(child = "Back", tag = "td"), HTML(child = Field(field = "Back", ), tag = "td")], )),
+#                 requireFilled = frozenset({Field(field = "Back", )})),
+#             Requirement(
+#                 child = HTML(tag = "tr",
+#                              child = ListElement(elements = [HTML(child = "Absent", tag = "td"), HTML(child = Field(field = "Absent", ), tag = "td")], )),
+#                 requireFilled = frozenset({Field(field = "Absent", )})),
+#         ],
+#     ),
+# )
+# tableFieldsHtml = """<test>
+#  <table>
+#   {{#Question}}
+#   <tr>
+#    <td>
+#     Question
+#    </td>
+#    <td>
+#     {{Question}}
+#    </td>
+#   </tr>
+#   {{/Question}}
+#   {{#Back}}
+#   <tr>
+#    <td>
+#     Back
+#    </td>
+#    <td>
+#     {{Back}}
+#    </td>
+#   </tr>
+#   {{/Back}}
+#  </table>
+# </test>"""
+
+
+# assert assertEqual("tableFieldsHtml","tableFieldsTemplate")
+
+endDebug()
+
+# tf_ = test(tf)
+# print(tf_)
+raise Exception

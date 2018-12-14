@@ -3,25 +3,33 @@ from .sugar import NotNormal
 from .fields import QuestionnedField
 from ...debug import debug
 from ..generators import ensureGen
-from .conditionals import PresentOrAbsentField, FilledOrEmptyField, AtLeastOneField
+from ..child import HTML
+from ..leaf import Field
+from .conditionals import PresentOrAbsentField, FilledOrEmptyField, AtLeastOneField, FilledField
 from ..children import MultipleChild, Branch
 
-def fieldToPair(Field):
+def fieldToPair(field):
     """Given a representation of a field, returns the label to use, and the Field object"""
+    debug("""fieldToPair({field})""",-1)
     if isinstance(field, str):
-        return (field,field)
+        debug("string case")
+        ret = (field,Field(field))
     elif isinstance(field,tuple) and len(field) == 2:
+        debug("pair case")
         (label,field) = field
         assert isinstance(field[0],str)
         if isinstance(field[1],str):
             field = Field(field)
         else:
-            assert isinstance(field[1],Field)):
-        return (label,field)
+            assert isinstance(field[1],Field)
+        ret = (label,field)
     elif isinstance(field,Field) :
-        return (field.field, field)
+        debug("Field case")
+        ret = (field.field, field)
     else:
         raise Exception(field)
+    debug(f"""fieldToPair() returns {ret}""",-1)
+    return ret
     
 
 class ListFields(MultipleChild, NotNormal):
@@ -39,24 +47,25 @@ class ListFields(MultipleChild, NotNormal):
                  globalSep = (lambda x:None),
                  globalFun = (lambda x:x),
                  toKeep = True,
-                 **kwargs
-    ):
-        self.fieldsToAsk = set()
+                 **kwargs):
         self.originalFields = fields
-        self.localFun = localFun or 
-        self.globalFun = globalFun or (lambda x:x)
-        self.globalSep = globalSep or (lambda x:None)
+        self.localFun = localFun
+        self.globalFun = globalFun
+        self.globalSep = globalSep
         super().__init__(
             toKeep = toKeep,
             **kwargs)
-        
-   def __repr__(self):
-        return f"""ListFields("{self.fieldsListed}","{self.listName}","{self.localFun}","{self.globalFun}", {self.params()})"""
+
+    def getChildren(self):
+        return self.getNormalForm().getChildren()
+    
+    def __repr__(self):
+        return f"""ListFields("{self.originalFields}","{self.localFun}","{self.globalSep}","{self.globalFun}", {self.params()})"""
     
     def _getNormalForm(self):
         elements = []
         seen = []
-        for field in self.fieldsListed:
+        for field in self.originalFields:
             sep = self.globalSep(seen)
             if sep is not None:
                 elements.append(sep)
@@ -78,32 +87,34 @@ class ListFieldsTrigger(ListFields):
     def __init__(self,
                  fields,
                  listName,
-                 localFun = None
+                 localFun = None,
                  globalFun = None,
-                 **kwargs
-    ):
-        self.cascadeAsked = set()
-        def localFun_(self.field):
+                 **kwargs):
+        self.listName = listName
+        cascadeAsked = set()
+        def localFun_(field):
             ret = localFun(field)
             if isinstance(ret,tuple):
                 asked, ret =ret
                 if asked is not None:
                     if isinstance(asked,set):
-                        self.cascadeAsked|= asked
+                        cascadeAsked|= asked
                     else:
-                        self.cascadeAsked.add(asked)
+                        cascadeAsked.add(asked)
             return ret
         def globalFun_(self, l):
             return Branch(name = listName,
                           default = globalFun(l),
-                          cascadeAsked = self.cascadeAsked
+                          cascadeAsked = cascadeAsked
             )
+        self.listFields = fields
         super().__init__(fields,
-                         localFun = self.localFun_,
-                         globalFun = self.globalFun_,
-                         listName = listName,
+                         localFun = localFun_,
+                         globalFun = globalFun_,
                          **kwargs)
     
+    def __repr__(self):
+        return f"""ListFieldsTrigger({self.liestFields}, {self.listName}, {self.localFun}, {self.globalFun})"""
 
 class TableFields(ListFields):
     def __init__(self,
@@ -111,13 +122,27 @@ class TableFields(ListFields):
                  **kwargs):
         self.tableFields = fields
         def localFun(field):
+            debug(f"""TableFields.localFun({field})""",1)
             (label,field) = fieldToPair(field)
-            return (#field.field,
-                FilledField(field = field, child = TR([TD(label),TD(field)]))
-                )
+            debug(f"""pair is "{label}", "{field}".""")
+            ret = (#field.field,
+                FilledField(
+                    field = field,
+                    child = TR(
+                        child = [TD(child = label),
+                                 TD(child = field)]
+                    )))
+            debug(f"""TableFields.localFun() returns {ret}""",-1)
+            return ret
         def globalFun(lines):
-            return HTML(tag = "table", child = lines)
+            debug(f"""TableFields.globalFun({lines})""",1)
+            ret=HTML(tag = "table", child = lines)
+            debug(f"""TableFields.globalFun() returns {ret}""", -1)
+            return ret
         super().__init__(fields, localFun = localFun, globalFun = globalFun, **kwargs)
+        
+    def __repr__(self):
+        return f"""TableFields on {super().__repr__()}"""
 
 class NumberedFields(ListFieldsTrigger):
     
@@ -158,3 +183,6 @@ no other elements are present, and show only the first element."""
                          emptyCase = DecoratedField(field = fieldPrefix,
                                                     label = fieldPrefix),
                          **kwargs)
+
+    def __repr__(self):
+        return f"""PotentiallyNumberedFields() on {super().__repr__()}"""

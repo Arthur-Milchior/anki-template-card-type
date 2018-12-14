@@ -47,7 +47,7 @@ class ListElement(MultipleChild):
         #debug(f"{self}.getChildren() = {self.children}")
         return self.children
     
-    def _applyRecursively(self,fun,  **kwargs):
+    def _applyRecursively(self, fun, **kwargs):
         """self, with fun applied to each element. 
 
         isNormal and versionWithoutRedundancy are passed to class constructor."""
@@ -155,7 +155,7 @@ class Branch(Gen):
     def getChildren(self):
         return self.children.values()
     
-    def _applyRecursively(self,fun, **kwargs):
+    def _applyRecursively(self, fun, **kwargs):
         children = dict()
         change = False
         shouldKeep = False

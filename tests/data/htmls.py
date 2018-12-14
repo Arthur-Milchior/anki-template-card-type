@@ -1,4 +1,3 @@
-htmls = list()
 from .models import *
 from .jsons import testObjects
 from ..imports import *
@@ -21,12 +20,10 @@ class TestHTML:
         assert assertEqual("self.compiled", "templateFromSoup(soup, prettify = True)")
 
 noTagHtml = "foo1"
-htmls.append(TestHTML(noTagHtml, noTagHtml, numberOfTagToEdit = 0, objects = testObjects, isQuestion = True))
 
 noTemplateHtml = """<p>
  foo2
 </p>"""
-htmls.append(TestHTML(noTemplateHtml,noTemplateHtml, numberOfTagToEdit = 0, objects = testObjects, isQuestion = True))
 
 htmlTestObject = """<span name="test" template="conf">
  foo4
@@ -34,14 +31,12 @@ htmlTestObject = """<span name="test" template="conf">
 htmlTestObjectCompiled = """<span name="test" template="conf">
  test
 </span>"""
-htmls.append(TestHTML(htmlTestObject, htmlTestObjectCompiled, numberOfTagToEdit = 1, objects = testObjects, isQuestion = True))
 
 htmlBarObject = """<span name="bar" template="conf">
  foo5
 </span>"""
 htmlBarObjectCompiled = """<span name="bar" objectabsent="bar" template="conf">
 </span>"""
-htmls.append(TestHTML(htmlBarObject, htmlBarObjectCompiled, numberOfTagToEdit = 1, objects = testObjects, isQuestion = True))
 
 htmlFooObject = """<span name="foo" template="conf">
 </span>"""
@@ -49,7 +44,6 @@ htmlFooObjectCompiled = """<span name="foo" template="conf">
  foo
  {{Question}}
 </span>"""
-htmls.append(TestHTML(htmlFooObject, htmlFooObjectCompiled, numberOfTagToEdit = 1, objects = testObjects, isQuestion = True))
 
 htmlFront = """<span template="Front Side">
 </span>"""
@@ -58,7 +52,6 @@ htmlAnswerTestCompiled = """<span template="Front Side">
   test
  </span>
 </span>"""
-htmls.append(TestHTML(htmlFront, htmlAnswerTestCompiled, FrontHtml = htmlTestObject, numberOfTagToEdit = 1, objects = testObjects, isQuestion = False))
 htmlQuestion = """<span asked="Question" name="Question" template="conf"/>"""
 htmlQuestionCompiled = """<span asked="Question" name="Question" template="conf">
  {{#Question}}
@@ -72,7 +65,6 @@ df =DecoratedField('Question')
 modelApplied = df.restrictToModel(model)
 
 
-htmls.append(TestHTML(htmlQuestion, htmlQuestionCompiled, objects = testObjects, isQuestion = True))
 htmlAnswerCompiled = """<span template="Front Side">
  <span asked="Question" name="Question" template="conf">
   {{#Question}}
@@ -82,11 +74,10 @@ htmlAnswerCompiled = """<span template="Front Side">
   {{/Question}}
  </span>
 </span>"""
-htmls.append(TestHTML(htmlFront, htmlAnswerCompiled, FrontHtml = htmlQuestion, objects = testObjects, isQuestion = False))
 
 
-definition1Template ="""<span asked="Definition1" name='ListElement([DecoratedField("Definition1"),DecoratedField("Definition2")])' template="eval"/>"""
-definition1Question ="""<span asked="Definition1" name='ListElement([DecoratedField("Definition1"),DecoratedField("Definition2")])' template="eval">
+definition1TemplateList ="""<span asked="Definition1" name='ListElement([DecoratedField("Definition1"),DecoratedField("Definition2")])' template="eval"/>"""
+definition1QuestionList ="""<span asked="Definition1" name='ListElement([DecoratedField("Definition1"),DecoratedField("Definition2")])' template="eval">
  {{#Definition1}}
  Definition1
  :
@@ -98,7 +89,7 @@ definition1Question ="""<span asked="Definition1" name='ListElement([DecoratedFi
  {{Definition2}}
  {{/Definition2}}
 </span>"""
-definition1Answer ="""<span template="Front Side">
+definition1AnswerList ="""<span template="Front Side">
  <span asked="Definition1" name='ListElement([DecoratedField("Definition1"),DecoratedField("Definition2")])' template="eval">
   {{#Definition1}}
   Definition1
@@ -112,11 +103,9 @@ definition1Answer ="""<span template="Front Side">
   {{/Definition2}}
  </span>
 </span>"""
-TestHTML(definition1Template, definition1Question, objects = testObjects, isQuestion = True)
-TestHTML(htmlFront, definition1Answer, FrontHtml = definition1Template, objects = testObjects, isQuestion = False)
 
-definition1Template ="""<span asked="Definition1" name="TwoDefsEasy" template="eval"/>"""
-definition1Question ="""<span asked="Definition1" name="TwoDefsEasy" template="eval">
+definition1TemplateEasy ="""<span asked="Definition1" name="TwoDefsEasy" template="eval"/>"""
+definition1QuestionEasy ="""<span asked="Definition1" name="TwoDefsEasy" template="eval">
  {{#Definition1}}
  Definition1
  :
@@ -128,7 +117,7 @@ definition1Question ="""<span asked="Definition1" name="TwoDefsEasy" template="e
  {{Definition2}}
  {{/Definition2}}
 </span>"""
-definition1Answer ="""<span template="Front Side">
+definition1AnswerEasy ="""<span template="Front Side">
  <span asked="Definition1" name="TwoDefsEasy" template="eval">
   {{#Definition1}}
   Definition1
@@ -142,11 +131,9 @@ definition1Answer ="""<span template="Front Side">
   {{/Definition2}}
  </span>
 </span>"""
-TestHTML(definition1Template, definition1Question, objects = testObjects, isQuestion = True)
-TestHTML(htmlFront, definition1Answer, FrontHtml = definition1Template, objects = testObjects, isQuestion = False)
 
-definition1Template ="""<span asked="Definition1" name="ListFields(['Definition1', 'Definition2'])" template="eval"/>"""
-definition1Question ="""<span asked="Definition1" name="ListFields(['Definition1', 'Definition2'])" template="eval">
+definition1TemplateTable ="""<span asked="Definition1" name="TableFields(['Definition1', 'Definition2'])" template="eval"/>"""
+definition1QuestionTable ="""<span asked="Definition1" name="TableFields(['Definition1', 'Definition2'])" template="eval">
  {{#Definition1}}
  Definition1
  :
@@ -158,8 +145,8 @@ definition1Question ="""<span asked="Definition1" name="ListFields(['Definition1
  {{Definition2}}
  {{/Definition2}}
 </span>"""
-definition1Answer ="""<span template="Front Side">
- <span asked="Definition1" name="ListFields(['Definition1', 'Definition2'])" template="eval">
+definition1AnswerTable ="""<span template="Front Side">
+ <span asked="Definition1" name="TableFields(['Definition1', 'Definition2'])" template="eval">
   {{#Definition1}}
   Definition1
   :
@@ -172,11 +159,9 @@ definition1Answer ="""<span template="Front Side">
   {{/Definition2}}
  </span>
 </span>"""
-TestHTML(definition1Template, definition1Question, objects = testObjects, isQuestion = True)
-TestHTML(htmlFront, definition1Answer, FrontHtml = definition1Template, objects = testObjects, isQuestion = False)
 
-definition1Template ="""<span asked="Definition1" name="TwoDefsMiddle" template="eval"/>"""
-definition1Question ="""<span asked="Definition1" name="TwoDefsMiddle" template="eval">
+definition1TemplateMiddle ="""<span asked="Definition1" name="TwoDefsMiddle" template="eval"/>"""
+definition1QuestionMiddle ="""<span asked="Definition1" name="TwoDefsMiddle" template="eval">
  {{#Definition1}}
  Definition1
  :
@@ -188,7 +173,7 @@ definition1Question ="""<span asked="Definition1" name="TwoDefsMiddle" template=
  {{Definition2}}
  {{/Definition2}}
 </span>"""
-definition1Answer ="""<span template="Front Side">
+definition1AnswerMiddle ="""<span template="Front Side">
  <span asked="Definition1" name="TwoDefsMiddle" template="eval">
   {{#Definition1}}
   Definition1
@@ -202,11 +187,9 @@ definition1Answer ="""<span template="Front Side">
   {{/Definition2}}
  </span>
 </span>"""
-TestHTML(definition1Template, definition1Question, objects = testObjects, isQuestion = True)
-TestHTML(htmlFront, definition1Answer, FrontHtml = definition1Template, objects = testObjects, isQuestion = False)
 
-definition1Template ="""<span asked="Definition1" name="TwoDefsHard" template="eval"/>"""
-definition1Question ="""<span asked="Definition1" name="TwoDefsHard" template="eval">
+definition1TemplateHard ="""<span asked="Definition1" name="TwoDefsHard" template="eval"/>"""
+definition1QuestionHard ="""<span asked="Definition1" name="TwoDefsHard" template="eval">
  {{#Definition1}}
  Definition1
  :
@@ -218,7 +201,7 @@ definition1Question ="""<span asked="Definition1" name="TwoDefsHard" template="e
  {{Definition2}}
  {{/Definition2}}
 </span>"""
-definition1Answer ="""<span template="Front Side">
+definition1AnswerHard ="""<span template="Front Side">
  <span asked="Definition1" name="TwoDefsHard" template="eval">
   {{#Definition1}}
   Definition1
@@ -232,6 +215,4 @@ definition1Answer ="""<span template="Front Side">
   {{/Definition2}}
  </span>
 </span>"""
-TestHTML(definition1Template, definition1Question, objects = testObjects, isQuestion = True)
-TestHTML(htmlFront, definition1Answer, FrontHtml = definition1Template, objects = testObjects, isQuestion = False)
 

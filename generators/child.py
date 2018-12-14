@@ -46,8 +46,10 @@ class Requirement(SingleChild):
                  isEmpty = None,
                  toClone = None,
                  isNormal = False,
+                 locals_ = None,
                  **kwargs):
         self.requirements = dict()
+        self.child = ensureGen(child, locals_)
         for (name, param) in [("Filled",requireFilled),
                               ("Remove",remove),
                               ("Empty",requireEmpty),
@@ -69,7 +71,8 @@ class Requirement(SingleChild):
         super().__init__(child,
                          isEmpty = inconsistent or isEmpty,
                          toClone = toClone,
-                         isNormal = isNormal or child.getIsNormal(),
+                         isNormal = isNormal or self.child.getIsNormal(),
+                         locals_ = locals_,
                          **kwargs)
         #self.contradiction = (requireFilled & self.requirements["Absent of model"]InParent()) or (requireEmpty & self.presentInParent())
     
@@ -80,9 +83,24 @@ class Requirement(SingleChild):
         return super().__eq__(other) and isinstance(other,Requirement) and self.requirements == other.requirements
     
     def isInconsistent(self):
-        return ((self.requirements["Filled"] & self.requirements["Empty"]) or
-                (self.requirements["Filled"] & self.requirements["Absent of model"]) or
-                (self.requirements["In model"] & self.requirements["Absent of model"]))
+        debug(f"""isInconsistent("{self}")""",1)
+        filledAndEmpty = self.requirements["Filled"] & self.requirements["Empty"]
+        debug(f"""filledAndEmpty is "{self.requirements["Filled"]}" & "{self.requirements["Empty"]}".""")
+        if filledAndEmpty:
+            debug(f"filledAndEmpty is {filledAndEmpty}, thus returning True", -1)
+            return True
+        filledAndAbsentOfModel = self.requirements["Filled"] & self.requirements["Absent of model"]
+        debug(f"""filledAndAbsentOfModel is "{self.requirements["Filled"]}" & "{self.requirements["Absent of model"]}".""")
+        if filledAndAbsentOfModel:
+            debug(f"filledAndAbsentOfModel is {filledAndAbsentOfModel}, thus returning True", -1)
+            return True
+        inAndAbsent = self.requirements["In model"] & self.requirements["Absent of model"]
+        debug(f"""inAndAbsent is "{self.requirements["In model"]}" & "{self.requirements["Absent of model"]}".""")
+        if inAndAbsent:
+            debug(f"inAndAbsent is {inAndAbsent}, thus returning True", -1)
+            return True
+        debug(f"""isInconsistent() returns False""",-1)
+        return False
     
     def _applyRecursively(self, fun, toClone = None, **kwargs):
         #used at least for _getNormalForm
@@ -166,34 +184,40 @@ class Requirement(SingleChild):
             return child
 
     def _restrictToModel(self,model,fields = None):
-        #debug(f"""Requirement._restrictToModel({self},{model},{fields})""",1)
+        debug(f"""Requirement._restrictToModel({self},{model},{fields})""",1)
         if fields is None:
             fields =  modelToFields(model)
-            #debug(f"""Fields become {fields} """)
+            debug(f"""Fields become {fields} """)
         shouldBeInModel = self.requirements["In model"] - fields
         if shouldBeInModel:
-            #debug(f"""should be in model: {shouldBeInModel}. Thus empty.""")
+            debug(f"""should be in model: {shouldBeInModel}. Thus empty.""")
+            return emptyGen
+        cantBiFilledIfAbsent = self.requirements["Filled"] - fields
+        if cantBiFilledIfAbsent:
+            debug(f"""should be in model: {cantBiFilledIfAbsent}. Thus empty.""")
             return emptyGen
         shouldBeAbsent = self.requirements["Absent of model"]&fields
         if shouldBeAbsent:
-            #debug(f"""should be absent: {shouldBeAbsent}. Thus empty.""")
+            debug(f"""should be absent: {shouldBeAbsent}. Thus empty.""")
             return emptyGen
         child = self.child.restrictToModel(model, fields = fields)
         if not child:
-            #debug(f"""Child false: {child}, thus empty""")
+            debug(f"""Child false: {child}, thus empty""")
             return emptyGen
         ret = Requirement(child = child,
-                          requirements = self.requirements,
                           requireFilled = self.requirements["Filled"],
-                          requireEmpty = self.requirements["Empty"] - fields)
-        #debug(f"Requirement._restrictToModel() returns {ret}",-1)
+                          requireEmpty = self.requirements["Empty"] & fields,
+                          remove =  self.requirements["Remove"],
+                          isNormal = True,
+                          containsRedundant = False)
+        debug(f"Requirement._restrictToModel() returns {ret}",-1)
         return ret
 
     def _template(self, tag, soup, isQuestion = None, **kwargs):
-        #debug(f"""Requirement._template("{self}","{tag}","{isQuestion}",{kwargs})""",1)
+        #debug(f"""Requirement._template(f"{self}","{tag}","{isQuestion}",{kwargs})""",1)
         assert isinstance(isQuestion,bool)
         assert soup is not None
-        conditional_span = soup.new_tag("span", createdBy="conditionals")
+        conditional_span = soup.new_tag(f"span", createdBy="conditionals")
         #t =
         self.child.template( conditional_span, soup, isQuestion = isQuestion, **kwargs)
         for (set, symbol) in [
@@ -210,11 +234,11 @@ class Requirement(SingleChild):
         #debug(f"Extending {tag} by {conditional_span}")
         tag.contents.extend(conditional_span.contents)
         if self.requirements["Remove"]:
-            raise Exception("Asking to require to remove something")
+            raise Exception(f"Asking to require to remove something")
         if  self.requirements["In model"]:
-            raise Exception("Asking to require the presence of a thing in model")
+            raise Exception(f"Asking to require the presence of a thing in model")
         if self.requirements["Absent of model"]:
-            raise Exception("Asking to require the absence of a thing in model")
+            raise Exception(f"Asking to require the absence of a thing in model")
         #debug(f"",-1)
         #return t, conditional_span
 
@@ -252,38 +276,35 @@ class HTML(SingleChild):
         super().__init__(child , toKeep = toKeep, isEmpty = isEmpty, **kwargs)
     
     def __repr__(self):
-        return f"""HTML(child = {repr(self.child)}, tag = {self.tag}, attrs = {self.attrs}, {self.params()})"""
+        return f"""HTML(child = {repr(self.child)}, tag = "{self.tag}", attrs = "{self.attrs}", {self.params()})"""
 
     def __eq__(self,other):
         return super().__eq__(other) and isinstance(other,HTML) and self.tag == other.tag and self.attrs == other.attrs
     
-    def _applyRecursively(self, fun, **kwargs):
-        child = fun(self.child, **kwargs)
+    def _applyRecursively(self, fun, toClone = None, **kwargs):
+        child = fun(self.child)
         if child == self.child:
             return self
-        return HTML(tag, child=child, attrs=self.attrs(),toClone = self)
+        return HTML(tag = self.tag,
+                    child=child,
+                    attrs=self.attrs,
+                    toClone = toClone or self,
+                    **kwargs)
 
     def _template(self, tag, soup, **kwargs):
-        newtag = soup.new_tag(tag, attrs = self.attrs)
+        newtag = soup.new_tag(tag, **self.attrs)
         if self.emptyTag:
             t = singleTag(self.tag,self.attrs)
         else:
             t = tagContent(t,self.tag,self.attrs)
         tag.append(newtag)
-        return t, newtag
 
     def _template(self, tag, soup, **kwargs):
-        newtag = soup.new_tag(tag, attrs = self.attrs)
-        if self.emptyTag:
-            t = singleTag(self.tag,self.attrs)
-        else:
-            t = self.child._template(newtag,soup, **kwargs)
-            if not t: 
-                newtag.decompose()
-                return "", NavigableString("")
-            t = tagContent(self.tag, self.attrs, t)
+        #debug(f"""soup.new_tag(f"{self.tag}", attrs = {self.attrs})""")
+        newtag = soup.new_tag(self.tag, **self.attrs)
+        if not self.emptyTag:
+            self.child._template(newtag,soup, **kwargs)
         tag.append(newtag)
-        return t, newtag
         
     # def _getNormalForm(self):
 

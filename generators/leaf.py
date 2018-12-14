@@ -18,6 +18,8 @@ class Leaf(Gen):
 class Empty(Leaf):
     """A generator without any content"""
     instance = None
+    def __hash__(self):
+        return 0
     def __init__(self,
                  *args,#required, because EnsureGen may give an argument
                  toKeep=False,
@@ -82,6 +84,8 @@ class Literal(Leaf):
             self.text = toClone.text
         else:
             self.text = ""
+    def __hash__(self):
+        return hash(self.text)
 
     def __repr__(self):
         return f"""Literal(text = "{self.text}", {self.params()})"""
@@ -128,6 +132,8 @@ class Field(Leaf):
                          toKeep = toKeep,
                          
                          **kwargs)
+    def __hash__(self):
+        return hash(self.field)
 
     def __eq__(self,other):
         return isinstance(other,Field) and self.field == other.field

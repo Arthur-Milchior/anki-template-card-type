@@ -6,7 +6,7 @@ hr = HTML("hr")
 
 class Image(HTML):
     def __init__(self,url):
-        super().__init__("img",{"src":url})
+        super().__init__("img", attrs = {"src":url})
 
 class Table(HTML):
     def __init__(self, content, trAttrs = {}, tdAttrs = {},  **kwargs):

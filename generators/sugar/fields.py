@@ -1,7 +1,8 @@
 from ..children import  Branch
 from ..leaf import Field
-from ...debug import debug
+from ...debug import debug, assertType
 from .sugar import NotNormal
+from .conditionals import FilledField
 
 class QuestionnedField(Branch):
     """Show the content of the field. Unless the field is asked and its the question, then show ???
@@ -39,12 +40,17 @@ class DecoratedField(FilledField):
 
     def __init__(self,
                  field,
-                 label,
+                 label = None,
                  **kwargs):
-        self.qf = 
-        super().__init__(field = field,
+        """field -- a field object, or a string"""
+        if isinstance(field,str):
+            field = Field(field)
+        if label is None:
+            label = field.field
+        super().__init__(field = field.field,
                          child = [
                              label,
+                             ": ",
                              QuestionnedField(field)],
                          **kwargs)
 

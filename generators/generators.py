@@ -7,39 +7,21 @@ modelToHash_max = 0
 fieldsToHash_ = dict()
 hashToFields_ = dict()
 
+BASIC = 0
+NORMAL = 1
+WITHOUT_REDUNDANCY = 2
+EMPTY = 10
+
 
 def modelToFields(model):
     """The set of fields of the model given in argument"""
-    return frozenset({fld["name"] for fld in model["flds"]})
+    if "set of fields" not in model:
+        model["set of fields"] = frozenset({fld["name"] for fld in model["flds"]})
+    return model["set of fields"]
 
-def fieldsToHashFields(fields):
-    """A hash for this set of fields. 
-    And the original saved set of fields which was used to create this hash."""
-    global modelToHash_max
-    hash = fieldsToHash_.get(fields)
-    if hash:
-        return (hash, hashToFields_[hash])
-    modelToHash_max +=1
-    hash = modelToHash_max
-    fieldsToHash_[fields] = hash
-    hashToFields_[hash] = fields
-    return (hash, fields)
-
-def modelToHashFields(model, fields = None):
-    """Given the model, return the hash of its set of fields. And the set
-    of fields used to create this hash originally.
-    
-    fields -- if given, the set of fields of the model.
-    """
-    pair = (model["name"], model["mod"])
-    if pair in modelToHash_:
-        hash = modelToHash_[pair]
-        fields = hashToFields_[hash]
-    else:
-        fields = fields or modelToFields(model)
-        (hash,fields) = fieldsToHashFields(fields)
-        modelToHash_[pair] = hash
-    return (hash,fields)
+def modelToHash(model):
+    """Given the model, return the hash of its set of fields."""
+    return (model["name"], model["mod"])
     
 
 #refer to README.md to understand what this class is about
@@ -76,27 +58,9 @@ class Gen:
     def __init__(self,
                  *,
                  normalVersion = None,
-                 isNormal = False,
                  toKeep = None,
-                 containsRedundant = True,
-                 versionWithoutRedundancy = None,
-                 isEmpty = None,
-                 toClone = None):
-        """to Clone. We assume that transformations keep the fact that it
-        should be kept, being normal, empty, and not redundant. Thus,
-        if not otherwise stated, it is copied from toClone.
-
-        normal and isNormal should not both be given. 
-        versionWithoutRedundancy and containsRedundant should not both be given. 
-        """
-        if toClone:
-            assert isinstance(toClone,Gen)
-        if isNormal is not None:
-            self.isNormal = isNormal
-        elif toClone is not None:
-            self.isNormal = toClone.isNormal
-        else:
-            self.isNormal = False
+                 state = BASIC,
+                 versionWithoutRedundancy = None):
                 
         assert (isNormal is False or normalVersion is None)
         assert ((not containsRedundant) or (versionWithoutRedundancy is None))
@@ -204,7 +168,10 @@ class Gen:
     #     raise Exception("_toKeep a Gen")
 
     def getIsNormal(self):
-        return self.isNormal
+        return self.state >= NORMAL
+
+    def setState(self, state):
+        self.state = max(self.state, state)
 
     def getNormalForm(self):
         """Compute the normal form, memoize it.  
@@ -214,23 +181,30 @@ class Gen:
 
         Don't reimplement this, implement _getNormalForm.
         """
-        #debug(f"""getNormalForm({self})""",1)
+        debug(f"""getNormalForm({self})""",1)
         if self.normalVersion is None:
-            #debug("Normal form must be computed")
+            debug("Normal form must be computed")
+            # if self.getIsEmpty(): TODO: for efficiency
+            #     debug("self is empty, thus normal is empty")
+            #     self.normalVersion = ensureGen(None)
+            # else:
             self.normalVersion = self._getNormalForm()
             assert assertType(self.normalVersion,Gen)
+        else:
+            debug("normal form already saved")
         ret = self.normalVersion
-        #debug(f"""getNormalForm() returns {ret}""",-1)
+        debug(f"""getNormalForm() returns {ret}""",-1)
         return ret
     
     def _getNormalForm(self):
         """(Re)Compute the normal form.
         Assuming self is not already normal, otherwise an exception may be raised."""
+        def tmp(element, **kwargs):
+            return element._getNormalForm()
         return self._applyRecursively((lambda element:
                                        element._getNormalForm()),
                                       isNormal = True,
                                       toClone = self)
-       
 
     def getWithoutRedundance(self):
         """Remove redundant, like {{#foo}}{{#foo}}, {{#foo}}{{^foo}}
@@ -243,13 +217,19 @@ class Gen:
         have to be considered multiple time, except for the elements
         which are specific to the new tree.
         """
+        debug(f"""getWithoutRedundance({self})""",1)
         if self.versionWithoutRedundancy is None:
+            debug("version without redundancy must be computed")
             normalForm = self.getNormalForm()
             if not isinstance(normalForm, Gen):
                 raise Exception(f"""normalForm of "{self}" is "{normalForm}", not of type Gen""")
             self.versionWithoutRedundancy = normalForm._getWithoutRedundance()
             assert assertType(self.versionWithoutRedundancy, Gen)
-        return self.versionWithoutRedundancy
+        else:
+            debug("without redundancy already saved")
+        ret = self.versionWithoutRedundancy
+        debug(f"""getNormalForm() returns {ret}""",-1)
+        return ret
             
     def _getWithoutRedundance(self):
         """Similar to getWithoutRedundance. Assume isNormal. Have to be
@@ -278,9 +258,9 @@ class Gen:
         
         Recompute instead of memoizing.
         """
-        return self._applyRecursively( (lambda element:
-                                        element.assumeFieldInSet(field,setName)),
-                                       toClone = self)
+        return self._applyRecursively((lambda element:
+                                       element.assumeFieldInSet(field,setName)),
+                                      toClone = self)
 
     def restrictToModel(self,model, fields = None):
         """Given the model, restrict the generator according the fields
@@ -290,30 +270,31 @@ class Gen:
         memoized. 
         don't reimplement.
         """
-        #debug(f"""restrictToModel({self})""",1)
+        debug(f"""restrictToModel({self})""",1)
         (hash, fields) = modelToHashFields(model, fields = fields)
         self.model = model
         self.fieldsInModel = fields
         if hash not in self.hashToRestrictedModel:
-            #debug(f"""hash {hash} not memoized. It must be computed.""")
+            debug(f"""hash {hash} not memoized. It must be computed.""")
             if not self.hashToRestrictedModel:
-                #debug("In fact hashToRestrictedModel is empty")
+                debug("In fact hashToRestrictedModel is empty")
                 pass
             restricted = self.getWithoutRedundance()._restrictToModel(model, fields)
             assert assertType(restricted, Gen)
             self.hashToRestrictedModel[hash] = restricted
         else:
-            #debug(f"""hash {hash} already memoized.""")
+            debug(f"""hash {hash} already memoized.""")
             pass
         ret = self.hashToRestrictedModel[hash]
-        #debug(f"""restrictToModel() returns "{ret}".""",-1)
+        debug(f"""restrictToModel() returns "{ret}".""",-1)
         return ret
     
     def _restrictToModel(self, model, fields = None):
         """Similar to restrictToModel. Do the computation and don't
         memoize. Should be implemented in inheriting normal class."""
-        return self._applyRecursively( (lambda element:
-                                        element.restrictToModel(model, fields = fields)), toClone = self)
+        return self._applyRecursively((lambda element:
+                                       element.restrictToModel(model, fields = fields)),
+                                      toClone = self)
     
         
     # def restrictFields(self, fields, emptyGen, hasContent)
@@ -343,7 +324,7 @@ class Gen:
     def template(self, tag, soup, isQuestion = None, asked = None, hide = None, **kwargs):
         """Print the actual template, given the asked questions, list
         of things to hide (as frozen set)."""
-        #debug (f"template({tag}, {soup}, {isQuestion} {asked}, {hide})",1)
+        debug (f"""template("{self}", "{tag}", "{soup}", "{isQuestion}", "{asked}", "{hide}")""",1)
         assert soup is not None
         assert assertType(isQuestion, bool)
         assert asked is not None
@@ -355,7 +336,7 @@ class Gen:
         elif isinstance(ret,tuple):
             (text,tag) = ret
             ret = (text, copy.copy(tag))
-        #debug (f"template()= {ret}",-1)
+        debug (f"template()= {ret}",-1)
         return ret
 
     def _template(self, tag, soup, isQuestion = None, asked = None, hide = None, **kwargs):
@@ -387,7 +368,7 @@ def ensureGen(element, locals_ = None):
     according to typeToGenerator.
 
     """
-    #debug(f"ensureGen({element})", 1)
+    debug(f"ensureGen({element})", 1)
     ret = None
     if locals_ is None:
         locals_ = dict()
@@ -403,19 +384,20 @@ def ensureGen(element, locals_ = None):
         if element in funs:
             raise Exception(f"Loop during processing of {element_original}, raising multiple time {elements}.")
     if isinstance(element,Gen):
-        #debug(f"is already a generator")
+        debug(f"is already a generator", -1)
         ret = element
-    for typ in typeToGenerator:
-        if isinstance(element, typ):
-            gen = typeToGenerator[typ]
-            ret = gen(element)
-            #debug(f"has type {typ}, thus use type {gen} and become {ret}")
-        else:
-            #debug(f"has not type {type}")
-            pass
+    else:
+        for typ in typeToGenerator:
+            if isinstance(element, typ):
+                gen = typeToGenerator[typ]
+                ret = gen(element)
+                debug(f"has type {typ}, thus use type {gen} and become {ret}", -1)
+                break
+            else:
+                debug(f"has not type {typ}")
+                pass
     if ret is None:
-        #debug("has no type we can consider")
+        debug("has no type we can consider", -1)
         assert False
-    #debug("", -1)
     return ret
 
