@@ -1,0 +1,10 @@
+from ...data.templates import *
+assert assertEqual("imageTemplated", "imageHtml")
+assert assertEqual("emptyTemplated","emptyHtml")
+assert assertEqual("literalTemplated","literalHtml")
+assert assertEqual("fieldTemplated","fieldHtml")
+assert assertEqual("requirementTemplated","requirementHtml")
+assert assertEqual("requirementTemplated","requirementHtml")
+assert assertEqual("contradictionTemplated","emptyHtml")
+assert assertEqual("requiringInexistantTemplated","emptyHtml")
+assert assertEqual("listTemplate","listHtml")
