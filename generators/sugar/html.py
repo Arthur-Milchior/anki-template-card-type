@@ -1,4 +1,4 @@
-from ..child import SingleChild, HTML
+from ..singleChild import SingleChild, HTML
 from ..leaf import emptyGen
 
 br = HTML("br")

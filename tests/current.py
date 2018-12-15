@@ -2,7 +2,18 @@ from .imports import *
 from .data.htmls import TestHTML
 from bs4 import BeautifulSoup
 from html import escape
-from .data.templates import testTemplate, emptyHtml
+#from .data.templates import testTemplate, emptyHtml
+
+startDebug()
+print(f"foofoo: {foofoo}")
+normal = foofoo.getNormalForm()
+print(f"normal: {normal}")
+endDebug()
+wr = normal.getWithoutRedundance()
+print(f"wr: {wr}")
+restrict = wr.restrictToModel(model)
+print(f"restrict: {restrict}")
+
 debug("current")
 
 # def test(source, model = model, objects = testObjects, isQuestion = True, asked = frozenset(), hide = frozenset(), **kwargs):
@@ -12,7 +23,6 @@ debug("current")
 # tf = TableFields(['Definition1', 'Definition2'])
 
 
-startDebug()
 # tableFieldsTemplate = testTemplate(TableFields(["Question","Back","Absent"]))
 # tableFieldsHtml = """<test>
 #  <table>
@@ -130,8 +140,7 @@ startDebug()
 
 # assert assertEqual("tableFieldsHtml","tableFieldsTemplate")
 
-endDebug()
 
 # tf_ = test(tf)
 # print(tf_)
-raise Exception
+

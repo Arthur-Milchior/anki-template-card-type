@@ -1,16 +1,7 @@
 import sys
-from ..debug import debug, assertType
-import types
-
-modelToHash_ =dict()
-modelToHash_max = 0
-fieldsToHash_ = dict()
-hashToFields_ = dict()
-
-BASIC = 0
-NORMAL = 1
-WITHOUT_REDUNDANCY = 2
-EMPTY = 10
+from ..debug import debug, assertType, debugFun, identity
+from .ensureGen import ensureGen, addTypeToGenerator
+from .constants import *
 
 
 def modelToFields(model):
@@ -31,181 +22,231 @@ class Gen:
     - either:
     -- getChildren (returning the list of all children. Assuming
     that the container is useless if no children are present) and
-    -- _applyRecursively: which return a copy of self, with first
-    argument passed to each children.
+    -- _applyRecursively(self,fun,**kwargs): return a copy of self,
+    with fun applied to each children. kwargs are passed to the
+    function's argument.
     - or reimplement:
-    -- _toKeep, whether the presence of self in a list justify to keep
-    the list
-    -- _getNormalForm, return a generator, similar to self, composed
-    only of normal generators. (It can be avoided if all object of
-    this class are in normal form)
-    -- If furthermore, if the class has normal objects, it should implement:
-    --- _getWithoutRedundance, a method removing redundante constraint, 
-    fields which can't ever appear, and things to delete. Each child
-    are also unredundanted.
-    --- _assumeFieldInSet, given a field and a set, assuming the field
-    is in this set, return the corrected version of self
-    --- _restrictToModel, remove part which are incompatible with the
-    given model.
+    -- _computeStep(step, **kwargs): 
+    --- _assumeFieldInSet(element,fieldName), assume that element
+    belongs to fieldName.
 
     Furthermore:
-    isEmpty, returning True if the object can be deleted, (i.e. its
-    text is always "" )
-    _template(self,soup, tag, asked = None, hide = None, isQuestion = None):
-    with soup the soup of the current xml, and tag the container
-    currently processed, in which to add currently generated elements.  
+    _applyTag(self, tag, soup): edit the BeautifulSoup tag, appending the
+    current object to the end of it.
+    __hash__, __eq__, __repr__
     """
+    #@debugFun
     def __init__(self,
                  *,
-                 normalVersion = None,
                  toKeep = None,
                  state = BASIC,
-                 versionWithoutRedundancy = None):
-                
-        assert (isNormal is False or normalVersion is None)
-        assert ((not containsRedundant) or (versionWithoutRedundancy is None))
-
-        if self.isNormal:
-            self.normalVersion = self
-        else:
-            self.normalVersion = normalVersion
-            assert normalVersion is None or assertType(normalVersion,Gen)
-
-
-        if containsRedundant is not None:
-            self.containsRedundant = containsRedundant
-        elif toClone is not None:
-            self.containsRedundant = toClone.containsRedundant
-        else:
-            self.containsRedundant = True
-
-        if not self.containsRedundant:
-            self.versionWithoutRedundancy = self
-        else:
-            self.versionWithoutRedundancy = versionWithoutRedundancy
-            assert versionWithoutRedundancy is None or assertType(normalVersion,Gen)
-            
-        # if toKeep is not None:
+                 locals_ = None,
+    ):
         self.toKeep = toKeep
-        # elif toClone is not None:
-        #   self.toKeep = toClone.getToKeep()
-        # else:
-        #     self.toKeep = True
-            
-        # if isEmpty is not None:
-        self.isEmpty = isEmpty
-        # elif toClone is not None:
-        #     self.isEmpty = toClone.isEmpty
-        # else:
-        #     self.isEmpty = None
-        #dicts used for memoization
-        self.fieldSetToNotRedundant = dict()
-        self.hashToRestrictedModel = dict()
-        self.tagAskedHideIsQuestionToTemplate = dict()
-        
+        self.versions = dict()
+        self.state = state
+        self.locals_ = locals_
 
-    # def __str__(self):
-    #     return f"""{self.__class____name__}({self._dic()})"""
-    # def _dic(self):
-    #     """A dictionnary used for """
-    # def __eq__(self,other):
-    #     return self.normalVersion == other.normalVersion and self.containsRedundant == other.containsRedundant and self.isEmpty == other.isEmpty
-    
-    def getIsEmpty(self):
-        #debug(f"getIsEmpty({self})",1)
-        if self.isEmpty is None:
-            #debug(f"whether it is empty is not yet known")
-            self.isEmpty = self._getIsEmpty()
-            #debug(f"getIsEmpty() is {self.isEmpty}",-1)
-        else:
-            #debug(f"whether it is empty is known to be {self.isEmpty}",-1)
-            pass
-        return self.isEmpty
-    
-    def _getIsEmpty(self):
-        #debug(f"_getIsEmpty({self})",1)
-        ret = True
-        children = self.getChildren()
-        #debug(f"Children are {children}")
-        for child in children:
-            if not child.getIsEmpty():
-                #debug(f"its child ({child}) is not empty. Thus self is not either.")
-                ret = False
-                break
-            else:
-                #debug(f"its child ({child}) is empty")
-                pass
-        #debug(f"self._getIsEmpty() is {ret}",-1)
+    def _ensureGen(self, element):
+        debug(f"_ensureGen({element})",1)
+        ret = ensureGen(element, self.locals_)
+        debug(f"_ensureGen() returns {ret}",-1)
         return ret
 
+    def __repr__(self):
+        return f"""{self.__class____name__}(without repr,{self.params()})"""
+    
+
+    @debugFun
+    def setState(self, state):
+        """State that the state is at least state. If the state is already higher, then it is not changed. 
+        Return the actual state."""
+        if not hasattr(self, "state"):
+            self.state = state
+        else:
+            self.state = self.state.union(state)
+        return self.getState()
+
+    @debugFun
+    def getState(self):
+        return self.state
+
+    @debugFun
+    def isAtLeast(self,state):
+        return state <= self.state
+    
+    @debugFun
+    def isEmpty(self):
+        return self.isAtLeast(EMPTY)
+
+    @debugFun
+    def isNormal(self):
+        return self.isAtLeast(NORMAL)
+    
+    @debugFun
+    def isWithoutRedundancy(self):
+        return self.isAtLeast(WITHOUT_REDUNDANCY)
+
+    @debugFun
+    def getAppliedModel(self):
+        if hasattr(self,"model"):
+            return self.model
+        return None
+
+    @debugFun
+    def isModelApplied(self):
+        return self.isAtLeast(MODEL_APPLIED)
+    
+    @debugFun
+    def isTemplateApplied(self):
+        return self.isAtLeast(TEMPLATE_APPLIED)
+
+    
+    @debugFun
     def __bool__(self):
         #debug(f"""__bool__({self})""",1)
-        ret = not self.getIsEmpty()
+        ret = not self.isEmpty()
         #debug(f"""__bool__() returns {ret}""",-1)
         return ret
+    
 
-    def getToKeep(self):
-        """In a list, does the presence of this element justify the fact that this element is kept.
+    @debugFun
+    def shouldBeKept(self):
+        """In a list, does the presence of this element justify the fact that
+        this element is kept.
 
         It memoize, so don't call when you intend to change children.
         Implemented only for classes which can be normal.
+
         """
         if self.toKeep is None:
             self.toKeep = bool(self._toKeep())
         return self.toKeep
 
-    def _toKeep(self):
-        for element in self.getChildren():
-            if element.getToKeep():
-                return True
-        return False
-    
+    @debugFun
+    def dontKeep(self):
+        self.toKeep = False
+
+    @debugFun
+    def doKeep(self):
+        self.toKeep = True
+
+    # @debugFun
     # def _toKeep(self):
-    #     """(Re)Compute the normal form.
+    #     for element in self.getChildren():
+    #         if element.getToKeep():
+    #             return True
+    #     return False
 
-    #     Reimplement it in every descendants which are not already normal. 
-    #     It may rise an exception if the class only generate normal elements."""
-    #     raise Exception("_toKeep a Gen")
-
-    def getIsNormal(self):
-        return self.state >= NORMAL
-
-    def setState(self, state):
-        self.state = max(self.state, state)
-
-    def getNormalForm(self):
-        """Compute the normal form, memoize it.  
-
-        Thus, should not be called if you intend to change the
-        descendant. 
-
-        Don't reimplement this, implement _getNormalForm.
-        """
-        debug(f"""getNormalForm({self})""",1)
-        if self.normalVersion is None:
-            debug("Normal form must be computed")
-            # if self.getIsEmpty(): TODO: for efficiency
-            #     debug("self is empty, thus normal is empty")
-            #     self.normalVersion = ensureGen(None)
-            # else:
-            self.normalVersion = self._getNormalForm()
-            assert assertType(self.normalVersion,Gen)
+    @debugFun
+    def getKey(state,
+               model = None,
+               asked = None,
+               hide = None,
+               isQuestion = None):
+        if state == NORMAL or state == WITHOUT_REDUNDANCY:
+            key = None
+        elif state == MODEL_APPLIED:
+            key = modelToHash(model)
+        elif state  ==  TEMPLATE_APPLIED:
+            key = (asked, hide, isQuestion)
         else:
-            debug("normal form already saved")
-        ret = self.normalVersion
-        debug(f"""getNormalForm() returns {ret}""",-1)
-        return ret
+            raise Exception(f"State should not be {state}")
+        return key
+            
+    @debugFun
+    def computeStep(self, goal, model = None, asked = None, isQuestion = None, hide = None):
+        """Compute step goal. Do the recursive computation if it is a step
+        before MODEL_APPLIED.
+        """
+        key = Gen.getKey(goal,
+                         model = model,
+                         asked = asked,
+                         hide = hide,
+                         isQuestion = isQuestion)        
+        if goal not in self.versions:
+            debug(f"goal is not present in versions")
+            self.versions[goal] = dict()
+        if key not in self.versions[goal]:
+            self.versions[goal][key] = self.computeMultiStep(goal, model = model, asked = asked, isQuestion = isQuestion, hide = hide)
+        self.versions[goal][key] = self._ensureGen(self.versions[goal][key])
+        return self.versions[goal][key]
     
-    def _getNormalForm(self):
-        """(Re)Compute the normal form.
-        Assuming self is not already normal, otherwise an exception may be raised."""
-        def tmp(element, **kwargs):
-            return element._getNormalForm()
-        return self._applyRecursively((lambda element:
-                                       element._getNormalForm()),
-                                      isNormal = True,
-                                      toClone = self)
+    @debugFun
+    def computeMultiStep(self, goal, model = None, asked = None, isQuestion = None, hide = None):
+        if goal <= self.state:
+            #debug("computeStep: step<=self.state, thus return self")
+            return self
+        previousStep = goal.previousStep()
+        if self.state < previousStep:
+            assert goal <= MODEL_APPLIED
+            #debug("computeStep: self.state < goal.previousStep()")
+            stepMinusOne = self.computeStep(goal.previousStep(),
+                                            model = model,
+                                            asked = asked,
+                                            hide = hide,
+                                            isQuestion = isQuestion)
+        elif self.state == previousStep:
+            #debug("computeStep: self.state == previousStep")
+            stepMinusOne = self
+        else:
+            assert False
+        #debug(f"computeStep: stepMinusOne is {stepMinusOne}")
+        single = stepMinusOne.computeSingleStep(goal,
+                                                model = model,
+                                                asked = asked,
+                                                hide = hide,
+                                                isQuestion = isQuestion)
+        #debug(f"computeStep: single is {single}")
+        return self._ensureGen(single)
+            
+    @debugFun
+    def computeSingleStep(self, goal, model = None, asked = None, isQuestion = None, hide = None):
+        """compute the next step. 
 
+        Assume current state.successor ==goal."""
+        if self.isEmpty():
+            return None
+        if goal == NORMAL:
+            debug(f"calling _getNormalForm()")
+            ret = self._getNormalForm()
+        elif goal == WITHOUT_REDUNDANCY:
+            debug(f"calling _getWithoutRedundance()")
+            ret = self._getWithoutRedundance()
+        elif goal == MODEL_APPLIED:
+            debug(f"calling _restrictToModel()")
+            ret = self._restrictToModel(model)
+        elif goal == TEMPLATE_APPLIED:
+            debug(f"calling _template()")
+            ret = self._template(asked = asked,
+                                 hide = hide,
+                                 isQuestion = isQuestion)
+            
+        else:
+            raise Exception(f"self.state should not be {self.state}")
+        debug(f"versions[goal][key] has been set to {ret}")
+        ret = ret._ensureGen(ret)
+        ret.setState(goal)
+        return ret
+        
+    @debugFun
+    def _computeStep(self, step, **kwargs):
+        #not directly called from computeStep, but from functions _getFoo
+        def computeStepAux(element):
+            return element.computeStep(step, **kwargs)
+        ret = self.applyRecursively(computeStepAux)
+        ret = self._ensureGen(ret)
+        return ret
+
+
+    @debugFun
+    def getNormalForm(self):
+        return self.computeStep(NORMAL)
+    @debugFun
+    def _getNormalForm(self):
+        return self._computeStep(NORMAL)
+    
+    @debugFun
     def getWithoutRedundance(self):
         """Remove redundant, like {{#foo}}{{#foo}}, {{#foo}}{{^foo}}
         on the isNormal form of self.
@@ -216,188 +257,135 @@ class Gen:
         descendant occurring in mulitple tree to be containsRedundant won't
         have to be considered multiple time, except for the elements
         which are specific to the new tree.
-        """
-        debug(f"""getWithoutRedundance({self})""",1)
-        if self.versionWithoutRedundancy is None:
-            debug("version without redundancy must be computed")
-            normalForm = self.getNormalForm()
-            if not isinstance(normalForm, Gen):
-                raise Exception(f"""normalForm of "{self}" is "{normalForm}", not of type Gen""")
-            self.versionWithoutRedundancy = normalForm._getWithoutRedundance()
-            assert assertType(self.versionWithoutRedundancy, Gen)
-        else:
-            debug("without redundancy already saved")
-        ret = self.versionWithoutRedundancy
-        debug(f"""getNormalForm() returns {ret}""",-1)
-        return ret
-            
+        """        
+        return self.computeStep(WITHOUT_REDUNDANCY)
+    @debugFun
     def _getWithoutRedundance(self):
-        """Similar to getWithoutRedundance. Assume isNormal. Have to be
-        reimplemented in normal form. Don't take memoization into account."""
-        return self._applyRecursively((lambda element:
-                                       element._getWithoutRedundance()),
-                                      containsRedundant = False,
-                                      toClone = self)
+        return self._computeStep(WITHOUT_REDUNDANCY)
+
+    @debugFun
+    def restrictToModel(self,model):
+        """Given the model, restrict the generator according the fields
+        existing. It follows that the returned answer contains no
+        requireInModel/requireAbsentOfModel requirement.
+
+        memoized. 
+        don't reimplement.
+        """
+        return self.computeStep(MODEL_APPLIED, model = model)
+    @debugFun
+    def _restrictToModel(self,model):
+        return self._computeStep(MODEL_APPLIED, model = model)
+
+    @debugFun
+    def template(self, asked, hide, isQuestion):
+        return self.computeStep(TEMPLATE_APPLIED, asked = asked, hide = hide, isQuestion = isQuestion)
+    @debugFun
+    def _template(self, asked, hide, isQuestion):
+        return self._computeStep(TEMPLATE_APPLIED, asked = asked, hide = hide, isQuestion = isQuestion)
+
     
+    @debugFun
+    def assumeQuestion(self, isQuestion):
+        """return a copy, where it is assumed that it is a question.
+        """
+        return self._assumeQuestion(isQuestion)
+    
+    @debugFun
+    def _assumeQuestion(self, isQuestion):
+        def assumeQuestionAux(element):
+            return element.assumeQuestion(isQuestion)
+        return self.applyRecursively(assumeQuestionAux,
+                                     toClone = self)
+        
+    @debugFun
+    def applyRecursively(self, fun, force = False, **kwargs):
+        computed = False
+        mem = None
+        @debugFun
+        def memoize(*args, **kwargs):
+            nonlocal computed, mem
+            if not computed:
+                mem = fun(*args, **kwargs)
+                computed = True
+            return mem
+        memoize.__name__ = f"memoizeOf_{fun.__name__}"
+        fun_ = fun if force else memoize
+        return self._applyRecursively(fun_, **kwargs)
+
+    @debugFun
+    def force(self):
+        """Ensure that ensureGen is called on each element recursively."""
+        def forceAux(element):
+            return element.force()
+        self.applyRecursively(forceAux, force = True)
+    
+    @debugFun
     def assumeFieldInSet(self, field, setName):
         """return a copy of self, where the field is assumed to be in the set.
         
         Assume self and descendant unredundant and isNormal.
         set should be one of "Absent of model", "In model", "Empty",
         "Filled", "Remove".
-        Memoize. Don't redefine. Call _restrictFields
+        Don't redefine. Call _assumeFieldInSet
         """
-        if (field,setName) not in self.fieldSetToNotRedundant:
-            assumed = self.getWithoutRedundance()._assumeFieldInSet(field,setName)
-            assert assertType(assumed, Gen)
-            self.fieldSetToNotRedundant[(field,setName)] = assumed
-        return self.fieldSetToNotRedundant[(field,setName)]
+        return self._assumeFieldInSet(field,setName)
     
+    @debugFun
     def _assumeFieldInSet(self, field, setName):
         """Similar to assumeFieldInSet. 
         
         Recompute instead of memoizing.
         """
-        return self._applyRecursively((lambda element:
-                                       element.assumeFieldInSet(field,setName)),
-                                      toClone = self)
-
-    def restrictToModel(self,model, fields = None):
-        """Given the model, restrict the generator according the fields
-        existing. It follows that the returned answer contains no
-        inModel/absentOfModel requirement.
-
-        memoized. 
-        don't reimplement.
-        """
-        debug(f"""restrictToModel({self})""",1)
-        (hash, fields) = modelToHashFields(model, fields = fields)
-        self.model = model
-        self.fieldsInModel = fields
-        if hash not in self.hashToRestrictedModel:
-            debug(f"""hash {hash} not memoized. It must be computed.""")
-            if not self.hashToRestrictedModel:
-                debug("In fact hashToRestrictedModel is empty")
-                pass
-            restricted = self.getWithoutRedundance()._restrictToModel(model, fields)
-            assert assertType(restricted, Gen)
-            self.hashToRestrictedModel[hash] = restricted
-        else:
-            debug(f"""hash {hash} already memoized.""")
-            pass
-        ret = self.hashToRestrictedModel[hash]
-        debug(f"""restrictToModel() returns "{ret}".""",-1)
-        return ret
-    
-    def _restrictToModel(self, model, fields = None):
-        """Similar to restrictToModel. Do the computation and don't
-        memoize. Should be implemented in inheriting normal class."""
-        return self._applyRecursively((lambda element:
-                                       element.restrictToModel(model, fields = fields)),
-                                      toClone = self)
-    
+        def assumeFieldInSetAux(element):
+            return element.assumeFieldInSet(field,setName)
+        return self.applyRecursively(assumeFieldInSetAux, toClone = self)
         
-    # def restrictFields(self, fields, emptyGen, hasContent)
-    #     """
-        
-    #     fields -- if None, don't consider. Otherwise, the frozenset of fields appearing in the note type.
-    #     emptyGen -- the set of fields garanteed to be emptyGen (i.e. foo, when under {{^foo}})
-    #     hasContent -- the set of fields garanteed to have some content (i.e. foo, when under {{#foo}})
-
-    #     raise an exception if the generator is not isNormal.
-    #     call _restrictFields, which does the actual job.
-    #     Do not memoize
-
-    #     Assume isNormal."""
-    #     if self.isNormal():
-    #         return self._restrictFields(fields)
-    #     else:
-    #         raise Exception("Restricting a note not isNormal",self)
-
-    # def _restrictFields(self, fields, emptyGen, hasContent)
-    #     """Similar to restrictFields, assuming isNormal. This is the
-    #     method which should be redefined.
-
-    #     """
-    #     raise Exception("Context from a Gen")
-        
-    def template(self, tag, soup, isQuestion = None, asked = None, hide = None, **kwargs):
+    @debugFun
+    def applyTag(self, tag, soup):
         """Print the actual template, given the asked questions, list
         of things to hide (as frozen set)."""
-        debug (f"""template("{self}", "{tag}", "{soup}", "{isQuestion}", "{asked}", "{hide}")""",1)
+        #debug (f"""template("{self}", "{tag}", "{soup}", "{isQuestion}", "{asked}", "{hide}")""",1)
         assert soup is not None
-        assert assertType(isQuestion, bool)
-        assert asked is not None
-        assert hide is not None
-        ret = self.tagAskedHideIsQuestionToTemplate.get((tag, asked, hide, isQuestion))
-        if ret is None:
-            ret =self._template(tag, soup, isQuestion = isQuestion, asked = asked, hide = hide, **kwargs)
-            self.tagAskedHideIsQuestionToTemplate[(tag, asked, hide, isQuestion)] = ret
-        elif isinstance(ret,tuple):
-            (text,tag) = ret
-            ret = (text, copy.copy(tag))
-        debug (f"template()= {ret}",-1)
-        return ret
+        self._applyTag(tag, soup)
+        #debug (f"template()= {ret}",-1)
 
-    def _template(self, tag, soup, isQuestion = None, asked = None, hide = None, **kwargs):
-        raise Exception(f"""_template in gen for: "{self}".""")
+    @debugFun
+    def _applyTag(self, tag, soup):
+        raise Exception(f"""_applyTag in gen for: "{self}".""")
 
-    def __repr__(self):
-        return f"Generator({self.params()})"
-    
     def params(self, show = False):
+        """The list of params as string. So that it can be printed."""
+        if not hasattr(self,"toKeep"):
+            self.toKeep = None
+        if not hasattr(self,"state"):
+            self.state = None
         if not show:
             return ""
-        if self.normalVersion == self:
-            normal = "self"
-        else:
-            normal = repr(self.normalVersion)
-        if self.versionWithoutRedundancy == self:
-            versionWithoutRedundancy = "self"
-        else:
-            versionWithoutRedundancy = repr(self.versionWithoutRedundancy)
-        return f"normal = {normal}, isNormal = {self.isNormal}, toKeep = {self.toKeep}, containsRedundant = {self.containsRedundant}, versionWithoutRedundancy = {versionWithoutRedundancy}, isEmpty = {self.isEmpty}"
+        return f"toKeep = {self.toKeep}, state = {self.state}"
 
-typeToGenerator= dict()
+    @debugFun
+    def all(self, tag = None, soup = None, model = None, isQuestion =
+            None, asked = frozenset(), hide = frozenset()):
+        self.getNormalForm(
+        ).getWithoutRedundance(
+        ).restrictToModel(
+            model
+        ).template(
+            asked = asked,
+            hide = hide,
+            isQuestion = isQuestion
+        ).applyTag(tag, soup)
+        
+addTypeToGenerator(Gen, identity)
 
-def addTypeToGenerator(type,generator):
-    typeToGenerator[type]=generator
-    
-def ensureGen(element, locals_ = None):
-    """Element if it is a Gen, or construct it. The type is chosen
-    according to typeToGenerator.
-
+@debugFun
+def shouldBeKept(gen):
     """
-    debug(f"ensureGen({element})", 1)
-    ret = None
-    if locals_ is None:
-        locals_ = dict()
-    funs = []
-    recCall = 0
-    element_original = element
-    while isinstance(element,types.FunctionType) or isinstance(element,types.BuiltinFunctionType):
-        funs.append(element)
-        recCall+=1
-        element = eval("element()",globals(),)
-        if recCall == 10:
-            raise Exception(f"10 successive recursive call during processing of {element_original}. 10 th is {element}")
-        if element in funs:
-            raise Exception(f"Loop during processing of {element_original}, raising multiple time {elements}.")
-    if isinstance(element,Gen):
-        debug(f"is already a generator", -1)
-        ret = element
+    True if Gen which must be kept. 
+    False if Gen which can be discarded
+    None if it can't yet been known."""
+    if isinstance(gen,Gen):
+        return gen.toKeep
     else:
-        for typ in typeToGenerator:
-            if isinstance(element, typ):
-                gen = typeToGenerator[typ]
-                ret = gen(element)
-                debug(f"has type {typ}, thus use type {gen} and become {ret}", -1)
-                break
-            else:
-                debug(f"has not type {typ}")
-                pass
-    if ret is None:
-        debug("has no type we can consider", -1)
-        assert False
-    return ret
-
+        return None

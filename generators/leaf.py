@@ -1,20 +1,26 @@
 import copy
-from .generators import Gen,addTypeToGenerator, modelToFields
-from ..debug import debug, assertType
+from .constants import *
+from .generators import Gen, modelToFields, modelToFields
+from .ensureGen import addTypeToGenerator
+from ..debug import debug, assertType, debugFun
 from bs4 import NavigableString
 from html import escape
 
 class Leaf(Gen):
-    def __init__(self,  containsRedundant = True, **kwargs):
-        # A leaf can never be redundant alone. 
-        super().__init__(containsRedundant = containsRedundant,  **kwargs)
+    """
+    The class of generators with no child.
+
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         
     def getChildren(self):
         return frozenset()
         
-    def _applyRecursively(self, fun,  **kwargs):
+    def _applyRecursively(self, fun, **kwargs):
         return self
-
+    
+emptyGen = None
 class Empty(Leaf):
     """A generator without any content"""
     instance = None
@@ -23,11 +29,9 @@ class Empty(Leaf):
     def __init__(self,
                  *args,#required, because EnsureGen may give an argument
                  toKeep=False,
-                 containsRedundant = True,
-                 isNormal = True,
-                 isEmpty = True,
+                 state = EMPTY,
                  createOther = False,
-                 init = False,
+                 init = None,
                  **kwargs):
         if createOther:
             pass
@@ -35,10 +39,8 @@ class Empty(Leaf):
             Empty.instance = self
         else:
             raise Exception("Calling Empty")
-        super().__init__(isNormal = isNormal,
-                         containsRedundant = containsRedundant,
+        super().__init__(state = state,
                          toKeep = toKeep,
-                         isEmpty = isEmpty,
                          **kwargs)
 
     def __repr__(self):
@@ -47,8 +49,8 @@ class Empty(Leaf):
         else:
             return f"""Empty(createOther = True, {self.params()})"""
 
-    def _template(self, *args,  **kwargs):
-        return None
+    def _applyTag(self, tag, soup):
+        pass
     
     def __eq__(self,other):
         #debug(f"{self!r} == {other!r}",1)
@@ -67,23 +69,22 @@ class Literal(Leaf):
     """A text to be printed, as-is, unconditionally."""
     def __init__(self,
                  text = None,
-                 isNormal = True,
                  toKeep = False,
+                 state = TEMPLATE_APPLIED,
                  toClone = None,
-                 isEmpty = None,
                  **kwargs):
-        super().__init__(
-                         toKeep = toKeep,
-                         containsRedundant = True,
-                         toClone = toClone,
-                         isEmpty = isEmpty or (isEmpty is None and not text),
-                         **kwargs)
         if text is not None:
             self.text = text
         elif toClone is not None and isinstance(toClone,Literal):
             self.text = toClone.text
         else:
             self.text = ""
+        if not self.text:
+            state == EMPTY
+        super().__init__(toKeep = toKeep,
+                         state = state,
+                         **kwargs)
+            
     def __hash__(self):
         return hash(self.text)
 
@@ -104,11 +105,10 @@ class Literal(Leaf):
         #debug("",-1)
         return ret
     
-    def _template(self, tag, *args, **kwargs):
+    def _applyTag(self, tag, soup):
         #debug(f"appending text {self.text} to {tag}")
         tag.append(NavigableString(escape(self.text)))
         #return self.text
-    
 addTypeToGenerator(str,Literal)
 
 class Field(Leaf):
@@ -116,21 +116,29 @@ class Field(Leaf):
                  field = None,
                  toKeep = True,
                  toClone = None,
-                 isEmpty = False,
+                 typ = False,
+                 cloze = False,
+                 state = NORMAL,
                  **kwargs):
-        if field is not None:
-            assert assertType(field,str)
-            self.field = field
-        elif toClone is not None and isinstance(toClone,Field):
+        self.typ = typ
+        self.cloze = cloze
+        if field is None and isinstance(toClone,Field):
             self.field = toClone.field
+        elif isinstance(field,str):
+            self.field = field
+        elif isinstance(field,set) and len(field)==1:
+            elt = s.pop()
+            s.add(elt)
+            if len(elt) == 1:
+                elt_ = s.pop
+                elt.add(elt_)
+                self.field = elt_
+            else:
+                assert False
         else:
             assert False
-        self.field = field
-        super().__init__(isNormal = True,
-                         isEmpty = isEmpty,
-                         toClone = toClone,
+        super().__init__(state = state,
                          toKeep = toKeep,
-                         
                          **kwargs)
     def __hash__(self):
         return hash(self.field)
@@ -139,28 +147,26 @@ class Field(Leaf):
         return isinstance(other,Field) and self.field == other.field
     
     def __repr__(self):
-        return f"""Field(field = "{self.field}", {self.params()})"""
-    
+        return f"""Field(field = "{self.field}", type = {self.typ}, cloze = {self.cloze}, {self.params()})"""
+
     def _assumeFieldInSet(self, field, setName):
         if field == self.field and (setName == "absentOfModel" or setName == "Empty"):
             return emptyGen
         return self
-    
-    def _restrictToModel(self, model, fields = None):
-        #debug(f"""{self}.restrictToModel({model["name"]}, {fields})""",1)
-        if not fields:
-            fields = modelToFields(model)
-            #debug(f"""Fields is None, become {fields}""")
-        if self.field in fields:
-            #debug(f"""Field {self.field} in fields""")
+
+    @debugFun
+    def _restrictToModel(self, model):
+        if self.field in modelToFields(model):
             ret = self
         else:
             #debug(f"""Field {self.field} not in fields""")
             ret =emptyGen
-        #debug(f"restrictToModel() returns {ret}",-1)
         return ret
-
-    def _template(self, tag, *args, **kwargs):
-        t = f"""{{{{{self.field}}}}}"""
+            
+    def _applyTag(self, tag, *args, **kwargs):
+        typ = "type:" if self.typ else ""
+        cloze = "cloze:" if self.typ else ""
+        t = NavigableString(f"""{{{{{typ}{cloze}{self.field}}}}}""")
         tag.append(t)
-        return t
+
+addTypeToGenerator(set, Field)

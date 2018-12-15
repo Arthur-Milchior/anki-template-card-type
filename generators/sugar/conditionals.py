@@ -1,8 +1,51 @@
-from ..child import SingleChild
+from ..singleChild import SingleChild, Requirement
 from ..leaf import emptyGen
-from ..children import MultipleChild, ListElement
-from ..child import Requirement
+from ..multipleChildren import MultipleChildren, ListElement, Name, QuestionOrAnswer
 from .sugar import NotNormal
+
+class Branch(Name):
+    """The class which expands differently in function of the question/hidden value.
+
+    name -- the name of this question.
+    children[isQuestion][isAsked] -- the field to show on the side question/answer of card (depending on isQuestion). Depending on whether this value is asked or not.
+    cascadeAsked -- a set of things which will also be considered to be asked if this is asked."""
+
+    def __init__(self,
+                 name = None,
+                 default = None,
+                 question = None,
+                 answerAsked = None,
+                 answerNotAsked = None,
+                 answer = None,
+                 asked = None,
+                 notAsked = None,
+                 questionAsked = None,
+                 questionNotAsked = None,
+                 children = dict(),
+                 toClone = None,
+                 isNormal = False,
+                 locals_ = None,
+                 cascadeAsked = None,
+                 **kwargs):
+        """
+        The value of self.children[isQuestion,isAsked] is:
+        {isQuestion}{IsAsked} if it exists.
+        {isAsked} if it exists
+        {isQuestion} if it exists
+        children[isQuestion,isAsked]
+        {default} if it exists
+        empty otherwise.
+
+        """
+        questionAsked = [questionAsked, asked, question, children.get((True,True)), default, emptyGen]
+        questionNotAsked = [questionNotAsked, notAsked, question, children.get((True,False)), default, emptyGen]
+        answerAsked = [answerAsked, asked, answer, children.get((False,True)), default, emptyGen]
+        answerNotAsked = [answerNotAsked, notAsked, answer, children.get((False,False)), default, emptyGen]
+        
+        asked = questionAsked if questionAsked == answerAsked else QuestionOrAnswer(questionAsked, answerAsked, **kwargs)
+        notAsked = questionNotAsked if questionNotAsked == answerNotAsked else QuestionOrAnswer(questionNotAsked, answerNotAsked, **kwargs)
+
+        super().__init__(name, asked, notAsked, cascadeAsked = cascadeAsked, **kwargs)
 
 class FilledOrEmptyField(ListElement):
     def __repr__(self):
@@ -80,31 +123,14 @@ class EmptyField(FilledOrEmptyField):
         self.child = child
         super().__init__(field, emptyCase = child,  **kwargs)
     
-class QuestionOrAnswerField(ListElement):
-    def __repr__(self):
-        return f"""QuestionOrAnswerField({self.field},{self.questionCase},{self.answerCase})"""
-    
-    def __init__(self, questionCase = emptyGen, answerCase = emptyGen,  **kwargs):
-        self.questionCase = questionCase
-        self.answerCase = answerCase
-        super().__init__([
-            Requirement(
-                self.questionCase.getNormalForm(),
-                requireQuestion = True
-            ),
-            Requirement(
-                self.answerCase.getNormalForm(),
-                requireQuestion = False
-            )],  **kwargs)
-        
-class QuestionField(QuestionOrAnswerField):
+class QuestionField(QuestionOrAnswer):
     def __repr__(self):
         return f"""QuestionField({self.field},{self.child})"""
     def __init__(self, child,  **kwargs):
         self.child = child
         super().__init__(questionCase = child,  **kwargs)
 
-class AnswerField(QuestionOrAnswerField):
+class AnswerField(QuestionOrAnswer):
     def __repr__(self):
         return f"""AnswerField({self.field},{self.child})"""
     def __init__(self, child,  **kwargs):
@@ -124,11 +150,11 @@ class PresentOrAbsentField(ListElement):
             [
                 Requirement(
                     self.presentCase.getNormalForm(),
-                    inModel = {self.field}
+                    requireInModel = {self.field}
                 ),
                 Requirement(
                     self.absentCase.getNormalForm(),
-                    absentOfModel = {self.field}
+                    requireAbsentOfModel = {self.field}
                 )]
             , **kwargs)
     

@@ -2,11 +2,12 @@ from .html import TR, TD
 from .sugar import NotNormal
 from .fields import QuestionnedField
 from ...debug import debug
-from ..generators import ensureGen
-from ..child import HTML
+from ..ensureGen import ensureGen
+from ..singleChild import HTML
 from ..leaf import Field
 from .conditionals import PresentOrAbsentField, FilledOrEmptyField, AtLeastOneField, FilledField
-from ..children import MultipleChild, Branch
+from ..multipleChildren import MultipleChildren
+from .conditionals import Branch
 
 def fieldToPair(field):
     """Given a representation of a field, returns the label to use, and the Field object"""
@@ -32,7 +33,7 @@ def fieldToPair(field):
     return ret
     
 
-class ListFields(MultipleChild, NotNormal):
+class ListFields(MultipleChildren, NotNormal):
     """
     Apply functions to each field, add separators between them, apply a function to the result
 
@@ -186,3 +187,4 @@ no other elements are present, and show only the first element."""
 
     def __repr__(self):
         return f"""PotentiallyNumberedFields() on {super().__repr__()}"""
+

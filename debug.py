@@ -5,9 +5,11 @@ shouldDebug = False
 def startDebug():
     global shouldDebug
     shouldDebug = True
+    print("Debug started")
 def endDebug():
     global shouldDebug
     shouldDebug = False
+    print("Debug ended")
     
 indentation = 0
 def debug(text, indentToAdd=0):
@@ -53,3 +55,30 @@ def assertType(element,types):
             return True
     print(f""" "{element}"'s type is {type(element)}, which is not a subtype of {types}""")
     return False
+
+
+def debugFun(fun):
+    def aux(*args, **kwargs):
+        t = f"{fun.__qualname__}("
+        first = False
+        def comma(text):
+            nonlocal first, t
+            if not first:
+                first = True
+            else:
+                t+=", "
+            t+=text
+        for arg in args:
+            comma(f"{arg}")
+        for kw in kwargs:
+            comma(f"{kw}={kwargs[kw]}")
+        t+=")"
+        debug(f"{t}",1)
+        ret = fun(*args, **kwargs)
+        debug(f"returns {ret}",-1)
+        return ret
+    aux.__name__ = f"auxOf{fun.__name__}"
+    return aux
+
+def identity(x):
+    return x

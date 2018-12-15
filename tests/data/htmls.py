@@ -62,8 +62,6 @@ htmlQuestionCompiled = """<span asked="Question" name="Question" template="conf"
 </span>"""
 
 df =DecoratedField('Question')
-modelApplied = df.restrictToModel(model)
-
 
 htmlAnswerCompiled = """<span template="Front Side">
  <span asked="Question" name="Question" template="conf">

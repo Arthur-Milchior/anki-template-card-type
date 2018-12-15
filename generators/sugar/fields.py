@@ -1,4 +1,4 @@
-from ..children import  Branch
+from .conditionals import  Branch
 from ..leaf import Field
 from ...debug import debug, assertType
 from .sugar import NotNormal

@@ -7,11 +7,14 @@ def testTemplate(initial, toPrint = False):
     wr = normal.getWithoutRedundance()
     if toPrint: print(f"""wr is {wr}""")
     rest = wr.restrictToModel(model)
-    if toPrint: print(f"""restricted is {rest}""")
+    if toPrint: print(f"""restricted by Model is {rest}""")
     soup = soupFromTemplate("<test/>")
-    rest.template(soup.test, soup = soup, isQuestion = True, asked = frozenset({"Definition1"}), hide = frozenset())
+    templ = rest.template(isQuestion = True, asked = frozenset({"Definition1"}), hide = frozenset())
+    if toPrint: print(f"""restricted by Template is {templ}""")
+    templ.applyTag(tag = soup, soup = soup)
     if toPrint: print(soup.prettify())
     return templateFromSoup(soup)
+
 imageTemplated = testTemplate(Image("http://www.foo.bar"))
 imageHtml = """<test>
  <img attrs="{'src': 'http://www.foo.bar'}"/>
