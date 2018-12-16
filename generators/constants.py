@@ -8,6 +8,9 @@ class Step:
     def __repr__(self):
         return f"Step({self.step},{self.name})"
 
+    def __eq__(self, other):
+        return self.step == other.step
+    
     @debugFun
     def nextStep(self):
         ret = {

@@ -108,6 +108,6 @@ def clean(tag):
     if "objectAbsent" in templateTag.attrs:
         del templateTag.attrs["objectAbsent"]
 
-mod = sys.modules[__name__]
+#mod = sys.modules[__name__]
 Template(["eval", "evaluate"], compile_eval, clean)
 Template(["config","conf"], compile_config, clean)

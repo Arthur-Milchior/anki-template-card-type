@@ -2,17 +2,18 @@ from .imports import *
 from .data.htmls import TestHTML
 from bs4 import BeautifulSoup
 from html import escape
+from copy import deepcopy
 #from .data.templates import testTemplate, emptyHtml
 
+foofoo = ListElement([literalFoo, emptyGen, fieldFoo])
+print(f"foofoo is {foofoo}")
+wr = foofoo.getWithoutRedundance()
+print(f"wr is {wr}")
 startDebug()
-print(f"foofoo: {foofoo}")
-normal = foofoo.getNormalForm()
-print(f"normal: {normal}")
-endDebug()
-wr = normal.getWithoutRedundance()
-print(f"wr: {wr}")
 restrict = wr.restrictToModel(model)
-print(f"restrict: {restrict}")
+print(f"restriction is {restrict}")
+
+endDebug()
 
 debug("current")
 

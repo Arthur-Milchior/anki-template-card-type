@@ -1,7 +1,7 @@
 from .html import TR, TD
 from .sugar import NotNormal
 from .fields import QuestionnedField
-from ...debug import debug
+from ...debug import debug, identity
 from ..ensureGen import ensureGen
 from ..singleChild import HTML
 from ..leaf import Field
@@ -44,9 +44,9 @@ class ListFields(MultipleChildren, NotNormal):
     """
     def __init__(self,
                  fields,
-                 localFun = (lambda x:x),
+                 localFun = identity,
                  globalSep = (lambda x:None),
-                 globalFun = (lambda x:x),
+                 globalFun = identity,
                  toKeep = True,
                  **kwargs):
         self.originalFields = fields

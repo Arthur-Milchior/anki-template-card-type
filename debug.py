@@ -17,20 +17,19 @@ def debug(text, indentToAdd=0):
         return
     global indentation
     indentToPrint = indentation
+    t = " "*indentToPrint
     if indentToAdd>0:
-        sep = "{"
-    elif indentToAdd==0:
-        sep = ""
-    else:
-        sep = "}"
-        indentToPrint +=indentToAdd
-    space = " "*indentToPrint
+        t+= "{<"
+    space = " "
     newline = "\n"
-    print (f"""{space}{sep}{re.sub(newline,newline+space,text)}""")
+    t+= re.sub(newline,newline+space,text)
+    print (t)
     indentation +=indentToAdd
     if indentToAdd<0:
-        print()
-    pass
+        indentToPrint +=indentToAdd
+        print((" "*indentToPrint)+">}")
+
+
 
 
 def assertEqual(left, right):
@@ -44,7 +43,7 @@ def assertEqual(left, right):
     rightEval = eval(right,glob,loc)
     if leftEval == rightEval:
         return True
-    print(f"""{left} evaluates as \n"{leftEval}".\n"{rightEval}"\n is the value of {right}, they are distinct.""")
+    print(f"""\n\n{left} evaluates as \n"{leftEval}".\n"{rightEval}"\n is the value of {right}, they are distinct.""")
     return False
 
 def assertType(element,types):
@@ -77,7 +76,8 @@ def debugFun(fun):
         ret = fun(*args, **kwargs)
         debug(f"returns {ret}",-1)
         return ret
-    aux.__name__ = f"auxOf{fun.__name__}"
+    aux.__name__ = f"debug_{fun.__name__}"
+    aux.__qualname__ = f"debug_{fun.__qualname__}"
     return aux
 
 def identity(x):

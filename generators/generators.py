@@ -20,8 +20,6 @@ class Gen:
     """
     Inheriting classes should implement: 
     - either:
-    -- getChildren (returning the list of all children. Assuming
-    that the container is useless if no children are present) and
     -- _applyRecursively(self,fun,**kwargs): return a copy of self,
     with fun applied to each children. kwargs are passed to the
     function's argument.
@@ -73,7 +71,7 @@ class Gen:
 
     @debugFun
     def isAtLeast(self,state):
-        return state <= self.state
+        return state <= self.getState()
     
     @debugFun
     def isEmpty(self):
@@ -102,7 +100,7 @@ class Gen:
         return self.isAtLeast(TEMPLATE_APPLIED)
 
     
-    @debugFun
+    #@debugFun
     def __bool__(self):
         #debug(f"""__bool__({self})""",1)
         ret = not self.isEmpty()
@@ -110,18 +108,18 @@ class Gen:
         return ret
     
 
-    @debugFun
-    def shouldBeKept(self):
-        """In a list, does the presence of this element justify the fact that
-        this element is kept.
+    # @debugFun
+    # def shouldBeKept(self):
+    #     """In a list, does the presence of this element justify the fact that
+    #     this element is kept.
 
-        It memoize, so don't call when you intend to change children.
-        Implemented only for classes which can be normal.
+    #     It memoize, so don't call when you intend to change children.
+    #     Implemented only for classes which can be normal.
 
-        """
-        if self.toKeep is None:
-            self.toKeep = bool(self._toKeep())
-        return self.toKeep
+    #     """
+    #     if self.toKeep is None:
+    #         self.toKeep = bool(self._toKeep())
+    #     return self.toKeep
 
     @debugFun
     def dontKeep(self):
@@ -138,7 +136,7 @@ class Gen:
     #             return True
     #     return False
 
-    @debugFun
+    #@debugFun
     def getKey(state,
                model = None,
                asked = None,
@@ -167,29 +165,36 @@ class Gen:
         if goal not in self.versions:
             debug(f"goal is not present in versions")
             self.versions[goal] = dict()
+        else:
+            debug(f"goal is present in versions")
         if key not in self.versions[goal]:
+            debug(f"key is not present in versions[goal]")
             self.versions[goal][key] = self.computeMultiStep(goal, model = model, asked = asked, isQuestion = isQuestion, hide = hide)
+        else:
+            debug(f"key is present in versions[goal]")
         self.versions[goal][key] = self._ensureGen(self.versions[goal][key])
         return self.versions[goal][key]
     
     @debugFun
     def computeMultiStep(self, goal, model = None, asked = None, isQuestion = None, hide = None):
-        if goal <= self.state:
-            #debug("computeStep: step<=self.state, thus return self")
+        currentState = self.getState()
+        if goal <= currentState:
+            #debug("computeStep: step<=currentState, thus return self")
             return self
         previousStep = goal.previousStep()
-        if self.state < previousStep:
+        if currentState < previousStep:
             assert goal <= MODEL_APPLIED
-            #debug("computeStep: self.state < goal.previousStep()")
+            #debug("computeStep: currentState < goal.previousStep()")
             stepMinusOne = self.computeStep(goal.previousStep(),
                                             model = model,
                                             asked = asked,
                                             hide = hide,
                                             isQuestion = isQuestion)
-        elif self.state == previousStep:
-            #debug("computeStep: self.state == previousStep")
+        elif currentState == previousStep:
+            #debug("computeStep: currentState == previousStep")
             stepMinusOne = self
         else:
+            print(f"goal is {goal}, previousStep is {previousStep}, state is {currentState}", file=sys.stderr)
             assert False
         #debug(f"computeStep: stepMinusOne is {stepMinusOne}")
         single = stepMinusOne.computeSingleStep(goal,
@@ -223,7 +228,7 @@ class Gen:
                                  isQuestion = isQuestion)
             
         else:
-            raise Exception(f"self.state should not be {self.state}")
+            raise Exception(f"self.getState() should not be {self.getState()}")
         debug(f"versions[goal][key] has been set to {ret}")
         ret = ret._ensureGen(ret)
         ret.setState(goal)
@@ -233,8 +238,8 @@ class Gen:
     def _computeStep(self, step, **kwargs):
         #not directly called from computeStep, but from functions _getFoo
         def computeStepAux(element):
-            return element.computeStep(step, **kwargs)
-        ret = self.applyRecursively(computeStepAux)
+            return element.computeStep(step , **kwargs)
+        ret = self.callOnChildren("computeStep", step = step, **kwargs)
         ret = self._ensureGen(ret)
         return ret
 
@@ -299,19 +304,53 @@ class Gen:
                                      toClone = self)
         
     @debugFun
-    def applyRecursively(self, fun, force = False, **kwargs):
-        computed = False
-        mem = None
-        @debugFun
-        def memoize(*args, **kwargs):
-            nonlocal computed, mem
-            if not computed:
-                mem = fun(*args, **kwargs)
-                computed = True
-            return mem
-        memoize.__name__ = f"memoizeOf_{fun.__name__}"
-        fun_ = fun if force else memoize
-        return self._applyRecursively(fun_, **kwargs)
+    def memoize(self,method,*args, **kwargs):
+        return (getattr(self,method))(*args, **kwargs)
+    
+    # def memoize(gen,method,*args, **kwargs):
+    #     computed = False
+    #     mem = None
+    #     @debugFun
+    #     def memoizeAux():
+    #         nonlocal computed, mem
+    #         if not computed:
+    #             mem = (getattr(child,method))(*args, **kwargs)
+    #             computed = True
+    #         return mem
+    #     memoize.__name__ = f"memoizeAux_of_{method}"
+    #     memoize.__qualname__ = f"memoizeAux_of_{method}"
+    #     return self._ensureGen(memoizeAux)
+    
+    @debugFun
+    def callOnChildren(self, method, *args, force = True, **kwargs):
+        # memoize.__name__ = f"memoize_of_{method}"
+        # memoize.__qualname__ = f"memoize_of_{method}"
+        # fun_ = fun if force else memoize
+        ret = self._callOnChildren(method, *args, **kwargs)
+        return ret 
+
+    # @debugFun
+    # def applyRecursively(self, fun, force = False, **kwargs):
+    #     @debugFun
+    #     def memoize(*args, **kwargs):
+    #         computed = False
+    #         mem = None
+    #         @debugFun
+    #         def memoizeAux():
+    #             nonlocal computed, mem
+    #             if not computed:
+    #                 mem = fun(*args, **kwargs)
+    #                 computed = True
+    #             return mem
+    #         memoize.__name__ = f"memoizeAux_of_{fun.__name__}"
+    #         memoize.__qualname__ = f"memoizeAux_of_{fun.__qualname__}"
+    #         return ensureGen(memoizeAux)
+    #     memoize.__name__ = f"memoize_of_{fun.__name__}"
+    #     memoize.__qualname__ = f"memoize_of_{fun.__qualname__}"
+    #     fun_ = fun if force else memoize
+    #     ret = self._applyRecursively(fun_, **kwargs)
+    #     assert not (not self and ret)
+    #     return ret 
 
     @debugFun
     def force(self):
@@ -362,7 +401,7 @@ class Gen:
             self.state = None
         if not show:
             return ""
-        return f"toKeep = {self.toKeep}, state = {self.state}"
+        return f"toKeep = {self.toKeep}, state = {self.getState()}"
 
     @debugFun
     def all(self, tag = None, soup = None, model = None, isQuestion =

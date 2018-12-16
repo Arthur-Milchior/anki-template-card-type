@@ -53,25 +53,28 @@ class ListElement(MultipleChildren):
         """self, with fun applied to each element. 
 
         isNormal and versionWithoutRedundancy are passed to class constructor."""
-        debug(f"{self}._applyRecursively({fun.__name__})",1)
+        debug(f"{self}._applyRecursively({fun.__qualname__})",1)
         elements = []
         change = False
         for i in range(len(self.elements)):
             debug(f"Considering position {i}, containing {self.elements[i]}")
             self.elements[i] = self._ensureGen(self.elements[i])
-            debug(f"""Once in gen, it becomes "{self.elements[i]}".""")
-            debug(f"""applying {fun.__name__} to "{self.elements[i]}".""")
-            element_ = fun(self.elements[i])
-            debug(f"""element_ now is {element_}""")
-            if element_ != self.elements[i]:
+            currentElement = self.elements[i]
+            debug(f"""Once in gen, it becomes "{currentElement}".""")
+            debug(f"""applying {fun.__name__} to "{currentElement}".""")
+            processedElement = fun(currentElement)
+            debug(f"""processedElement now is {processedElement}""")
+            debug(f"""Applying {fun.__qualname__} to "{currentElement}" leads to {processedElement}.""")
+            assert not (not currentElement and processedElement)
+            if processedElement != currentElement:
                 debug(f"""changed""")
                 change = True
             else:
                 debug(f"""not changed""")
                 pass
-            if element_:
-                debug(f"Appending {element_} to elements")
-                elements.append(element_)
+            if processedElement:
+                debug(f"Appending {processedElement} to elements")
+                elements.append(processedElement)
             else:
                 debug(f"""not appending it""")
                 pass
