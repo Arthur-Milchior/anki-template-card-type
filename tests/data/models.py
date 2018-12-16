@@ -11,7 +11,7 @@ model = {
     'name': 'Basic',
     'flds': [{'name': 'Question', 'ord': 0, 'sticky': False, 'rtl': False, 'font': 'Arial', 'size': 20, 'media': []},
              {'name': 'Back', 'ord': 1, 'sticky': False, 'rtl': False, 'font': 'Arial', 'size': 20, 'media': []},
-             {'name': 'Definition1', 'ord': 2, 'sticky': False, 'rtl': False, 'font': 'Arial', 'size': 20, 'media': []},
+             {'name': 'Definition', 'ord': 2, 'sticky': False, 'rtl': False, 'font': 'Arial', 'size': 20, 'media': []},
              {'name': 'Definition2', 'ord': 3, 'sticky': False, 'rtl': False, 'font': 'Arial', 'size': 20, 'media': []},
              {'name': 'Definition3', 'ord': 4, 'sticky': False, 'rtl': False, 'font': 'Arial', 'size': 20, 'media': []},
              {'name': 'Definition4', 'ord': 5, 'sticky': False, 'rtl': False, 'font': 'Arial', 'size': 20, 'media': []},

@@ -1,5 +1,6 @@
 import sys
-from ..debug import debug, assertType, debugFun, identity
+from ..debug import debug, assertType, debugFun
+from ..utils import identity
 from .ensureGen import ensureGen, addTypeToGenerator
 from .constants import *
 
@@ -20,9 +21,9 @@ class Gen:
     """
     Inheriting classes should implement: 
     - either:
-    -- _applyRecursively(self,fun,**kwargs): return a copy of self,
-    with fun applied to each children. kwargs are passed to the
-    function's argument.
+    -- _callOnChildren(self, method, *args, force = True, **kwargs):
+    a copy of self's class, with method called on each children.
+    kwargs are passed to the method's argument.  
     - or reimplement:
     -- _computeStep(step, **kwargs): 
     --- _assumeFieldInSet(element,fieldName), assume that element
@@ -40,10 +41,10 @@ class Gen:
                  state = BASIC,
                  locals_ = None,
     ):
+        self.locals_ = locals_
         self.toKeep = toKeep
         self.versions = dict()
         self.state = state
-        self.locals_ = locals_
 
     def _ensureGen(self, element):
         debug(f"_ensureGen({element})",1)
@@ -52,7 +53,7 @@ class Gen:
         return ret
 
     def __repr__(self):
-        return f"""{self.__class____name__}(without repr,{self.params()})"""
+        return f"""{self.__class__.__name__}(without repr,{self.params()})"""
     
 
     @debugFun
@@ -64,32 +65,30 @@ class Gen:
         else:
             self.state = self.state.union(state)
         return self.getState()
-
+    
     @debugFun
+    def clone(self,children):
+        assert False
+
+    #@debugFun
     def getState(self):
         return self.state
 
-    @debugFun
+    #@debugFun
     def isAtLeast(self,state):
         return state <= self.getState()
     
-    @debugFun
+    #@debugFun
     def isEmpty(self):
         return self.isAtLeast(EMPTY)
 
-    @debugFun
+    #@debugFun
     def isNormal(self):
         return self.isAtLeast(NORMAL)
     
-    @debugFun
+    #@debugFun
     def isWithoutRedundancy(self):
         return self.isAtLeast(WITHOUT_REDUNDANCY)
-
-    @debugFun
-    def getAppliedModel(self):
-        if hasattr(self,"model"):
-            return self.model
-        return None
 
     @debugFun
     def isModelApplied(self):
@@ -146,8 +145,10 @@ class Gen:
             key = None
         elif state == MODEL_APPLIED:
             key = modelToHash(model)
+        elif state  ==  QUESTION_ANSWER:
+            key = isQuestion
         elif state  ==  TEMPLATE_APPLIED:
-            key = (asked, hide, isQuestion)
+            key = (asked, hide)
         else:
             raise Exception(f"State should not be {state}")
         return key
@@ -178,6 +179,8 @@ class Gen:
     @debugFun
     def computeMultiStep(self, goal, model = None, asked = None, isQuestion = None, hide = None):
         currentState = self.getState()
+        if self.isEmpty():
+            return None
         if goal <= currentState:
             #debug("computeStep: step<=currentState, thus return self")
             return self
@@ -224,9 +227,10 @@ class Gen:
         elif goal == TEMPLATE_APPLIED:
             debug(f"calling _template()")
             ret = self._template(asked = asked,
-                                 hide = hide,
-                                 isQuestion = isQuestion)
-            
+                                 hide = hide)
+        elif goal == QUESTION_ANSWER:
+            debug(f"calling _questionOrAnswer()")
+            ret = self._questionOrAnswer(isQuestion = isQuestion)
         else:
             raise Exception(f"self.getState() should not be {self.getState()}")
         debug(f"versions[goal][key] has been set to {ret}")
@@ -235,11 +239,9 @@ class Gen:
         return ret
         
     @debugFun
-    def _computeStep(self, step, **kwargs):
-        #not directly called from computeStep, but from functions _getFoo
-        def computeStepAux(element):
-            return element.computeStep(step , **kwargs)
-        ret = self.callOnChildren("computeStep", step = step, **kwargs)
+    def _computeStep(self, goal, **kwargs):
+        #not directly called from computeGoal, but from functions _getFoo
+        ret = self.callOnChildren(method = "computeStep", goal = goal, **kwargs)
         ret = self._ensureGen(ret)
         return ret
 
@@ -254,7 +256,7 @@ class Gen:
     @debugFun
     def getWithoutRedundance(self):
         """Remove redundant, like {{#foo}}{{#foo}}, {{#foo}}{{^foo}}
-        on the isNormal form of self.
+        on the normal form of self.
         
         Memoize. Unreduntate is also set for each descendant of self.
         
@@ -283,25 +285,22 @@ class Gen:
         return self._computeStep(MODEL_APPLIED, model = model)
 
     @debugFun
-    def template(self, asked, hide, isQuestion):
-        return self.computeStep(TEMPLATE_APPLIED, asked = asked, hide = hide, isQuestion = isQuestion)
+    def template(self, asked, hide):
+        return self.computeStep(TEMPLATE_APPLIED, asked = asked, hide = hide)
     @debugFun
-    def _template(self, asked, hide, isQuestion):
-        return self._computeStep(TEMPLATE_APPLIED, asked = asked, hide = hide, isQuestion = isQuestion)
+    def _template(self, asked = frozenset(), hide = frozenset()):
+        return self._computeStep(TEMPLATE_APPLIED, asked = asked, hide = hide)
 
-    
     @debugFun
-    def assumeQuestion(self, isQuestion):
-        """return a copy, where it is assumed that it is a question.
-        """
-        return self._assumeQuestion(isQuestion)
-    
+    def questionOrAnswer(self, isQuestion):
+        return self.computeStep(QUESTION_ANSWER, isQuestion = isQuestion)
+    @debugFun
+    def _questionOrAnswer(self, isQuestion):
+        return self._computeStep(QUESTION_ANSWER, isQuestion = isQuestion)
+
     @debugFun
     def _assumeQuestion(self, isQuestion):
-        def assumeQuestionAux(element):
-            return element.assumeQuestion(isQuestion)
-        return self.applyRecursively(assumeQuestionAux,
-                                     toClone = self)
+        return self.callOnChildren(method = "questionOrAnswer", isQuestion = isQuestion)
         
     @debugFun
     def memoize(self,method,*args, **kwargs):
@@ -327,43 +326,38 @@ class Gen:
         # memoize.__qualname__ = f"memoize_of_{method}"
         # fun_ = fun if force else memoize
         ret = self._callOnChildren(method, *args, **kwargs)
-        return ret 
-
-    # @debugFun
-    # def applyRecursively(self, fun, force = False, **kwargs):
-    #     @debugFun
-    #     def memoize(*args, **kwargs):
-    #         computed = False
-    #         mem = None
-    #         @debugFun
-    #         def memoizeAux():
-    #             nonlocal computed, mem
-    #             if not computed:
-    #                 mem = fun(*args, **kwargs)
-    #                 computed = True
-    #             return mem
-    #         memoize.__name__ = f"memoizeAux_of_{fun.__name__}"
-    #         memoize.__qualname__ = f"memoizeAux_of_{fun.__qualname__}"
-    #         return ensureGen(memoizeAux)
-    #     memoize.__name__ = f"memoize_of_{fun.__name__}"
-    #     memoize.__qualname__ = f"memoize_of_{fun.__qualname__}"
-    #     fun_ = fun if force else memoize
-    #     ret = self._applyRecursively(fun_, **kwargs)
-    #     assert not (not self and ret)
-    #     return ret 
+        ret = self._ensureGen(ret)
+        if ret.isEmpty():
+            ret = self._ensureGen(None)
+        return ret
+    
+    @debugFun
+    def _callOnChildren(self, method, *args, force = True, **kwargs):
+        elements = []
+        someChange = False
+        for element in self.getChildren():
+            newElement = (getattr(element, method))(*args, **kwargs)
+            if newElement != element:
+                someChange = True
+            elements.append(newElement)
+        if someChange:
+            ret = self.clone(elements = elements)
+            if ret == self:
+                ret = self
+        else:
+            ret = self
+        return ret
 
     @debugFun
     def force(self):
         """Ensure that ensureGen is called on each element recursively."""
-        def forceAux(element):
-            return element.force()
-        self.applyRecursively(forceAux, force = True)
+        self.callOnChildren(method = "force")
     
     @debugFun
     def assumeFieldInSet(self, field, setName):
         """return a copy of self, where the field is assumed to be in the set.
         
-        Assume self and descendant unredundant and isNormal.
+        Assume self and descendant unredundant and normal.
         set should be one of "Absent of model", "In model", "Empty",
         "Filled", "Remove".
         Don't redefine. Call _assumeFieldInSet
@@ -376,18 +370,16 @@ class Gen:
         
         Recompute instead of memoizing.
         """
-        def assumeFieldInSetAux(element):
-            return element.assumeFieldInSet(field,setName)
-        return self.applyRecursively(assumeFieldInSetAux, toClone = self)
+        return self.callOnChildren("assumeFieldInSet", field = field, setName = setName)
         
     @debugFun
     def applyTag(self, tag, soup):
         """Print the actual template, given the asked questions, list
         of things to hide (as frozen set)."""
-        #debug (f"""template("{self}", "{tag}", "{soup}", "{isQuestion}", "{asked}", "{hide}")""",1)
         assert soup is not None
+        assert tag is not None
+        assert TEMPLATE_APPLIED <= self.getState()
         self._applyTag(tag, soup)
-        #debug (f"template()= {ret}",-1)
 
     @debugFun
     def _applyTag(self, tag, soup):
@@ -404,16 +396,34 @@ class Gen:
         return f"toKeep = {self.toKeep}, state = {self.getState()}"
 
     @debugFun
-    def all(self, tag = None, soup = None, model = None, isQuestion =
-            None, asked = frozenset(), hide = frozenset()):
-        self.getNormalForm(
+    def all(self,
+            model = None,
+            isQuestion = None,
+            asked = frozenset(),
+            hide = frozenset()):
+        return self.getNormalForm(
         ).getWithoutRedundance(
+        ).questionOrAnswer(
+            isQuestion
         ).restrictToModel(
             model
         ).template(
             asked = asked,
             hide = hide,
-            isQuestion = isQuestion
+        )
+
+    def allAndTag(self,
+                  tag = None,
+                  soup = None,
+                  model = None,
+                  isQuestion = None,
+                  asked = frozenset(),
+                  hide = frozenset()):
+        return self.all(
+            model = model,
+            isQuestion = isQuestion,
+            asked = asked,
+            hide = hide,
         ).applyTag(tag, soup)
         
 addTypeToGenerator(Gen, identity)

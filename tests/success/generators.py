@@ -1,6 +1,21 @@
+# List of templates which must be equals
+
 from ..imports import *
 from ..data import *
 
+# Leaf
+
+## Empty
+assert assertEqual("none", "emptyGen")
+assert assertEqual("none", "none.getNormalForm()")
+assert assertEqual("none", "none.getWithoutRedundance()")
+assert none.isEmpty()
+assert not none.toKeep
+assert not none
+assert assertEqual("emptyGen", "Empty(createOther = True)")
+assert none == ensureGen(None)
+
+## Literal
 assert assertEqual("literalTest" , """Literal("test")""")
 assert assertEqual("literalTest", "literalTest.getNormalForm()")
 assert assertEqual("literalTest", "literalTest.getWithoutRedundance()")
@@ -9,13 +24,11 @@ assert literalTest
 assert literalTest !=  emptyGen
 assert emptyGen !=  literalTest
 assert assertEqual("literalTest.restrictToModel(model)", "literalTest")
-
-
 assert literalTest != literalFoo
 stringFoo = ensureGen("foo")
 assert assertEqual("stringFoo", "literalFoo")
 
-
+## Field 
 assert assertEqual("fieldFoo_", "fieldFoo")
 assert fieldFoo  !=  Literal("test")
 assert fieldFoo !=  Literal("{{foo}}")
@@ -26,17 +39,11 @@ assert not fieldFoo.isEmpty()
 assert fieldFoo.toKeep
 assert fieldFoo
 assert assertEqual("fieldFoo.restrictToModel(model)", "emptyGen")
-assert assertEqual("fieldFront.restrictToModel(model)", "fieldFront")
+assert assertEqual("fieldQuestion.restrictToModel(model)", "fieldQuestion")
 
+# singleChild
+assert assertEqual("contradictionRequirement.getNormalForm()", "emptyGen")
 
-
-assert assertEqual("none", "emptyGen")
-assert assertEqual("none", "none.getNormalForm()")
-assert assertEqual("none", "none.getWithoutRedundance()")
-assert none.isEmpty()
-assert not none.toKeep
-assert not none
-assert assertEqual("emptyGen", "Empty(createOther = True)")
 
 
 foofoo_ = ensureGen(["foo",emptyGen,fieldFoo])
@@ -49,7 +56,7 @@ foofooWR = foofoo.getWithoutRedundance()
 assert assertEqual("foofoo.force()", "foofooNormal.force()")
 assert assertEqual("foofoo.force()", "foofooWR.force()")
 assert assertEqual("foofoo.restrictToModel(model)", "literalFoo")
-assert assertEqual("foofront.restrictToModel(model)", "foofront")
+assert assertEqual("fooQuestion.restrictToModel(model)", "fooQuestion")
 assert fooList
 
 
@@ -58,13 +65,5 @@ assert assertEqual("test", "literalTest")
 assert assertEqual("test", "test.getNormalForm()")
 assert assertEqual("test", "test.getWithoutRedundance()")
 
+assert assertEqual("branch", "questionnedField")
 
-# decoratedField = DecoratedField("FrontField")
-# #debug(f"""decorated: {decoratedField}""")
-# normal = decoratedField.getNormalForm()
-# #debug(f"""normal: {normal}""")
-# withoutRedundance = normal.getWithoutRedundance()
-# #debug(f"""withoutRedundance: {withoutRedundance}""")
-# #debug("Compute restriction")
-# modelApplied = withoutRedundance.restrictToModel(model)
-# #debug(f"""modelApplied: {modelApplied}""")

@@ -1,10 +1,14 @@
-from ...data.templates import *
-assert assertEqual("imageTemplated", "imageHtml")
-assert assertEqual("emptyTemplated","emptyHtml")
-assert assertEqual("literalTemplated","literalHtml")
-assert assertEqual("fieldTemplated","fieldHtml")
-assert assertEqual("requirementTemplated","requirementHtml")
-assert assertEqual("requirementTemplated","requirementHtml")
-assert assertEqual("contradictionTemplated","emptyHtml")
-assert assertEqual("requiringInexistantTemplated","emptyHtml")
-assert assertEqual("listTemplate","listHtml")
+from ..imports import *
+from ..functions import prettifyGen
+
+
+assert assertEqual("prettifyGen(image)", "imageHtml")
+assert assertEqual("prettifyGen(emptyGen)","emptyHtml")
+assert assertEqual("prettifyGen(literalFoo)","literalHtml")
+assert assertEqual("prettifyGen(fieldQuestion)","fieldHtml")
+assert assertEqual("prettifyGen(requireQuestion)","requirementHtml")
+assert assertEqual("prettifyGen(requirements3)","requirement2Html")
+assert assertEqual("prettifyGen(contradictionRequirement)","emptyHtml")
+assert assertEqual("prettifyGen(requiringInexistant)","emptyHtml")
+assert assertEqual("prettifyGen(fooQuestion)","listHtml")
+

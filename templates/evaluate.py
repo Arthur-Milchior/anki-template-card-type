@@ -80,7 +80,6 @@ def compile_(tag, soup, *, isQuestion = None, model = None, objects = None, inCo
     kwargs -- unused for this kind of template.
     inConfig -- whether object is in config. Otherwise this value must be evaluated.
     """
-    #debug(f"""obects.compile_: kwargs is {kwargs}""",1)
     assert assertType(isQuestion, bool)
     assert model is not None
     assert isinstance(objects, dict)
@@ -92,8 +91,13 @@ def compile_(tag, soup, *, isQuestion = None, model = None, objects = None, inCo
     if params is not None:
         tag.clear()
         (obj, asked, hide) = params
-        obj.restrictToModel(model).template(tag, soup, isQuestion = isQuestion, asked = asked, hide = hide)
-    #debug("",-1)
+        obj.allAndTag(tag = tag,
+                      soup = soup,
+                      model = model,
+                      isQuestion = isQuestion,
+                      asked = asked,
+                      hide = hide)
+
 def compile_eval(*args, **kwargs):
     compile_(*args, inConfig=False, **kwargs)
 

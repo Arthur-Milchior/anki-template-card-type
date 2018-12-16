@@ -29,23 +29,28 @@ def _set(s,value):
     readIfRequired()
     objects[s] = value
 
+def jsonStringToDic(jsonString, dic = dict()):
+    json = json.loads(jsonTest)
+    return jsonToDic(instructions, dic)
+def jsonToDic(json, dic = dict()):
+    dic.clear()
+    instructions = json.get("instructions", [])
+    for instruction in instructions:
+        if isinstance(instruction,list):
+            (name,value) = instruction
+            #debug(f"""Evaluating "{name}" as "{value}" of type {type(value)}.""")
+            dic[name] =  ensureGen(eval(value,globals(), dic))
+        elif isinstance(instruction,str):
+            exec(instruction,globals(), dic)
+        else:
+            assert False
+    return dic
+    
 read = False
 def reread(objects=objects):
     #debug("reread", 1)
-    global userOption
     userOption = aqt.mw.addonManager.getConfig(__name__)
-    instructions = userOption.get("instructions", [])
-    objects.clear()
-    for instruction in instructions:
-        #debug(f"reread {instruction}" )
-        if isinstance(instruction,list):
-            (name,value) = instruction
-            define(name, value)
-        elif isinstance(instruction,str):
-            execute(instruction)
-        else:
-            assert False
-    #debug("reread", -1)
+    jsonToDic(userOption, objects)
 
 def execute(t):
     #debug(f"execute({t})",1 )

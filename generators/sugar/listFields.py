@@ -1,7 +1,8 @@
 from .html import TR, TD
 from .sugar import NotNormal
 from .fields import QuestionnedField
-from ...debug import debug, identity
+from ...debug import debug
+from ...utils import identity
 from ..ensureGen import ensureGen
 from ..singleChild import HTML
 from ..leaf import Field
@@ -60,8 +61,8 @@ class ListFields(MultipleChildren, NotNormal):
     def getChildren(self):
         return self.getNormalForm().getChildren()
     
-    def __repr__(self):
-        return f"""ListFields("{self.originalFields}","{self.localFun}","{self.globalSep}","{self.globalFun}", {self.params()})"""
+    # def __repr__(self):
+    #     return f"""ListFields("{self.originalFields}","{self.localFun}","{self.globalSep}","{self.globalFun}", {self.params()})"""
     
     def _getNormalForm(self):
         elements = []
@@ -77,7 +78,7 @@ class ListFields(MultipleChildren, NotNormal):
         elements.append(self.globalSep(seen))
         return ensureGen(self.globalFun(elements)).getNormalForm()
 
-class ListFieldsTrigger(ListFields):
+class NamedListFields(ListFields):
     """Similar to ListFields.
 
     localFun returns a pair, with a question to cascade, or None.
@@ -114,8 +115,8 @@ class ListFieldsTrigger(ListFields):
                          globalFun = globalFun_,
                          **kwargs)
     
-    def __repr__(self):
-        return f"""ListFieldsTrigger({self.liestFields}, {self.listName}, {self.localFun}, {self.globalFun})"""
+    # def __repr__(self):
+    #     return f"""ListFieldsTrigger({self.liestFields}, {self.listName}, {self.localFun}, {self.globalFun})"""
 
 class TableFields(ListFields):
     def __init__(self,
@@ -142,8 +143,8 @@ class TableFields(ListFields):
             return ret
         super().__init__(fields, localFun = localFun, globalFun = globalFun, **kwargs)
         
-    def __repr__(self):
-        return f"""TableFields on {super().__repr__()}"""
+    # def __repr__(self):
+    #     return f"""TableFields on {super().__repr__()}"""
 
 class NumberedFields(ListFieldsTrigger):
     
@@ -170,8 +171,8 @@ class NumberedFields(ListFieldsTrigger):
                          localFun = localFun,
                          globalFun = globalFun,
                          **kwargs)
-    def __repr__(self):
-        return f"""NumberedFields("{self.fieldPrefix}","{self.greater}")"""
+    # def __repr__(self):
+    #     return f"""NumberedFields("{self.fieldPrefix}","{self.greater}")"""
 
 class PotentiallyNumberedFields(FilledOrEmptyField):
     """If the second element is present, a list is used. Otherwise, assume
@@ -185,6 +186,6 @@ no other elements are present, and show only the first element."""
                                                     label = fieldPrefix),
                          **kwargs)
 
-    def __repr__(self):
-        return f"""PotentiallyNumberedFields() on {super().__repr__()}"""
+    # def __repr__(self):
+    #     return f"""PotentiallyNumberedFields() on {super().__repr__()}"""
 

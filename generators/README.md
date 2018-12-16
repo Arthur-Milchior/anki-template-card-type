@@ -36,9 +36,11 @@ template is as follows:
   multiple model. Thus, the part of the job which is not specific to a
   model may be done a single time. This is done using
   self.restrictToModel(model,fields = None).
-* Actually outputting the template, taking into account whether it is
+* Computing question/answer side, using self.questionOrAnswer
+* taking into account whether it is
   question or answer side, what is asked, and what should be
-  hidden. This can be done using self.template(asked,hide,question)
+  hidden. This can be done using self.template(asked,hide)
+* finally adding the content to some xml using ._udpateTag
   
 ## Generators
 ### Core

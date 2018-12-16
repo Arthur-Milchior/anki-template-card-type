@@ -5,6 +5,9 @@ class Step:
         self.step = step
         self.name = name
 
+    def __hash__(self):
+        return self.step
+
     def __repr__(self):
         return f"Step({self.step},{self.name})"
 
@@ -17,9 +20,11 @@ class Step:
             BASIC: NORMAL,
             NORMAL: WITHOUT_REDUNDANCY,
             WITHOUT_REDUNDANCY: MODEL_APPLIED,
-            MODEL_APPLIED: TEMPLATE_APPLIED,
+            MODEL_APPLIED: QUESTION_ANSWER,
+            QUESTION_ANSWER: TEMPLATE_APPLIED,
         }.get(self)
-        assert ret is not None
+        if ret is None:
+            raise Exception(f"""Next step of {step} does not exists.""")
         return ret
 
     def __hash__(self):
@@ -30,9 +35,11 @@ class Step:
             NORMAL: BASIC,
             WITHOUT_REDUNDANCY: NORMAL,
             MODEL_APPLIED: WITHOUT_REDUNDANCY,
-            TEMPLATE_APPLIED: MODEL_APPLIED,
+            QUESTION_ANSWER: MODEL_APPLIED,
+            TEMPLATE_APPLIED: QUESTION_ANSWER,
         }.get(step)
-        assert ret is not None
+        if ret is None:
+            raise Exception(f"""Previous step of {step} does not exists.""")
         return ret
     
     def union(self, other):
@@ -46,6 +53,7 @@ class Step:
 BASIC = Step(0, "BASIC")
 NORMAL = Step(1, "NORMAL")
 WITHOUT_REDUNDANCY = Step(2, "WITHOUT_REDUNDANCY")
-MODEL_APPLIED = Step(3, "MODEL_APPLIED")
-TEMPLATE_APPLIED = Step(4, "TEMPLATE_APPLIED")
+QUESTION_ANSWER = Step(3, "QUESTION_ANSWER")
+MODEL_APPLIED = Step(4, "MODEL_APPLIED")
+TEMPLATE_APPLIED = Step(5, "TEMPLATE_APPLIED")
 EMPTY = Step(10, "EMPTY")

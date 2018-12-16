@@ -18,7 +18,12 @@ class Leaf(Gen):
     @debugFun
     def getChildren(self):
         return frozenset()
-        
+
+    @debugFun
+    def clone(self, elements = []):
+        assert elements == []
+        return self
+
 emptyGen = None
 class Empty(Leaf):
     """A generator without any content"""
@@ -41,10 +46,6 @@ class Empty(Leaf):
         super().__init__(state = state,
                          toKeep = toKeep,
                          **kwargs)
-
-    @debugFun
-    def _applyRecursively(self, fun, **kwargs):
-        return self
     
     def __repr__(self):
         if self == emptyGen:
@@ -74,25 +75,15 @@ class Literal(Leaf):
     """A text to be printed, as-is, unconditionally."""
     def __init__(self,
                  text = None,
-                 toKeep = False,
                  state = TEMPLATE_APPLIED,
-                 toClone = None,
                  **kwargs):
-        if text is not None:
-            self.text = text
-        elif toClone is not None and isinstance(toClone,Literal):
-            self.text = toClone.text
-        else:
-            self.text = ""
+        if text is None:
+            text = ""
+        self.text = text
         if not self.text:
             state == EMPTY
-        super().__init__(toKeep = toKeep,
-                         state = state,
+        super().__init__(state = state,
                          **kwargs)
-            
-    @debugFun
-    def _applyRecursively(self, fun, **kwargs):
-        return self
     
     def __hash__(self):
         return hash(self.text)
@@ -124,28 +115,28 @@ class Field(Leaf):
     def __init__(self,
                  field = None,
                  toKeep = True,
-                 toClone = None,
-                 typ = False,
-                 cloze = False,
-                 state = NORMAL,
+                 typ = None,
+                 cloze = None,
+                 state = WITHOUT_REDUNDANCY,
                  **kwargs):
+        if typ is None:
+            typ = False
+        if cloze is None:
+            cloze = False
         self.typ = typ
         self.cloze = cloze
-        if field is None and isinstance(toClone,Field):
-            self.field = toClone.field
-        elif isinstance(field,str):
-            self.field = field
-        elif isinstance(field,set) and len(field)==1:
+        if isinstance(field,Field):
+            field = field.field
+        elif isinstance(field,set):#required so that {{foo}} becomes Field(foo)
+            assert len(field)==1
             elt = s.pop()
             s.add(elt)
-            if len(elt) == 1:
-                elt_ = s.pop
-                elt.add(elt_)
-                self.field = elt_
-            else:
-                assert False
+            assert len(elt) == 1
+            field = elt.pop
+            elt.add(field)
         else:
-            assert False
+            assert assertType(field, str)
+        self.field = field
         super().__init__(state = state,
                          toKeep = toKeep,
                          **kwargs)
@@ -180,49 +171,4 @@ class Field(Leaf):
 
 addTypeToGenerator(set, Field)
 
-class Function(Gen):
-    def __init__(self, fun, value = None, processed = None):
-        self.value = value
-        if processed is None:
-            self.processed = value is not None
-        else:
-            self.processed = processed
-        self.fun = fun
-        super().__init__()
-
-    def __repr__(self):
-        if self.processed:
-            return f"""Function({self.value})"""
-        else:            
-            return f"""Function({self.fun})"""
-
-    def __hash__(self):
-        return hash(self.fun)
-
-    def __eq__(self, other):
-        return isinstance(other, Function) and self.fun == other.fun
-
-    @debugFun
-    def _applyRecursively(self, *args, **kwargs):
-        value = self.getValue()
-        debug(f"_applyRecursively calls itself recursively on {value}")
-        return value._applyRecursively(*args, **kwargs)
-
-    @debugFun
-    def _applyTag(self, tag, soup):
-        self.getValue().applyTag(tag, soup)
-        
-    @debugFun
-    def getState(self):
-        return self.getValue().getState()
-    
-    @debugFun
-    def getValue(self):
-        if not self.processed:
-            self.value = self.fun()
-            self.processed = True
-        return self.value
-
-addTypeToGenerator(types.FunctionType, Function)
-addTypeToGenerator(types.BuiltinFunctionType, Function)
 

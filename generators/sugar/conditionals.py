@@ -2,6 +2,7 @@ from ..singleChild import SingleChild, Requirement
 from ..leaf import emptyGen
 from ..multipleChildren import MultipleChildren, ListElement, Name, QuestionOrAnswer
 from .sugar import NotNormal
+from ...utils import firstTruth
 
 class Branch(Name):
     """The class which expands differently in function of the question/hidden value.
@@ -22,10 +23,7 @@ class Branch(Name):
                  questionAsked = None,
                  questionNotAsked = None,
                  children = dict(),
-                 toClone = None,
-                 isNormal = False,
-                 locals_ = None,
-                 cascadeAsked = None,
+                 cascadeAsked = frozenset(),
                  **kwargs):
         """
         The value of self.children[isQuestion,isAsked] is:
@@ -37,19 +35,47 @@ class Branch(Name):
         empty otherwise.
 
         """
-        questionAsked = [questionAsked, asked, question, children.get((True,True)), default, emptyGen]
-        questionNotAsked = [questionNotAsked, notAsked, question, children.get((True,False)), default, emptyGen]
-        answerAsked = [answerAsked, asked, answer, children.get((False,True)), default, emptyGen]
-        answerNotAsked = [answerNotAsked, notAsked, answer, children.get((False,False)), default, emptyGen]
+        self.inputs = dict()
+        def addIfNotNone(key, value):
+            if value is not None:
+                self.inputs[key] = value
+        addIfNotNone("default", default)
+        addIfNotNone("question", question)
+        addIfNotNone("answerAsked", answerAsked)
+        addIfNotNone("answerNotAsked", answerNotAsked)
+        addIfNotNone("answer", answer)
+        addIfNotNone("asked", asked)
+        addIfNotNone("notAsked", notAsked)
+        addIfNotNone("questionAsked", questionAsked)
+        addIfNotNone("questionNotAsked", questionNotAsked)
+        addIfNotNone("children", children)
+        addIfNotNone("cascadeAsked", cascadeAsked)
+        addIfNotNone("name", name)
+ 
+        questionAsked = firstTruth([questionAsked, asked, question, children.get((True,True)), default, emptyGen])
+        questionNotAsked = firstTruth([questionNotAsked, notAsked, question, children.get((True,False)), default, emptyGen])
+        answerAsked = firstTruth([answerAsked, asked, answer, children.get((False,True)), default, emptyGen])
+        answerNotAsked = firstTruth([answerNotAsked, notAsked, answer, children.get((False,False)), default, emptyGen])
         
         asked = questionAsked if questionAsked == answerAsked else QuestionOrAnswer(questionAsked, answerAsked, **kwargs)
         notAsked = questionNotAsked if questionNotAsked == answerNotAsked else QuestionOrAnswer(questionNotAsked, answerNotAsked, **kwargs)
 
-        super().__init__(name, asked, notAsked, cascadeAsked = cascadeAsked, **kwargs)
+        super().__init__(name = name,
+                         asked = asked,
+                         notAsked = notAsked,
+                         cascadeAsked = cascadeAsked,
+                         **kwargs)
+
+    # def __repr__(self):
+    #     t= f"Branch("
+    #     for key in self.inputs:
+    #         t+=f"{key}: {self.inputs[key]}, "
+    #     t+=")"
+    #     return t
 
 class FilledOrEmptyField(ListElement):
-    def __repr__(self):
-        return """FilledOrEmptyField({self.field},{self.filledCase},{self.emptyCase})"""
+    # def __repr__(self):
+    #     return """FilledOrEmptyField({self.field},{self.filledCase},{self.emptyCase})"""
     
     def __init__(self,field,filledCase = emptyGen, emptyCase = emptyGen,  **kwargs):
         self.filledCase = filledCase
@@ -57,90 +83,44 @@ class FilledOrEmptyField(ListElement):
         self.field = field
         super().__init__([
             Requirement(
-                self.filledCase,
+                child = self.filledCase,
                 requireFilled = {self.field}
             ),
             Requirement(
-                self.emptyCase,
+                child = self.emptyCase,
                 requireEmpty = {self.field}
             )],  **kwargs)
         
 
-class AtLeastNField(SingleChild, NotNormal):
-    """Show the child if at least n of the fields have content.
-
-    If there are m fields, then the length of the text generated is
-    O(m choose n). For n=1, it means the text is linear in the number
-    of fields. For n=2, it means the text is square in the number of fields.
-
-    So use this only for small text, such as
-    <table>.
-    """
-    def __init__(self, child, fields, n=1):
-        self.child = child
-        super().__init__(child)
-        self.n = n
-        self.fields = fields
-        
-    def __repr__(self):
-        return f"""AtLeastNField({self.child},{self.fields},{self.n})"""
-
-    def _getNormalForm(self):
-        if self.n == 0:
-            return self.child.getNormalForm()
-        seen = set()
-        seen_card = 0
-        actual = emptyGen
-        for condition in self.fields:
-            if seen_card >= self.n-1:
-                actual = FilledOrEmptyField(condition,
-                                            filledCase = AtLeastNField(self.child, seen, self.n-1),
-                                            emptyCase = actual)
-            seen_card +=1
-            seen.add(condition)
-        return actual.getNormalForm()
-
-class AtLeastOneField(AtLeastNField):
-    def __init__(self,*args,**kwargs):
-        self.child = child
-        super().__init__(*args, n=1,**kwargs)
-class AtLeastTwoField(AtLeastNField):
-    def __init__(self,*args,**kwargs):
-        self.child = child
-        super().__init__(*args, n=2,**kwargs)
-        
 class FilledField(FilledOrEmptyField):
     def __init__(self, field, child,  **kwargs):
         self.child = child
         super().__init__(field, filledCase = child,  **kwargs)
-    def __repr__(self):
-        return f"""FilledField({self.field},{self.child})"""
+    # def __repr__(self):
+    #     return f"""FilledField({self.field},{self.child})"""
         
 class EmptyField(FilledOrEmptyField):
-    def __repr__(self):
-        return f"""EmptyField({self.field},{self.child})"""
     def __init__(self, field, child,  **kwargs):
         self.child = child
         super().__init__(field, emptyCase = child,  **kwargs)
+    # def __repr__(self):
+    #     return f"""EmptyField({self.field},{self.child})"""
     
 class QuestionField(QuestionOrAnswer):
-    def __repr__(self):
-        return f"""QuestionField({self.field},{self.child})"""
     def __init__(self, child,  **kwargs):
         self.child = child
         super().__init__(questionCase = child,  **kwargs)
+    # def __repr__(self):
+    #     return f"""QuestionField({self.field},{self.child})"""
 
 class AnswerField(QuestionOrAnswer):
-    def __repr__(self):
-        return f"""AnswerField({self.field},{self.child})"""
     def __init__(self, child,  **kwargs):
         self.child = child
         super().__init__(answerCase = child,  **kwargs)
+    # def __repr__(self):
+    #     return f"""AnswerField({self.field},{self.child})"""
         
 class PresentOrAbsentField(ListElement):
-    def __repr__(self):
-        return f"""PresentOrAbsentField({self.field},{self.presentCase},{self.absentCase})"""
-    
     def __init__(self, field, presentCase = emptyGen, absentCase = emptyGen,  **kwargs):
         self.child = child
         self.presentCase = presentCase
@@ -149,26 +129,27 @@ class PresentOrAbsentField(ListElement):
         elements = super().__init__(
             [
                 Requirement(
-                    self.presentCase.getNormalForm(),
+                    child = self.presentCase.getNormalForm(),
                     requireInModel = {self.field}
                 ),
                 Requirement(
-                    self.absentCase.getNormalForm(),
+                    child = self.absentCase.getNormalForm(),
                     requireAbsentOfModel = {self.field}
                 )]
             , **kwargs)
+    # def __repr__(self):
+    #     return f"""PresentOrAbsentField({self.field},{self.presentCase},{self.absentCase})"""
     
 class PresentField(PresentOrAbsentField):
-    def __repr__(self):
-        return f"""PresentField({self.field},{self.child})"""
-    
     def __init__(self, field, child,  **kwargs):
         self.child = child
         super().__init__(field, presentCase = child,  **kwargs)
+    # def __repr__(self):
+    #     return f"""PresentField({self.field},{self.child})"""
         
 class AbsentField(PresentOrAbsentField):
-    def __repr__(self):
-        return f"""AbsentField({self.field},{self.child})"""
     def __init__(self, field, child,  **kwargs):
         self.child = child
         super().__init__(field, absentCase = child,  **kwargs)
+    # def __repr__(self):
+    #     return f"""AbsentField({self.field},{self.child})"""

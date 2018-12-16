@@ -17,3 +17,5 @@ class NotNormal(Gen):
     def _restrictToModel(self, *args, **kwargs):
         raise Exception("_restrictToModel from not normal")
     
+    def _questionOrAnswer(self, *args, **kwargs):
+        raise Exception("_questionOrAnswer from not normal")

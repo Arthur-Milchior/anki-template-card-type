@@ -2,12 +2,13 @@ import copy
 from .generators import Gen, shouldBeKept
 from .constants import *
 from .ensureGen import addTypeToGenerator
-from .leaf import Literal, Field, Empty, emptyGen
 from ..debug import debug, assertType, debugFun
+from .leaf import emptyGen
 
 class MultipleChildren(Gen):
-    @debugFun
-    def __init__(self, toKeep = None, **kwargs):
+    #@debugFun
+    def __init__(self, toKeep = None,  **kwargs):
+        super().__init__(**kwargs)
         if toKeep is None:
             allFalse = True
             for element in self.getChildren():
@@ -20,8 +21,12 @@ class MultipleChildren(Gen):
                     allFalse = None
             if allFalse:
                 toKeep = False
-        super().__init__(toKeep = toKeep, **kwargs)
-
+        if toKeep is True:
+            self.doKeep()
+        elif toKeep is False:
+            self.dontKeep()
+            
+ 
 class ListElement(MultipleChildren):
     #@debugFun
     def __init__(self,
@@ -32,11 +37,24 @@ class ListElement(MultipleChildren):
         Keyword arguments:
         elements -- list of elements
         """
+        self.childEnsured = False
         debug(f"ListElement({elements})",1)
         self.elements = elements
         super().__init__(toKeep = toKeep, **kwargs)
         debug("",-1)
- 
+        
+    def clone(self, elements):
+        truthyElements = []
+        for element in elements:
+            if element:
+                truthyElements.append(element)
+        if len(truthyElements)==0:
+            return emptyGen
+        elif len(truthyElements)==1:
+            return truthyElements[0]
+        else:
+            return ListElement(truthyElements)
+        
     def __repr__(self):
         return f"""ListElement(elements = {self.elements}, {self.params()})"""
 
@@ -45,50 +63,11 @@ class ListElement(MultipleChildren):
     
     @debugFun
     def getChildren(self):
-        #debug(f"{self}.getChildren() = {self.children}")
+        if self.childEnsured == False:
+            for i in range(len(self.elements)):
+                self.elements[i] = self._ensureGen(self.elements[i])
+            self.childEnsured = True
         return self.elements
-    
-    @debugFun
-    def _applyRecursively(self, fun, **kwargs):
-        """self, with fun applied to each element. 
-
-        isNormal and versionWithoutRedundancy are passed to class constructor."""
-        debug(f"{self}._applyRecursively({fun.__qualname__})",1)
-        elements = []
-        change = False
-        for i in range(len(self.elements)):
-            debug(f"Considering position {i}, containing {self.elements[i]}")
-            self.elements[i] = self._ensureGen(self.elements[i])
-            currentElement = self.elements[i]
-            debug(f"""Once in gen, it becomes "{currentElement}".""")
-            debug(f"""applying {fun.__name__} to "{currentElement}".""")
-            processedElement = fun(currentElement)
-            debug(f"""processedElement now is {processedElement}""")
-            debug(f"""Applying {fun.__qualname__} to "{currentElement}" leads to {processedElement}.""")
-            assert not (not currentElement and processedElement)
-            if processedElement != currentElement:
-                debug(f"""changed""")
-                change = True
-            else:
-                debug(f"""not changed""")
-                pass
-            if processedElement:
-                debug(f"Appending {processedElement} to elements")
-                elements.append(processedElement)
-            else:
-                debug(f"""not appending it""")
-                pass
-        debug(f"""End of loop. Elements are "{elements}".""")
-        if not elements:
-            ret = emptyGen
-        elif len(elements) == 1:
-            ret = elements[0]
-        elif change:
-            ret = ListElement(elements = elements,  **kwargs)
-        else:
-            ret = self
-        debug(f"self._applyRecursively() returns {ret}",-1)
-        return ret
 
     @debugFun
     def _applyTag(self, *args, **kwargs):
@@ -103,40 +82,47 @@ class Name(Gen):
                  name = None,
                  asked = None,
                  notAsked = None,
-                 toClone = None,
                  cascadeAsked = frozenset(),
                  **kwargs):
-        if name is not None:
-            self.name = name
-        elif toClone is not None and  isinstance(toClone,Branch):
-            self.name = toClone.name
-        else:
-            assert False
+        assert assertType(name, str)
+        assert assertType(cascadeAsked, frozenset)
+        for cascading in cascadeAsked:
+            assert assertType(cascading, str)
+        self.name = name
         self.cascadeAsked = cascadeAsked
+        
         self.asked = asked
         self.notAsked = notAsked
+        self.childEnsured = False
         super().__init__(**kwargs)
+
+    def clone(self, elements):
+        assert len(elements) ==2
+        asked, notAsked = elements
+        if not asked and not notAsked:
+            return emptyGen
+        if asked == self.asked and notAsked == self.notAsked:
+            return self
+        return Name(name = self.name,
+                    asked = asked,
+                    notAsked = notAsked,
+                    cascadeAsked = self.cascadeAsked)
+       
     
     def __repr__(self):
-        return f"""Name(name = {self.name}, asked = {self.asked}, notAsked = {self.notAsked}, {self.params()})"""
+        return f"""Name(name = "{self.name}", asked = {self.asked}, notAsked = {self.notAsked}, {self.params()})"""
     
     def __eq__(self,other):
-        return isinstance(other,Branch) and self.name == other.name and self.asked == other.asked and self.notAsked == other.notAsked
+        return isinstance(other,Name) and self.name == other.name and self.asked == other.asked and self.notAsked == other.notAsked
     
     def getChildren(self):
-        return frozenset({self.asked, self.notAsked})
-    
-    def _applyRecursively(self, fun, **kwargs):
-        self.asked = ensureGen(self.asked)
-        self.notAsked = ensureGen(self.notAsked)
-        asked_ = fun(self.asked)
-        notAsked_ = fun(self.notAsked)
-        if asked_ == self.asked_ and notAsked_ == self.notAsked_:
-            return self
-        return Name(asked_, notAsked_, **kwargs)
+        if not self.childEnsured:
+            self.asked = self._ensureGen(self.asked)
+            self.notAsked = self._ensureGen(self.notAsked)
+            self.childEnsured = True
+        return (self.asked, self.notAsked)
 
-    def _template(self, tag, soup, isQuestion = None, asked = frozenset(), hide = frozenset()):
-        assert assertType(isQuestion, bool)
+    def _template(self, asked = frozenset(), hide = frozenset()):
         if self.name in hide:
             return None
         if self.name in asked:
@@ -144,7 +130,7 @@ class Name(Gen):
             child = self.asked
         else:
             child = self.notAsked
-        return child.template(tag, soup, isQuestion = isQuestion, asked = asked, hide = hide)
+        return child.template(asked = asked, hide = hide)
         
     def _applyTag(self, *args, **kwargs):
         raise Exception("Name._applyTag should not exists")
@@ -157,32 +143,47 @@ class QuestionOrAnswer(Gen):
                  **kwargs):
         self.question = question
         self.answer = answer
+        self.childEnsured = False
         super().__init__(**kwargs)
         
 
-    def _assumeQuestion(self, isQuestion):
-        return self.question if isQuestion else self.answer
+    def clone(self, elements):
+        assert len(elements) ==2
+        question, answer = elements
+        if not question and not answer:
+            return emptyGen
+        if question == self.question and answer == self.answer:
+            return self
+        return Name(question = question,
+                    answer = answer)
+
+    #Todo: during the consistency step, copy the question side to descendant
+
+    @debugFun
+    def _questionOrAnswer(self, isQuestion):
+        ret = self.question if isQuestion else self.answer
+        ret = ret.questionOrAnswer(isQuestion)
+        return ret
     
     def __repr__(self):
-        return f"""QuestionOrAnswer("{self.question}", "{self.answer}", {self.params()})"""
+        return f"""QuestionOrAnswer(question = "{self.question}", answer = "{self.answer}", {self.params()})"""
     
     def __eq__(self,other):
-        return isinstance(other,QuestionAsked) and self.answer == other.answer and self.question == other.question
+        return isinstance(other,QuestionOrAnswer) and self.answer == other.answer and self.question == other.question
     
     def getChildren(self):
-        return frozenset({self.answer, self.question})
+        if not self.childEnsured:
+            self.question = self._ensureGen(self.question)
+            self.answer = self._ensureGen(self.answer)
+            self.childEnsured = True
+        return (self.question, self.answer)
     
-    def _applyRecursively(self, fun, **kwargs):
-        self.question = ensureGen(question)
-        self.answer = ensureGen(answer)
-        question_ = fun(self.question)
-        answer_ = fun(self.answer)
-        if question_ == self.question_ and answer_ == self.answer_:
-            return self
-        return QuestionOrAnswer(question_, answer_, **kwargs)
-
     def _applyTag(self, *args, isQuestion = None, **kwargs):
-        return self._assumeQuestion(isQuestion).applyTag(*args, isQuestion = None, **kwargs)
+        raise Exception("At this stage, QuestionOrAnswer must be removed")
+        # aq = self._assumeQuestion(isQuestion)
+        # at = aq.applyTag(*args,
+        #                  **kwargs)
+        # return at
     
 # class RecursiveFields(MultipleChildren):
 #     """

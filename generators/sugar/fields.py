@@ -1,8 +1,8 @@
-from .conditionals import  Branch
+from .conditionals import  Branch, FilledField
 from ..leaf import Field
 from ...debug import debug, assertType
 from .sugar import NotNormal
-from .conditionals import FilledField
+
 
 class QuestionnedField(Branch):
     """Show the content of the field. Unless the field is asked and its the question, then show ???
@@ -22,17 +22,23 @@ class QuestionnedField(Branch):
             self.fieldName = field
             self.field = Field(field)
         else:
+            assert assertType(field,Field)
             self.field = field
             self.fieldName = field.field
         if questionAsked is None:
             questionAsked = "???"
         if default is None:
             default = self.field
+        self.questionAsked = questionAsked
+        self.default = default
         #todo emphasize answerAsked
         super().__init__(name = self.fieldName,
                          questionAsked = questionAsked,
                          default = default,
                          **kwargs)
+        
+    # def __repr__(self):
+    #     return f"""QuestionnedField({self.field}, {self.questionAsked}, {self.default})."""
         
 class DecoratedField(FilledField):
     """A questionned field, preceded by some way to ask the question.
@@ -54,3 +60,5 @@ class DecoratedField(FilledField):
                              QuestionnedField(field)],
                          **kwargs)
 
+    # def __repr__(self):
+    #     return f"""DecoratedField({self.field})"""

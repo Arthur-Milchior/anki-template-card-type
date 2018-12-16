@@ -1,21 +1,21 @@
 from .imports import *
-from .data.htmls import TestHTML
+from .functions import testEachStep
 from bs4 import BeautifulSoup
 from html import escape
 from copy import deepcopy
-#from .data.templates import testTemplate, emptyHtml
+from .data.models import model
 
-foofoo = ListElement([literalFoo, emptyGen, fieldFoo])
-print(f"foofoo is {foofoo}")
-wr = foofoo.getWithoutRedundance()
-print(f"wr is {wr}")
-startDebug()
-restrict = wr.restrictToModel(model)
-print(f"restriction is {restrict}")
+# tr = testEachStep(br,
+#                   model = model,
+#                   isQuestion = True,
+#                   asked = frozenset({"Question"}))
 
-endDebug()
-
-debug("current")
+# image = Image("http://www.foo.bar")
+# print(f"Image is {image}")
+# print(f"once compiled, it become {testEachStep(image)}")
+# startDebug()
+# endDebug()
+# debug("current")
 
 # def test(source, model = model, objects = testObjects, isQuestion = True, asked = frozenset(), hide = frozenset(), **kwargs):
 #     soup = soupFromTemplate("<test/>")

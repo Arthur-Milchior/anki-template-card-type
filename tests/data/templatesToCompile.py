@@ -2,23 +2,6 @@ from .models import *
 from .jsons import testObjects
 from ..imports import *
 
-class TestHTML:
-    def  __init__(self,source, compiled, *, numberOfTagToEdit = None, model = model, **kwargs):
-        self.source = source
-        self.model = model
-        self.compiled = compiled
-        self.kwargs = kwargs
-        self.numberOfTagToEdit = numberOfTagToEdit
-    #     self.test()
-
-    # def test(self):
-        soup = soupFromTemplate(self.source)
-        if self.numberOfTagToEdit is not None:
-            assert self.numberOfTagToEdit == len(tagsToEdit(soup))
-        #debug(f"""TestHTML: kwargs is {self.kwargs}""")
-        compile_(soup, soup = soup, model = model, **self.kwargs)
-        assert assertEqual("self.compiled", "templateFromSoup(soup, prettify = True)")
-
 noTagHtml = "foo1"
 
 noTemplateHtml = """<p>
@@ -213,4 +196,7 @@ definition1AnswerHard ="""<span template="Front Side">
   {{/Definition2}}
  </span>
 </span>"""
+
+singleTest = "<test/>"
+questionMarks = "???"
 

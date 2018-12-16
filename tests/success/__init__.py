@@ -1,3 +1,6 @@
 print("Regression test")
-from . import generators, htmls, models
-
+#from .config import *
+from .generators import *
+from .templates import *
+from .models import *
+from .htmlToCompile import * 

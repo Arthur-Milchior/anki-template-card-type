@@ -1,3 +1,4 @@
+from ...config import readIfRequired
 readIfRequired()
 # print(objects)
 

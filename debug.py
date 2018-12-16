@@ -80,5 +80,4 @@ def debugFun(fun):
     aux.__qualname__ = f"debug_{fun.__qualname__}"
     return aux
 
-def identity(x):
-    return x
+
