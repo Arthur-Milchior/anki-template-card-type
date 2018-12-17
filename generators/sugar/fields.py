@@ -1,4 +1,6 @@
-from .conditionals import  Branch, FilledField
+from .conditionals import  Branch
+from ..singleChild import Filled
+from ..generators import Gen
 from ..leaf import Field
 from ...debug import debug, assertType
 from .sugar import NotNormal
@@ -40,7 +42,7 @@ class QuestionnedField(Branch):
     # def __repr__(self):
     #     return f"""QuestionnedField({self.field}, {self.questionAsked}, {self.default})."""
         
-class DecoratedField(FilledField):
+class DecoratedField(Gen):
     """A questionned field, preceded by some way to ask the question.
     If there is no question, nothing is printed."""
 
@@ -53,12 +55,18 @@ class DecoratedField(FilledField):
             field = Field(field)
         if label is None:
             label = field.field
-        super().__init__(field = field.field,
-                         child = [
-                             label,
-                             ": ",
-                             QuestionnedField(field)],
-                         **kwargs)
+        self.label = label
+        self.field = field
+        super().__init__(**kwargs)
+
+    def _getNormalForm(self):
+        return Filled(field = self.field.field,
+                      child = [
+                          self.label,
+                          ": ",
+                          QuestionnedField(self.field)]
+        ).getNormalForm()
+        
 
     # def __repr__(self):
     #     return f"""DecoratedField({self.field})"""

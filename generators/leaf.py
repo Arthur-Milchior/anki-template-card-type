@@ -3,7 +3,7 @@ import types
 from .constants import *
 from .generators import Gen, modelToFields, modelToFields
 from .ensureGen import addTypeToGenerator
-from ..debug import debug, assertType, debugFun
+from ..debug import debug, assertType, debugFun, ExceptionInverse
 from bs4 import NavigableString
 from html import escape
 
@@ -42,7 +42,7 @@ class Empty(Leaf):
         elif Empty.instance is None and init:
             Empty.instance = self
         else:
-            raise Exception("Calling Empty")
+             raise ExceptionInverse("Calling Empty")
         super().__init__(state = state,
                          toKeep = toKeep,
                          **kwargs)
@@ -149,14 +149,19 @@ class Field(Leaf):
     def __repr__(self):
         return f"""Field(field = "{self.field}", type = {self.typ}, cloze = {self.cloze}, {self.params()})"""
 
-    def _assumeFieldInSet(self, field, setName):
-        if field == self.field and (setName == "absentOfModel" or setName == "Empty"):
+    def _assumeFieldEmpty(field):
+        if field == self.field:
             return emptyGen
-        return self
-
+        else:
+            return self
+    def _assumeFieldAbsent(field):
+        if field == self.field:
+            return emptyGen
+        else:
+            return self
     @debugFun
-    def _restrictToModel(self, model):
-        if self.field in modelToFields(model):
+    def _restrictToModel(self, fields):
+        if self.field in fields:
             ret = self
         else:
             #debug(f"""Field {self.field} not in fields""")

@@ -1,12 +1,13 @@
 from .html import TR, TD
 from .sugar import NotNormal
 from .fields import QuestionnedField
-from ...debug import debug
+from ...debug import debug, ExceptionInverse
 from ...utils import identity
 from ..ensureGen import ensureGen
 from ..singleChild import HTML
 from ..leaf import Field
-from .conditionals import PresentOrAbsentField, FilledOrEmptyField, AtLeastOneField, FilledField
+from .conditionals import FilledOrEmpty
+from .numberOfField import AtLeastOneField
 from ..multipleChildren import MultipleChildren
 from .conditionals import Branch
 
@@ -29,7 +30,7 @@ def fieldToPair(field):
         debug("Field case")
         ret = (field.field, field)
     else:
-        raise Exception(field)
+        raise ExceptionInverse(field)
     debug(f"""fieldToPair() returns {ret}""",-1)
     return ret
     
@@ -146,7 +147,7 @@ class TableFields(ListFields):
     # def __repr__(self):
     #     return f"""TableFields on {super().__repr__()}"""
 
-class NumberedFields(ListFieldsTrigger):
+class NumberedFields(NamedListFields):
     
     """A list of related questions. First field is called
     fieldPrefix. Then fieldPrefix2, fieldPrefix3,... This belong to a
@@ -161,10 +162,10 @@ class NumberedFields(ListFieldsTrigger):
         
         self.numberedFields = [fieldPrefix]+[f"""{fieldPrefix}{i}""" for i in range(2,greater+1)]
         def localFun(field):
-            FilledField(field = field, child = QuestionnedField(field))
+            return FilledField(field = field, child = QuestionnedField(field))
             
         def globalFun(lines):
-            HTML(tag = "ul",child = lines)
+            return [fieldPrefix, ": ", HTML(tag = "ul",child = lines)]
         
         super().__init__(fields = self.numberedFields,
                          listName = f"""{fieldPrefix}s""",
@@ -174,7 +175,7 @@ class NumberedFields(ListFieldsTrigger):
     # def __repr__(self):
     #     return f"""NumberedFields("{self.fieldPrefix}","{self.greater}")"""
 
-class PotentiallyNumberedFields(FilledOrEmptyField):
+class PotentiallyNumberedFields(FilledOrEmpty):
     """If the second element is present, a list is used. Otherwise, assume
 no other elements are present, and show only the first element."""
     def __init__(self, fieldPrefix,greater,**kwargs):

@@ -1,6 +1,7 @@
 import sys
 from ..debug import assertType
 from ..imports import *
+from ..debug import ExceptionInverse
 from . import templates
 from ..config import evaluate
 from ..generators.generators import ensureGen
@@ -20,7 +21,7 @@ def _tagGetParams(tag):
     hide = split(tag.attrs.get("hide"))
     objName = tag.attrs.get("name")
     if objName is None:
-        raise Exception(f"""Name missing in {tag}.""")
+        raise ExceptionInverse(f"""Name missing in {tag}.""")
     ret = (objName, asked, hide)
     #debug(f"_tagGetParams({tag.name}) returns {ret}", -1)
     return ret

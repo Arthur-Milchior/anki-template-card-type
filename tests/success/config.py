@@ -4,7 +4,7 @@ readIfRequired()
 
 
 # test = getObject("test")
-# assert assertEqual(" test ", "Literal("test")")
+# assert assertEqual( test , Literal("test"))
 # assert test == test.getNormalForm()
 # assert test == test.getWithoutRedundance()
 

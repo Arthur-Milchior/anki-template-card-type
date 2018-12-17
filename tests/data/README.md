@@ -11,6 +11,7 @@ The processing should be similar to the one of /config.py, but processing is don
 # model.py
 
 Contains a model. With fields Question, Back, Definition, Definition2,... to Definition6 and a few templates.
+Its fields are also extracted
 
 # htmlFromGenerator
 

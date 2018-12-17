@@ -47,5 +47,5 @@ try:
         browser.form.menuEdit.addAction(a)
     addHook("browser.setupMenus", setupMenu)
 except:
-    print(traceback.format_exc())
+    print("\n".join(reversed(str(traceback.format_exc()).split("\n"))))
     os._exit(1)

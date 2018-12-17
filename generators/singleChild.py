@@ -5,21 +5,49 @@ from .constants import *
 from .generators import Gen, modelToFields, shouldBeKept
 from .leaf import emptyGen
 from ..tag import singleTag, tagContent
-from ..debug import debug, assertType, debugFun
+from ..debug import debug, assertType, debugFun, ExceptionInverse
 from .multipleChildren import MultipleChildren
 
 class SingleChild(MultipleChildren):
     def __init__(self, child = None, toKeep = None, **kwargs):
         self.child = child
+        self.childComputed = False
         super().__init__(toKeep = toKeep, **kwargs)
 
+    def clone(self, elements):
+        assert len(elements)==1
+        child = elements[0]
+        return self.cloneSingle(child)
+
+    def cloneSingle(self, child):
+        if not child:
+            return emptyGen
+        if child == self.child:
+            return self
+        return self.__class__(child = child)
+    
+    # def cloneSingle(self, elements):
+    #     assert len(elements) ==1
+    #     child = elements[0]
+    #     if not child:
+    #         return emptyGen
+    #     if child == self.child:
+    #         return self
+    #     return self.__class__(child = child)
+    
     def getChild(self):
-        if not isinstance(self.child, Gen):
+        if not self.childComputed:
             self.child = self._ensureGen(self.child)
+            self.childComputed = True
         return self.child
         
     def getChildren(self):
         return [self.getChild()]
+    def __hash__(self):
+        return hash((self.__class__,self.child))
+    
+    def __repr__(self):
+        return f"""{self.__class__.__name__}(child = {self.child}, {self.params()})"""
     
     def __eq__(self,other):
         """It may require to actually compute the child"""
@@ -35,27 +63,56 @@ class HTML(SingleChild):
 
     def __init__(self,
                  tag = None,
+                 atom = False,
                  attrs={},
                  **kwargs):
         assert assertType(tag,str)
         self.tag = tag
         self.attrs = attrs
-        super().__init__(**kwargs)
-        if self.child is None:
-            self.doKeep()
-        self.emptyTag = self.child is None
+        toKeep = atom is True
+        self.atom = atom
+        super().__init__(toKeep = toKeep, **kwargs)
 
-    def clone(self, elements):
-        assert len(elements)==1
-        element = elements[0]
-        if element == self.child:
+    @debugFun
+    def isEmpty(self):
+        return ((not self.atom) and self.getChild().isEmpty())
+
+    def __hash__(self):
+        return hash((self.tag,self.attrs,self.child))
+
+    @debugFun
+    def cloneSingle(self, child):
+        if child == self.child:
             return self
+        if not child and not self.atom:
+            return emptyGen
         return HTML(tag = self.tag,
                     attrs = self.attrs,
-                    child = element)
+                    child = child,
+                    atom = self.atom
+        )
+    
+    # @debugFun
+    # def cloneSingle(self, elements):
+    #     assert len(elements)==1
+    #     element = elements[0]
+    #     if element == self.child:
+    #         return self
+    #     if not element and not self.atom:
+    #         return emptyGen
+    #     return HTML(tag = self.tag,
+    #                 attrs = self.attrs,
+    #                 child = element,
+    #                 atom = self.atom
+    #     )
     
     def __repr__(self):
-        return f"""HTML(child = {repr(self.child)}, tag = "{self.tag}", attrs = "{self.attrs}", {self.params()})"""
+        return f"""HTML(
+  child = {self.child}, 
+  tag = "{self.tag}", 
+  attrs = "{self.attrs}",
+  atom = {self.atom},
+  {self.params()})"""
 
     def __eq__(self,other):
         return super().__eq__(other) and isinstance(other,HTML) and self.tag == other.tag and self.attrs == other.attrs
@@ -71,187 +128,212 @@ class HTML(SingleChild):
         #debug(f"New tag became {newtag}")
         tag.append(newtag)
         #debug(f"Tag became {tag}")
-         
-class Requirement(SingleChild):
-    """Conditional. Both about the content of the field. And the existence of the field in the model. Also allow to remove a child. And request that this is a question side.
 
-
-    requireFilled -- the fields which must have some content, (and thus be present in the model)
-    requireEmpty -- the field must be either requireEmpty or absentOfModel of the model
-    requireInModel -- the field must be present in the model. 
-    requireAbsentOfModel -- the field must not belong to the model
-    remove -- named descendant to remove.
-
-    requirements -- the map of set to use if the other value is not explicitly given.
-    """
+class FieldChild(SingleChild):
     def __init__(self,
-                 requirements = None,
-                 
-                 requireFilled = None,
-                 requireEmpty = None,
-                 requireInModel = None,
-                 requireAbsentOfModel = None,
-                 remove = None,
-                 
-                 state = BASIC,
+                 field,
                  **kwargs):
-        self.requirements = dict()
-        for (name, param) in[("Filled",requireFilled),
-                             ("Remove",remove),
-                             ("Empty",requireEmpty),
-                             ("In model",requireInModel),
-                             ("Absent of model", requireAbsentOfModel)]:
-            default = frozenset()
-            fun = frozenset
-            if param is not None:
-                self.requirements[name] = fun(param)
-            elif requirements is not None:
-                self.requirements[name] = fun(requirements.get(name,default))
-            else:
-                self.requirements[name] = default
-        inconsistent = self.isInconsistent()
-        if inconsistent:
-            print("Inconsistent requirements.",file=sys.stderr)
-            state = EMPTY
-        super().__init__(state = state,
-                         **kwargs)
-
-    def clone(self, elements):
-        assert len(elements) ==1
-        element = elements[0]
-        if element == self.child:
-            return self
-        return Requirement(requirements = self.requirements,
-                           child = element)
+        self.field = field
+        super().__init__(**kwargs)
         
+    def cloneSingle(self, child):
+        if not child:
+            return emptyGen
+        if child == self.child:
+            return self
+        return self.__class__(
+            field = self.field,
+            child = child)
+    
+    # def cloneSingle(self, elements):
+    #     assert len(elements) == 1
+    #     child = elements[0]
+    #     if not child:
+    #         return emptyGen
+    #     if child == self.child:
+    #         return self
+    #     return self.__class__(
+    #         field = self.field,
+    #         child = child)
     
     def __repr__(self):
-        t = f"""Requirement(child = {self.child}"""
-        for key in self.requirements:
-            t+=f", {key}={self.requirements[key]}"
-        t+=f", {self.params()})"
-        return t
-
-    def __eq__(self,other):
-        return super().__eq__(other) and isinstance(other,Requirement) and self.requirements == other.requirements
+        return f"""{self.__class__.__name__}(field = {self.field}, child = {self.child}, {self.params()})"""
     
-    def isInconsistent(self):
-        #debug(f"""isInconsistent("{self}")""",1)
-        for left, right in [("Filled", "Empty"), ("Filled", "Absent of model"), ("In model", "Absent of model")]:
-            intersection = self.requirements[left] & self.requirements[right]
-            #debug(f"""Computing intersection of {left} and {right}, ie. "{self.requirements["Filled"]}" & "{self.requirements["Empty"]}".""")
-            if intersection:
-                #debug(f"is not empty, thus {filledAndEmpty}, thus returning True", -1)
-                return True
-        #debug(f"""isInconsistent() returns False""",-1)
-        return False
-            
+    def __eq__(self,other):
+        return isinstance(other,self.__class__) and self.field == other.field and self.child == other.child
+    
+    def __hash__(self):
+        return hash((self.field,super().__hash__()))
+        
+         
+class Absent(FieldChild):
+    """The class which expends only if a field is not present in a model."""
+
+    def _restrictToModel(self, fields):
+        if self.field in fields:
+            return emptyGen
+        else:
+            return self.cloneSingle(self.getChild().restrictToModel(fields))
+    
+    def _assumeFieldPresent(self, field):
+        if self.field == field:
+            return emptyGen
+        else:
+            return self.cloneSingle(self.getChild().assumeFieldPresent(field))
+        
+    def _assumeFieldAbsent(self, field):
+        if self.field == field:
+            return self.child.assumeFieldAbsent(field)
+        else:
+            return emptyGen
+        
+    def _assumeFieldFilled(self, field):
+        if self.field == field:
+            return emptyGen
+        else:
+            return self.assumeFieldFilled(field)
+         
+    def _getWithoutRedundance(self):
+        child = self.getChild().getWithoutRedundance()
+        child = child.assumeFieldAbsent(self.field)
+        return self.cloneSingle(child)
+        
+    @debugFun
+    def _restrictToModel(self,fields):
+        if self.field in fields:
+            return emptyGen
+        else:
+            return self.child.restrictToModel(fields)
+        
+
+    def _applyTag(self, tag, soup):
+        assert False
+
+class Present(FieldChild):
+    """The class which expands only if a field is contained in a model."""
+    def _assumeFieldPresent(self, field):
+        if self.field == field:
+            return self.child.assumeFieldPresent(field)
+        else:
+            return self.cloneSingle(self.getChild().assumeFieldPresent(field))
+        
+    def _assumeFieldAbsent(self, field):
+        if self.field == field:
+            return emptyGen
+        else:
+            return self.cloneSingle(self.getChild().assumeFieldAbsent(field))
         
     def _getWithoutRedundance(self):
-        child = self.child
-        for requirementName in ["Filled", "Remove", "Empty", "In model", "Absent of model"]:
-            for field in self.requirements[requirementName]:
-                child = child.assumeFieldInSet(field, requirementName)
-        if child == self.child:
-            self.setState(WITHOUT_REDUNDANCY)
-            return self
-        if not child:
-            return emptyGen
-        return Requirement(child = child,
-                           requirements = self.requirements,
-                           state = WITHOUT_REDUNDANCY)
+        child = self.getChild().getWithoutRedundance()
+        child = child.assumeFieldPresent(self.field)
+        return self.cloneSingle(child)
         
-    def _assumeFieldInSet(self, field, setName):
-        contradictorySets = {"Absent Of Model":{"Filled", "In model"},
-                             "In model":{"Absent of model"},
-                             "Empty":{"Filled"},
-                             "Filled": {"Empty", "Absent of model"},
-                             "Remove": frozenset()}
-        for contradictorySet in contradictorySets[setName]:
-            if field in contradictorySet:
-                return emptyGen
-        
-        redudantSets = {"Absent Of Model":"Empty",
-                        "In model": None,
-                        "Empty": None,
-                        "Filled": "In model",
-                        "Remove": None}
-        redudantSet = redudantSets[setName]
-        requirements = copy.copy(self.requirements)
-        change = False
-        if redudantSet and field in self.requirements[redudantSet]:
-            requirements[redudantSet] = requirements[redudantSet]-{field}
-            change = True
-        if field in self.requirements[setName]:
-            requirements[setName] = requirements[setName]-{field}
-            change = True
-        if change: #since self is not redundant, the removed requirement was already taken in consideration.
-            child = self.child
-        else:
-            child = self.child.assumeFieldInSet(field,setName)
-            if not child:
-                return emptyGen
-            if child == self.child:
-                return self
-        if (requirements["Filled"] or
-            requirements["Empty"] or
-            requirements["In model"] or
-            requirements["Absent of model"] or
-            requirements["Remove"]):
-            return Requirement(child = child,
-                               requirements = self.requirements)
-        else:
-            return child
-
     @debugFun
-    def _restrictToModel(self,model):
-        fields = modelToFields(model)
-        #debug(f"""Requirement._restrictToModel({self},{model},{fields})""",1)
-        if fields is None:
-            fields =  modelToFields(model)
-            #debug(f"""Fields become {fields} """)
-        shouldBeInModel = self.requirements["In model"] - fields
-        if shouldBeInModel:
-            #debug(f"""should be in model: {shouldBeInModel}. Thus empty.""")
+    def _restrictToModel(self,fields):
+        if self.field in fields:
+            return self.child.restrictToModel(fields)
+        else:
             return emptyGen
-        cantBiFilledIfAbsent = self.requirements["Filled"] - fields
-        if cantBiFilledIfAbsent:
-            #debug(f"""should be in model: {cantBiFilledIfAbsent}. Thus empty.""")
+        
+    def _applyTag(self, tag, soup):
+        assert False
+
+class Empty(FieldChild):
+    """The class which expands differently in function of the question/answer side."""
+    def _assumeFieldFilled(self, field):
+        if self.field == field:
             return emptyGen
-        shouldBeAbsent = self.requirements["Absent of model"]&fields
-        if shouldBeAbsent:
-            #debug(f"""should be absent: {shouldBeAbsent}. Thus empty.""")
-            return emptyGen
-        child = self.child.restrictToModel(model)
-        if not child:
-            #debug(f"""Child false: {child}, thus empty""")
-            return emptyGen
-        ret = Requirement(child = child,
-                          requireFilled = self.requirements["Filled"],
-                          requireEmpty = self.requirements["Empty"] & fields,
-                          remove =  self.requirements["Remove"])
-        #debug(f"Requirement._restrictToModel() returns {ret}",-1)
-        return ret
+        else:
+            return self.cloneSingle(self.getChild().assumeFieldFilled(field))
+        
+    def _assumeFieldEmpty(self, field):
+        if self.field == field:
+            return self.cloneSingle(self.getChild().assumeFieldEmpty(field))
+        else:
+            return self.getChild().assumeFieldEmpty(field)
+        
+    def _assumeFieldAbsent(self, field):
+        if self.field == field:
+            return self.cloneSingle(self.getChild().assumeFieldEmpty(field))
+        else:
+            return self.getChild().assumeFieldEmpty(field)
+         
+    def _restrictToModel(self, fields):
+        if self.field in fields:
+            return self.cloneSingle(self.getChild().restrictToModel(fields))
+        else:
+            return self.getChild().restrictToModel(fields)
+    
+    def _getWithoutRedundance(self):
+        child = self.getChild().getWithoutRedundance()
+        child =child.assumeFieldEmpty(self.field)
+        return self.cloneSingle(child)
 
     def _applyTag(self, tag, soup):
         assert soup is not None
-        conditional_span = soup.new_tag(f"span", createdBy="conditionals")
-        self.child.applyTag(conditional_span, soup)
-        for (set, symbol) in [
-                (self.requirements["Filled"],"#"),
-                (self.requirements["Empty"],"^")
-        ]:
-            for element in set:
-                before = NavigableString(f"""{{{{{symbol}{element}}}}}""")
-                after = NavigableString(f"""{{{{/{element}}}}}""")
-                #debug(f"Enclosing {conditional_span} by {before}/{after}")
-                conditional_span.insert(0,before)
-                conditional_span.append(after)
-        #debug(f"Extending {tag} by {conditional_span}")
-        tag.contents.extend(conditional_span.contents)
-        if self.requirements["Remove"]:
-            raise Exception(f"Asking to require to remove something")
-        if  self.requirements["In model"]:
-            raise Exception(f"Asking to require the presence of a thing in model")
-        if self.requirements["Absent of model"]:
-            raise Exception(f"Asking to require the absence of a thing in model")
+        tag.append(NavigableString(f"{{{{^{self.field}}}}}"))
+        self.empty.applyTag(tag, soup)
+        tag.append(NavigableString(f"{{{{/{self.field}}}}}"))
+
+        
+class Filled(FieldChild):
+    """The class which expands differently in function of the question/answer side."""
+    def _assumeFieldFilled(self, field):
+        if self.field == field:
+            return self.child.assumeFieldFilled(field)
+        else:
+            return self.cloneSingle(self.getChild().assumeFieldFilled(field))
+        
+    def _assumeFieldEmpty(self, field):
+        if self.field == field:
+            return emptyGen
+        else:
+            return self.cloneSingle(self.getChild().assumeFieldEmpty(field))
+        
+    def _assumeFieldAbsent(self, field):
+        if self.field == field:
+            return self.empty
+        else:
+            return self.cloneSingle(self.getChild().assumeFieldEmpty(field))
+         
+    def _getWithoutRedundance(self):
+        child = self.getChild().getWithoutRedundance()
+        child = child.assumeFieldFilled(self.field)
+        return self.cloneSingle(child)
+        
+    @debugFun
+    def _restrictToModel(self,fields):
+        if self.field not in fields:
+            #debug(f"self.field({self.field}) not in fields({fields})")
+            return emptyGen
+        else:
+            return self.cloneSingle(self.child.restrictToModel(fields))
+        
+    def _applyTag(self, tag, soup):
+        assert soup is not None
+        tag.append(NavigableString(f"{{{{#{self.field}}}}}"))
+        self.filled.applyTag(tag, soup)
+        tag.append(NavigableString(f"{{{{/{self.field}}}}}"))
+    
+class Question(SingleChild):
+    """The class which expands only on the question side"""
+    def _assumeQuestion(self, changeStep = False):
+        return self.getChild().assumeQuestion(changeStep = changeStep)
+    def _assumeAnswer(self, changeStep = False):
+        return emptyGen
+    def _applyTag(self, *args, **kwargs):
+        raise ExceptionInverse("At this stage, Question must be removed")
+    def _getWithoutRedundance(self):
+        return self.cloneSingle(self.getChild().assumeQuestion())
+    
+class Answer(SingleChild):
+    """The class which  expands only on the answer side."""
+    @debugFun
+    def _assumeQuestion(self, changeStep = False):
+        return emptyGen
+    def _assumeAnswer(self, changeStep = False):
+        return self.getChild().assumeAnswer(changeStep = changeStep)
+    def _applyTag(self, *args, **kwargs):
+        raise ExceptionInverse("At this stage, Answer must be removed")
+    def _getWithoutRedundance(self):
+        return self.cloneSingle(self.getChild().assumeAnswer())

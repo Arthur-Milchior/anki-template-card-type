@@ -2,7 +2,7 @@ import copy
 from .generators import Gen, shouldBeKept
 from .constants import *
 from .ensureGen import addTypeToGenerator
-from ..debug import debug, assertType, debugFun
+from ..debug import debug, assertType, debugFun, ExceptionInverse
 from .leaf import emptyGen
 
 class MultipleChildren(Gen):
@@ -56,7 +56,7 @@ class ListElement(MultipleChildren):
             return ListElement(truthyElements)
         
     def __repr__(self):
-        return f"""ListElement(elements = {self.elements}, {self.params()})"""
+        return f"""ListElement({self.elements}, {self.params()})"""
 
     def __eq__(self,other):
         return isinstance(other,ListElement) and self.elements == other.elements
@@ -133,57 +133,7 @@ class Name(Gen):
         return child.template(asked = asked, hide = hide)
         
     def _applyTag(self, *args, **kwargs):
-        raise Exception("Name._applyTag should not exists")
-        
-class QuestionOrAnswer(Gen):
-    """The class which expands differently in function of the question/answer side."""
-    def __init__(self,
-                 question = None,
-                 answer = None,
-                 **kwargs):
-        self.question = question
-        self.answer = answer
-        self.childEnsured = False
-        super().__init__(**kwargs)
-        
-
-    def clone(self, elements):
-        assert len(elements) ==2
-        question, answer = elements
-        if not question and not answer:
-            return emptyGen
-        if question == self.question and answer == self.answer:
-            return self
-        return Name(question = question,
-                    answer = answer)
-
-    #Todo: during the consistency step, copy the question side to descendant
-
-    @debugFun
-    def _questionOrAnswer(self, isQuestion):
-        ret = self.question if isQuestion else self.answer
-        ret = ret.questionOrAnswer(isQuestion)
-        return ret
-    
-    def __repr__(self):
-        return f"""QuestionOrAnswer(question = "{self.question}", answer = "{self.answer}", {self.params()})"""
-    
-    def __eq__(self,other):
-        return isinstance(other,QuestionOrAnswer) and self.answer == other.answer and self.question == other.question
-    
-    def getChildren(self):
-        if not self.childEnsured:
-            self.question = self._ensureGen(self.question)
-            self.answer = self._ensureGen(self.answer)
-            self.childEnsured = True
-        return (self.question, self.answer)
-    
-    def _applyTag(self, *args, isQuestion = None, **kwargs):
-        raise Exception("At this stage, QuestionOrAnswer must be removed")
-        # aq = self._assumeQuestion(isQuestion)
-        # at = aq.applyTag(*args,
-        #                  **kwargs)
-        # return at
+        raise ExceptionInverse("Name._applyTag should not exists")
     
 # class RecursiveFields(MultipleChildren):
 #     """

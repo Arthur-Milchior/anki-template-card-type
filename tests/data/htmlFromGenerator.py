@@ -1,4 +1,3 @@
-from ..imports import *
 
 imageHtml = """<img src="http://www.foo.bar"/>"""
 emptyHtml = ""

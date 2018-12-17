@@ -1,4 +1,4 @@
-from ..imports import *
+import json
 from ...config import jsonToDic
 
 jsonTest = """{

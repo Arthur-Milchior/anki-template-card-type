@@ -22,17 +22,17 @@ def ensureGen(element, locals_ = None):
     #     recCall+=1
     #     element = eval("element()",globals(),locals_)
     #     if recCall == 10:
-    #         raise Exception(f"10 successive recursive call during processing of {element_original}. 10 th is {element}")
+    #         raise ExceptionInverse(f"10 successive recursive call during processing of {element_original}. 10 th is {element}")
     #     if element in funs:
-    #         raise Exception(f"Loop during processing of {element_original}, raising multiple time {elements}.")
+    #         raise ExceptionInverse(f"Loop during processing of {element_original}, raising multiple time {elements}.")
     for typ in typeToGenerator:
         if isinstance(element, typ):
             gen = typeToGenerator[typ]
             ret = gen(element)
-            debug(f"has type {typ}, thus use function {gen}")
+            #debug(f"has type {typ}, thus use function {gen}")
             break
         else:
-            debug(f"has not type {typ}")
+            #debug(f"has not type {typ}")
             pass
     if ret is None:
         debug("has no type we can consider")

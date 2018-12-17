@@ -1,7 +1,10 @@
 from .generators import Gen
 from .ensureGen import addTypeToGenerator
+from ..debug import debugFun, debugInit
+import types
 
 class Function(Gen):
+    @debugInit
     def __init__(self,
                  fun,
                  value = None,

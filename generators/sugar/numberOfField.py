@@ -1,3 +1,9 @@
+from ...debug import debugFun, debugInit, debug
+from ..singleChild import SingleChild
+from ..leaf import emptyGen
+from .sugar import NotNormal
+from .conditionals import FilledOrEmpty
+
 class AtLeastNField(SingleChild, NotNormal):
     """Show the child if at least n of the fields have content.
 
@@ -8,33 +14,42 @@ class AtLeastNField(SingleChild, NotNormal):
     So use this only for small text, such as
     <table>.
     """
+    @debugInit
     def __init__(self, child, fields, n=1):
         self.child = child
         super().__init__(child)
         self.n = n
         self.fields = fields
+        if n> len(fields):
+            self.setState(EMPTY)
         
-    # def __repr__(self):
-    #     return f"""AtLeastNField({self.child},{self.fields},{self.n})"""
+    def __repr__(self):
+        return f"""AtLeastNField({self.child},{self.fields},{self.n})"""
 
+    @debugFun
     def _getNormalForm(self):
         if self.n == 0:
             return self.child.getNormalForm()
-        seen = set()
-        seen_card = 0
-        actual = emptyGen
-        for condition in self.fields:
-            if seen_card >= self.n-1:
-                actual = FilledOrEmptyField(condition,
-                                            filledCase = AtLeastNField(self.child, seen, self.n-1),
-                                            emptyCase = actual)
-            seen_card +=1
-            seen.add(condition)
-        return actual.getNormalForm()
+        if not self.fields:
+            return emptyGen
+        element = self.fields[-1]
+        remaining = self.fields[:-1]
+        filledCase = AtLeastNField(child = self.child,
+                                   fields = remaining,
+                                   n = n-1)
+        emptyCase = AtLeastNField(child = self.child,
+                                  fields = remaining,
+                                  n = n)
+        dichotomy = FilledOrEmpty(element,
+                                  filledCase = filledCase,
+                                  emptyCase =  emptyCase,
+        )
+        return dichotomy.getNormalForm()
+
 
 class AtLeastOneField(AtLeastNField):
     def __init__(self,*args,**kwargs):
         super().__init__(*args, n=1,**kwargs)
-class AtLeastTwoField(AtLeastNField):
+class AtLeastTwoFields(AtLeastNField):
     def __init__(self,*args,**kwargs):
         super().__init__(*args, n=2,**kwargs)

@@ -1,21 +1,32 @@
 from ..generators import Gen
+from ...debug import ExceptionInverse
 class NotNormal(Gen):
     def _getWithoutRedundance(self):
-        raise Exception("_getWithoutRedundance from not normal")
+        raise ExceptionInverse("_getWithoutRedundance from not normal")
     # def getWithoutRedundance(self):
-    #     raise Exception("getWithoutRedundance from not normal")
+    #     raise ExceptionInverse("getWithoutRedundance from not normal")
     # def assumeFieldInSet(self, *args, **kwargs):
-    #     raise Exception("assumeFieldInSet from not normal")
-    def _assumeFieldInSet(self, *args, **kwargs):
-        raise Exception("_assumeFieldInSet from not normal")
+    #     raise ExceptionInverse("assumeFieldInSet from not normal")
+    def _assumeFieldFilled(self, field):
+        assert False
+    def _assumeFieldEmpty(self, field):
+        assert False
+    def _assumeFieldPresent(self, field):
+        assert False
+    def _assumeAnswer(self, changeStep = False):
+        assert False
+    def _assumeFieldAbsent(self, field):
+        assert False
+    # def _assumeFieldInSet(self, *args, **kwargs):
+    #     raise ExceptionInverse("_assumeFieldInSet from not normal")
     def _assumeQuestion(self, *args, **kwargs):
-        raise Exception("_assumeQuestion from not normal")
+        raise ExceptionInverse("_assumeQuestion from not normal")
     def _applyTag(self, *args, **kwargs):
-        raise Exception("_applyTag from not normal")
+        raise ExceptionInverse("_applyTag from not normal")
     def _template(self, *args, **kwargs):
-        raise Exception("_template from not normal")
+        raise ExceptionInverse("_template from not normal")
     def _restrictToModel(self, *args, **kwargs):
-        raise Exception("_restrictToModel from not normal")
+        raise ExceptionInverse("_restrictToModel from not normal")
     
     def _questionOrAnswer(self, *args, **kwargs):
-        raise Exception("_questionOrAnswer from not normal")
+        raise ExceptionInverse("_questionOrAnswer from not normal")

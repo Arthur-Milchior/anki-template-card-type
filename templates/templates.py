@@ -1,4 +1,4 @@
-from ..debug import debug, assertType
+from ..debug import debug, assertType, ExceptionInverse
 import bs4
 
 class Template:
@@ -20,7 +20,7 @@ def getFunctionFromKind(kind):
     """Given a kind, the method to call to generate the content."""
     r = Template.kindOfTemplate.get(kind.lower())
     if r is None:
-        raise Exception(f"""Kind "{kind}" is called, but not present in templates.template.kindOfTemplate. It contains only Template {Template.kindOfTemplate}""")
+        raise ExceptionInverse(f"""Kind "{kind}" is called, but not present in templates.template.kindOfTemplate. It contains only Template {Template.kindOfTemplate}""")
     return r
 
 

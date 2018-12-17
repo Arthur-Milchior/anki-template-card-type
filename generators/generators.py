@@ -1,9 +1,30 @@
 import sys
-from ..debug import debug, assertType, debugFun
+from ..debug import debug, assertType, debugFun, ExceptionInverse
 from ..utils import identity
 from .ensureGen import ensureGen, addTypeToGenerator
 from .constants import *
 
+def memoize(computeKey):
+    def actualArobase(f):
+        fname = f.__name__
+        #@debugFun
+        def f_(self, *args, **kwargs):
+            if not hasattr(self, "versions"):
+                self.versions = dict()
+            if fname not in self.versions:
+                self.versions[fname] = dict()
+            key = computeKey(*args, **kwargs)
+            if key not in self.versions:
+                debug("Computation is done explicitly")
+                self.versions[fname][key] = f(self, *args, **kwargs)
+            else:
+                debug("Computation is retrieved from memoization")
+            return self.versions[fname][key]
+        f_.__name__=f"Memoized_{f.__name__}"
+        f_.__qualname__=f"Memoized_{f.__qualname__}"
+        return f_
+    return actualArobase
+    
 
 def modelToFields(model):
     """The set of fields of the model given in argument"""
@@ -14,20 +35,44 @@ def modelToFields(model):
 def modelToHash(model):
     """Given the model, return the hash of its set of fields."""
     return (model["name"], model["mod"])
-    
+
+def ensureGenAndSetState(state):
+    def actualArobase(f):
+        #@debugFun
+        def f_(self, *args, **kwargs):
+            ret = f(self, *args, **kwargs)
+            ret = self._ensureGen(ret)
+            ret.setState(state)
+            return ret
+        return f_
+        f_.__name__=f"SetState({State})__{f.__name__}"
+        f_.__qualname__=f"SetState({State})__{f.__qualname__}"
+    return actualArobase
+
+def emptyToEmpty(f):
+    #@debugFun
+    def f_(self, *args, **kwargs):
+        if self.isEmpty():
+            return None
+        else:
+            return f(self, *args, **kwargs)
+    f_.__name__=f"EmptyToEmpty_{f.__name__}"
+    f_.__qualname__=f"EmptyToEmpty_{f.__qualname__}"
+    return f_
 
 #refer to README.md to understand what this class is about
 class Gen:
     """
     Inheriting classes should implement: 
-    - either:
+    # - either:
     -- _callOnChildren(self, method, *args, force = True, **kwargs):
     a copy of self's class, with method called on each children.
     kwargs are passed to the method's argument.  
-    - or reimplement:
-    -- _computeStep(step, **kwargs): 
-    --- _assumeFieldInSet(element,fieldName), assume that element
-    belongs to fieldName.
+    -- assumeFoo: when assuming foo change the element. Otherwise, it is just called recursively on child. Leafs are returned unchanged.
+    # - or reimplement:
+    # -- _computeStep(step, **kwargs): 
+    # --- _assumeFieldInSet(element,fieldName), assume that element
+    # belongs to fieldName.
 
     Furthermore:
     _applyTag(self, tag, soup): edit the BeautifulSoup tag, appending the
@@ -43,14 +88,12 @@ class Gen:
     ):
         self.locals_ = locals_
         self.toKeep = toKeep
-        self.versions = dict()
         self.state = state
 
+    #@debugFun
     def _ensureGen(self, element):
-        debug(f"_ensureGen({element})",1)
-        ret = ensureGen(element, self.locals_)
-        debug(f"_ensureGen() returns {ret}",-1)
-        return ret
+        return ensureGen(element, self.locals_)
+        
 
     def __repr__(self):
         return f"""{self.__class__.__name__}(without repr,{self.params()})"""
@@ -120,11 +163,11 @@ class Gen:
     #         self.toKeep = bool(self._toKeep())
     #     return self.toKeep
 
-    @debugFun
+    #@debugFun
     def dontKeep(self):
         self.toKeep = False
 
-    @debugFun
+    #@debugFun
     def doKeep(self):
         self.toKeep = True
 
@@ -144,115 +187,118 @@ class Gen:
         if state == NORMAL or state == WITHOUT_REDUNDANCY:
             key = None
         elif state == MODEL_APPLIED:
+            assert model is not None
             key = modelToHash(model)
         elif state  ==  QUESTION_ANSWER:
+            assert isinstance(isQuestion, bool)
             key = isQuestion
         elif state  ==  TEMPLATE_APPLIED:
             key = (asked, hide)
         else:
-            raise Exception(f"State should not be {state}")
+            raise ExceptionInverse(f"State should not be {state}")
         return key
             
-    @debugFun
-    def computeStep(self, goal, model = None, asked = None, isQuestion = None, hide = None):
-        """Compute step goal. Do the recursive computation if it is a step
-        before MODEL_APPLIED.
-        """
-        key = Gen.getKey(goal,
-                         model = model,
-                         asked = asked,
-                         hide = hide,
-                         isQuestion = isQuestion)        
-        if goal not in self.versions:
-            debug(f"goal is not present in versions")
-            self.versions[goal] = dict()
-        else:
-            debug(f"goal is present in versions")
-        if key not in self.versions[goal]:
-            debug(f"key is not present in versions[goal]")
-            self.versions[goal][key] = self.computeMultiStep(goal, model = model, asked = asked, isQuestion = isQuestion, hide = hide)
-        else:
-            debug(f"key is present in versions[goal]")
-        self.versions[goal][key] = self._ensureGen(self.versions[goal][key])
-        return self.versions[goal][key]
+    # @debugFun
+    # def computeStep(self, goal, **kwargs):
+    #     """Compute step goal. Do the recursive computation if it is a step
+    #     before QUESTION_ANSWER.
+    #     """
+    #     key = Gen.getKey(goal, **kwargs)
+    #     if goal not in self.versions:
+    #         debug(f"goal is not present in versions")
+    #         self.versions[goal] = dict()
+    #     else:
+    #         debug(f"goal is present in versions")
+    #     if key not in self.versions[goal]:
+    #         debug(f"key is not present in versions[goal]")
+    #         self.versions[goal][key] = self.computeMultiStep(goal, **kwargs)
+    #     else:
+    #         debug(f"key is present in versions[goal]")
+    #     self.versions[goal][key] = self._ensureGen(self.versions[goal][key])
+    #     self.versions[goal][key].setState(goal)
+    #     debug(f"versions[goal][key] has been set to {ret}")
+    #     return self.versions[goal][key]
+
+    def ensureSingleStep(self,goal):
+        if self.getState().nextStep() < goal:
+            raise ExceptionInverse(f"Can't compute {goal} from state {self.getState()} of {self}")
     
-    @debugFun
-    def computeMultiStep(self, goal, model = None, asked = None, isQuestion = None, hide = None):
-        currentState = self.getState()
-        if self.isEmpty():
-            return None
-        if goal <= currentState:
-            #debug("computeStep: step<=currentState, thus return self")
-            return self
-        previousStep = goal.previousStep()
-        if currentState < previousStep:
-            assert goal <= MODEL_APPLIED
-            #debug("computeStep: currentState < goal.previousStep()")
-            stepMinusOne = self.computeStep(goal.previousStep(),
-                                            model = model,
-                                            asked = asked,
-                                            hide = hide,
-                                            isQuestion = isQuestion)
-        elif currentState == previousStep:
-            #debug("computeStep: currentState == previousStep")
-            stepMinusOne = self
-        else:
-            print(f"goal is {goal}, previousStep is {previousStep}, state is {currentState}", file=sys.stderr)
-            assert False
-        #debug(f"computeStep: stepMinusOne is {stepMinusOne}")
-        single = stepMinusOne.computeSingleStep(goal,
-                                                model = model,
-                                                asked = asked,
-                                                hide = hide,
-                                                isQuestion = isQuestion)
-        #debug(f"computeStep: single is {single}")
-        return self._ensureGen(single)
+    # @debugFun
+    # def computeMultiStep(self, goal, **kwargs):
+    #     currentState = self.getState()
+    #     if self.isEmpty():
+    #         return None
+    #     if goal <= currentState:
+    #         #debug("computeStep: step<=currentState, thus return self")
+    #         return self
+    #     previousStep = goal.previousStep()
+    #     if currentState < previousStep:
+    #         if goal > QUESTION_ANSWER:
+    #             raise ExceptionInverse(f"Trying to have goal {goal}, while at state {self.getState()} for {self}")
+    #         #debug("computeStep: currentState < goal.previousStep()")
+    #         stepMinusOne = self.computeStep(goal.previousStep(), **kwargs)
+    #     elif currentState == previousStep:
+    #         #debug("computeStep: currentState == previousStep")
+    #         stepMinusOne = self
+    #     else:
+    #         print(f"goal is {goal}, previousStep is {previousStep}, state is {currentState}", file=sys.stderr)
+    #         assert False
+    #     #debug(f"computeStep: stepMinusOne is {stepMinusOne}")
+    #     single = stepMinusOne.computeSingleStep(goal, **kwargs)
+    #     #debug(f"computeStep: single is {single}")
+    #     return self._ensureGen(single)
             
-    @debugFun
-    def computeSingleStep(self, goal, model = None, asked = None, isQuestion = None, hide = None):
-        """compute the next step. 
+    # @debugFun
+    # def computeSingleStep(self, goal, model = None, asked = None, isQuestion = None, hide = None):
+    #     """compute the next step. 
 
-        Assume current state.successor ==goal."""
-        if self.isEmpty():
-            return None
-        if goal == NORMAL:
-            debug(f"calling _getNormalForm()")
-            ret = self._getNormalForm()
-        elif goal == WITHOUT_REDUNDANCY:
-            debug(f"calling _getWithoutRedundance()")
-            ret = self._getWithoutRedundance()
-        elif goal == MODEL_APPLIED:
-            debug(f"calling _restrictToModel()")
-            ret = self._restrictToModel(model)
-        elif goal == TEMPLATE_APPLIED:
-            debug(f"calling _template()")
-            ret = self._template(asked = asked,
-                                 hide = hide)
-        elif goal == QUESTION_ANSWER:
-            debug(f"calling _questionOrAnswer()")
-            ret = self._questionOrAnswer(isQuestion = isQuestion)
-        else:
-            raise Exception(f"self.getState() should not be {self.getState()}")
-        debug(f"versions[goal][key] has been set to {ret}")
-        ret = ret._ensureGen(ret)
-        ret.setState(goal)
-        return ret
+    #     Assume current state.successor ==goal."""
+    #     if self.isEmpty():
+    #         return None
+    #     if goal == NORMAL:
+    #         debug(f"calling _getNormalForm()")
+    #         ret = self._getNormalForm()
+    #     elif goal == WITHOUT_REDUNDANCY:
+    #         debug(f"calling _getWithoutRedundance()")
+    #         ret = self._getWithoutRedundance()
+    #     elif goal == QUESTION_ANSWER:
+    #         debug(f"calling _questionOrAnswer()")
+    #         ret = self._questionOrAnswer(isQuestion = isQuestion)
+    #     elif goal == MODEL_APPLIED:
+    #         debug(f"calling _restrictToModel()")
+    #         ret = self._restrictToModel(model)
+    #     elif goal == TEMPLATE_APPLIED:
+    #         debug(f"calling _template()")
+    #         ret = self._template(asked = asked,
+    #                              hide = hide)
+    #     else:
+    #         raise ExceptionInverse(f"goal should not be {goal}")
+    #     ret = ret._ensureGen(ret)
+    #     ret.setState(goal)
+    #     return ret
         
-    @debugFun
-    def _computeStep(self, goal, **kwargs):
-        #not directly called from computeGoal, but from functions _getFoo
-        ret = self.callOnChildren(method = "computeStep", goal = goal, **kwargs)
-        ret = self._ensureGen(ret)
-        return ret
+    # @debugFun
+    # def _computeStep(self, goal, **kwargs):
+    #     #not directly called from computeGoal, but from functions _getFoo
+    #     ret = self.callOnChildren(method = "computeStep", goal = goal, **kwargs)
+    #     ret = self._ensureGen(ret)
+    #     return ret
 
 
+    @memoize((lambda:None))
+    @ensureGenAndSetState(NORMAL)
+    @emptyToEmpty
     @debugFun
     def getNormalForm(self):
-        return self.computeStep(NORMAL)
+        self.ensureSingleStep(NORMAL)
+        return self._getNormalForm()
     @debugFun
     def _getNormalForm(self):
-        return self._computeStep(NORMAL)
+        return self.callOnChildren(method = "getNormalForm")
     
+    @memoize((lambda:None))
+    @ensureGenAndSetState(WITHOUT_REDUNDANCY)
+    @emptyToEmpty
     @debugFun
     def getWithoutRedundance(self):
         """Remove redundant, like {{#foo}}{{#foo}}, {{#foo}}{{^foo}}
@@ -265,13 +311,33 @@ class Gen:
         have to be considered multiple time, except for the elements
         which are specific to the new tree.
         """        
-        return self.computeStep(WITHOUT_REDUNDANCY)
+        self.ensureSingleStep(WITHOUT_REDUNDANCY)
+        return self._getWithoutRedundance()
+    
     @debugFun
     def _getWithoutRedundance(self):
-        return self._computeStep(WITHOUT_REDUNDANCY)
-
+        return self.callOnChildren(method = "getWithoutRedundance")
+    
+    @memoize((lambda isQuestion:isQuestion))
+    @ensureGenAndSetState(QUESTION_ANSWER)
+    @emptyToEmpty
     @debugFun
-    def restrictToModel(self,model):
+    def questionOrAnswer(self, isQuestion):
+        self.ensureSingleStep(QUESTION_ANSWER)
+        return self._questionOrAnswer(isQuestion = isQuestion)
+    
+    @debugFun
+    def _questionOrAnswer(self, isQuestion):
+        if isQuestion:
+            return self.assumeQuestion(changeStep = True)
+        else:
+            return self.assumeAnswer(changeStep = True)
+
+    @memoize((lambda fields:fields))
+    @ensureGenAndSetState(MODEL_APPLIED)
+    @emptyToEmpty
+    @debugFun
+    def restrictToModel(self,fields):
         """Given the model, restrict the generator according the fields
         existing. It follows that the returned answer contains no
         requireInModel/requireAbsentOfModel requirement.
@@ -279,47 +345,24 @@ class Gen:
         memoized. 
         don't reimplement.
         """
-        return self.computeStep(MODEL_APPLIED, model = model)
+        self.ensureSingleStep(MODEL_APPLIED)
+        return self._restrictToModel(fields = fields)
+    
     @debugFun
-    def _restrictToModel(self,model):
-        return self._computeStep(MODEL_APPLIED, model = model)
+    def _restrictToModel(self,fields):
+        return self.callOnChildren(method = "restrictToModel", fields = fields)
 
+    @memoize((lambda asked, hide:(asked,hide)))
+    @ensureGenAndSetState(TEMPLATE_APPLIED)
+    @emptyToEmpty
     @debugFun
     def template(self, asked, hide):
-        return self.computeStep(TEMPLATE_APPLIED, asked = asked, hide = hide)
+        self.ensureSingleStep(TEMPLATE_APPLIED)
+        return self._template(asked = asked, hide = hide)
     @debugFun
     def _template(self, asked = frozenset(), hide = frozenset()):
-        return self._computeStep(TEMPLATE_APPLIED, asked = asked, hide = hide)
+        return self.callOnChildren(method = "template", asked = asked, hide = hide)
 
-    @debugFun
-    def questionOrAnswer(self, isQuestion):
-        return self.computeStep(QUESTION_ANSWER, isQuestion = isQuestion)
-    @debugFun
-    def _questionOrAnswer(self, isQuestion):
-        return self._computeStep(QUESTION_ANSWER, isQuestion = isQuestion)
-
-    @debugFun
-    def _assumeQuestion(self, isQuestion):
-        return self.callOnChildren(method = "questionOrAnswer", isQuestion = isQuestion)
-        
-    @debugFun
-    def memoize(self,method,*args, **kwargs):
-        return (getattr(self,method))(*args, **kwargs)
-    
-    # def memoize(gen,method,*args, **kwargs):
-    #     computed = False
-    #     mem = None
-    #     @debugFun
-    #     def memoizeAux():
-    #         nonlocal computed, mem
-    #         if not computed:
-    #             mem = (getattr(child,method))(*args, **kwargs)
-    #             computed = True
-    #         return mem
-    #     memoize.__name__ = f"memoizeAux_of_{method}"
-    #     memoize.__qualname__ = f"memoizeAux_of_{method}"
-    #     return self._ensureGen(memoizeAux)
-    
     @debugFun
     def callOnChildren(self, method, *args, force = True, **kwargs):
         # memoize.__name__ = f"memoize_of_{method}"
@@ -353,24 +396,75 @@ class Gen:
         """Ensure that ensureGen is called on each element recursively."""
         self.callOnChildren(method = "force")
     
-    @debugFun
-    def assumeFieldInSet(self, field, setName):
-        """return a copy of self, where the field is assumed to be in the set.
+    # @debugFun
+    # def assumeFieldInSet(self, field, setName):
+    #     """return a copy of self, where the field is assumed to be in the set.
         
-        Assume self and descendant unredundant and normal.
-        set should be one of "Absent of model", "In model", "Empty",
-        "Filled", "Remove".
-        Don't redefine. Call _assumeFieldInSet
-        """
-        return self._assumeFieldInSet(field,setName)
+    #     Assume self and descendant unredundant and normal.
+    #     set should be one of "requireAbsentOfModel", "requireInModel", "requireEmpty",
+    #     "requireFilled", "remove".
+    #     Don't redefine. Call _assumeFieldInSet
+    #     """
+    #     return self._assumeFieldInSet(field,setName)
+    
+    # @debugFun
+    # def _assumeFieldInSet(self, field, setName):
+    #     """Similar to assumeFieldInSet. 
+        
+    #     Recompute instead of memoizing.
+    #     """
+    #     return self.callOnChildren("assumeFieldInSet", field = field, setName = setName)
+    
+    @emptyToEmpty
+    @debugFun
+    def assumeFieldFilled(self, field):
+        return self._assumeFieldFilled(field)
     
     @debugFun
-    def _assumeFieldInSet(self, field, setName):
-        """Similar to assumeFieldInSet. 
+    def _assumeFieldFilled(self, field):
+        return self.callOnChildren("assumeFieldFilled", field = field)
+    
+    @emptyToEmpty
+    @debugFun
+    def assumeFieldEmpty(self, field):
+        return self._assumeFieldEmpty(field)
+    @debugFun
+    def _assumeFieldEmpty(self, field):
+        return self.callOnChildren("assumeFieldEmpty", field = field)
         
-        Recompute instead of memoizing.
-        """
-        return self.callOnChildren("assumeFieldInSet", field = field, setName = setName)
+    @emptyToEmpty
+    @debugFun
+    def assumeFieldPresent(self, field):
+        return self._assumeFieldPresent(field)
+    @debugFun
+    def _assumeFieldPresent(self, field):
+        return self.callOnChildren("assumeFieldPresent", field = field)
+    
+    @emptyToEmpty
+    @debugFun
+    def assumeQuestion(self, changeStep = False):
+        if changeStep:
+            self.setState(QUESTION_ANSWER)
+        return self._assumeQuestion(changeStep = changeStep)
+    @debugFun
+    def _assumeQuestion(self, changeStep):
+        return self.callOnChildren("assumeQuestion", changeStep = changeStep)
+    
+    @emptyToEmpty
+    @debugFun
+    def assumeAnswer(self, changeStep = False):
+        return self._assumeAnswer(changeStep = changeStep)
+    @debugFun
+    def _assumeAnswer(self, changeStep = False):
+        return self.callOnChildren("assumeAnswer", changeStep = changeStep)
+        
+    @emptyToEmpty
+    @debugFun
+    def assumeFieldAbsent(self, field):
+        return self._assumeFieldAbsent(field)    
+    @debugFun
+    def _assumeFieldAbsent(self, field):
+        return self.callOnChildren("assumeFieldAbsent", field = field)
         
     @debugFun
     def applyTag(self, tag, soup):
@@ -383,7 +477,7 @@ class Gen:
 
     @debugFun
     def _applyTag(self, tag, soup):
-        raise Exception(f"""_applyTag in gen for: "{self}".""")
+        raise ExceptionInverse(f"""_applyTag in gen for: "{self}".""")
 
     def params(self, show = False):
         """The list of params as string. So that it can be printed."""
@@ -396,8 +490,8 @@ class Gen:
         return f"toKeep = {self.toKeep}, state = {self.getState()}"
 
     @debugFun
-    def all(self,
-            model = None,
+    def compile(self,
+            fields = None,
             isQuestion = None,
             asked = frozenset(),
             hide = frozenset()):
@@ -406,21 +500,21 @@ class Gen:
         ).questionOrAnswer(
             isQuestion
         ).restrictToModel(
-            model
+            fields
         ).template(
             asked = asked,
             hide = hide,
         )
 
-    def allAndTag(self,
-                  tag = None,
-                  soup = None,
-                  model = None,
-                  isQuestion = None,
-                  asked = frozenset(),
-                  hide = frozenset()):
-        return self.all(
-            model = model,
+    def compileAndTag(self,
+                      tag = None,
+                      soup = None,
+                      fields = None,
+                      isQuestion = None,
+                      asked = frozenset(),
+                      hide = frozenset()):
+        return self.compile(
+            fields = fields,
             isQuestion = isQuestion,
             asked = asked,
             hide = hide,
@@ -428,7 +522,7 @@ class Gen:
         
 addTypeToGenerator(Gen, identity)
 
-@debugFun
+#@debugFun
 def shouldBeKept(gen):
     """
     True if Gen which must be kept. 

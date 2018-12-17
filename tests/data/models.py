@@ -1,3 +1,5 @@
+from ...generators.generators import modelToFields
+
 model = {
     'sortf': 0,
     'did': 1,
@@ -27,3 +29,4 @@ model = {
     'req': [[0, 'none', []]]
 }
 
+fields = modelToFields(model)

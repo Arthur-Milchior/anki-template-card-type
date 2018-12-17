@@ -5,3 +5,4 @@ def firstTruth(l):
         
 def identity(x):
     return x
+

@@ -1,6 +1,6 @@
 from .models import *
 from .jsons import testObjects
-from ..imports import *
+from ...generators.imports import *
 
 noTagHtml = "foo1"
 

@@ -1,4 +1,4 @@
-from ..debug import assertType, debugFun
+from ..debug import assertType, debugFun, ExceptionInverse
 class Step:
     def __init__(self, step, name):
         assert assertType(step, int)
@@ -14,17 +14,18 @@ class Step:
     def __eq__(self, other):
         return self.step == other.step
     
-    @debugFun
+    #@debugFun
     def nextStep(self):
         ret = {
             BASIC: NORMAL,
             NORMAL: WITHOUT_REDUNDANCY,
-            WITHOUT_REDUNDANCY: MODEL_APPLIED,
-            MODEL_APPLIED: QUESTION_ANSWER,
-            QUESTION_ANSWER: TEMPLATE_APPLIED,
+            WITHOUT_REDUNDANCY: QUESTION_ANSWER,
+            QUESTION_ANSWER: MODEL_APPLIED,
+            MODEL_APPLIED: TEMPLATE_APPLIED,
+            TEMPLATE_APPLIED: SOUP,
         }.get(self)
         if ret is None:
-            raise Exception(f"""Next step of {step} does not exists.""")
+            raise ExceptionInverse(f"""Next step of {self} does not exists.""")
         return ret
 
     def __hash__(self):
@@ -34,12 +35,13 @@ class Step:
         ret = {
             NORMAL: BASIC,
             WITHOUT_REDUNDANCY: NORMAL,
-            MODEL_APPLIED: WITHOUT_REDUNDANCY,
-            QUESTION_ANSWER: MODEL_APPLIED,
-            TEMPLATE_APPLIED: QUESTION_ANSWER,
+            QUESTION_ANSWER: WITHOUT_REDUNDANCY,
+            MODEL_APPLIED: QUESTION_ANSWER,
+            TEMPLATE_APPLIED: MODEL_APPLIED,
+            SOUP: TEMPLATE_APPLIED,
         }.get(step)
         if ret is None:
-            raise Exception(f"""Previous step of {step} does not exists.""")
+            raise ExceptionInverse(f"""Previous step of {step} does not exists.""")
         return ret
     
     def union(self, other):
@@ -56,4 +58,5 @@ WITHOUT_REDUNDANCY = Step(2, "WITHOUT_REDUNDANCY")
 QUESTION_ANSWER = Step(3, "QUESTION_ANSWER")
 MODEL_APPLIED = Step(4, "MODEL_APPLIED")
 TEMPLATE_APPLIED = Step(5, "TEMPLATE_APPLIED")
+SOUP = Step(6, "SOUP")#used for debugging
 EMPTY = Step(10, "EMPTY")
