@@ -6,7 +6,7 @@ from ...utils import identity
 from ..ensureGen import ensureGen
 from ..singleChild import HTML, Filled
 from ..leaf import Field
-from .conditionals import FilledOrEmpty
+from .conditionals import FilledOrEmpty, AskedOrNot
 from .numberOfField import AtLeastOneField
 from ..multipleChildren import MultipleChildren
 from .conditionals import Branch
@@ -49,21 +49,19 @@ class ListFields(NotNormal):
     """
     def __init__(self,
                  fields,
-                 localFun = identity,
-                 globalSep = (lambda x:None),
-                 globalFun = identity,
+                 localFun = None,
+                 globalSep = None,
+                 globalFun = None,
                  toKeep = True,
                  **kwargs):
         self.originalFields = fields
-        self.localFun = localFun
-        self.globalFun = globalFun
-        self.globalSep = globalSep
+        self.localFun = localFun or identity
+        self.globalFun = globalFun or identity
+        self.globalSep = globalSep or (lambda x:None)
+        
         super().__init__(
             toKeep = toKeep,
             **kwargs)
-
-    def getChildren(self):
-        return self.getNormalForm().getChildren()
     
     # def __repr__(self):
     #     return f"""ListFields("{self.originalFields}","{self.localFun}","{self.globalSep}","{self.globalFun}", {self.params()})"""
@@ -84,45 +82,37 @@ class ListFields(NotNormal):
         globalEnsured = ensureGen(globalApplied)
         return globalEnsured.getNormalForm()
 
-class NamedListFields(ListFields):
+class NamedListFields(NotNormal):
     """Similar to ListFields.
 
-    localFun -- should returns a pair. First element is the name/set of names of things to cascade (or none). Second thing is added to the list.
-    Only the second element is returned to ListField's localFun
-    globalFun -- applied to the result of ListField's process. Then a Name is applied on it.
+    similar to ListField, where localFun depends on whether listName is asked or not.
     """
 
     def __init__(self,
                  fields,
                  listName,
-                 localFun = None,
+                 localAskedFun = None,
+                 localDefaultFun = None,
+                 globalSep = None,
                  globalFun = None,
                  **kwargs):
         self.listName = listName
-        cascadeAsked = set()
-        def localFun_(field):
-            nonlocal cascadeAsked
-            ret = localFun(field)
-            if isinstance(ret,tuple):
-                asked, ret =ret
-                if asked is not None:
-                    if isinstance(asked,set):
-                        cascadeAsked|= asked
-                    else:
-                        cascadeAsked.add(asked)
-            return ret
-        def globalFun_(l):
-            nonlocal cascadeAsked
-            frozenCascadeAsked = frozenset(cascadeAsked)
-            return Name(name = listName,
-                          default = globalFun(l),
-                          cascadeAsked = frozenCascadeAsked
-            )
         self.listFields = fields
-        super().__init__(fields,
-                         localFun = localFun_,
-                         globalFun = globalFun_,
-                         **kwargs)
+        self.localAskedFun = localAskedFun
+        self.localDefaultFun = localDefaultFun
+        self.globalSep = globalSep
+        self.globalFun = globalFun
+        
+        super().__init__(**kwargs)
+
+    def _getNormalForm(self):
+        asked = ListFields(self.listFields, localFun = self.localAskedFun, globalFun = self.globalFun, globalSep = self.globalSep)
+        notAsked = ListFields(self.listFields, localFun = self.localDefaultFun, globalFun = self.globalFun, globalSep = self.globalSep)
+        return AskedOrNot(field = self.listName,
+                          asked = asked,
+                          notAsked = notAsked,
+        ).getNormalForm()
+        
     
     # def __repr__(self):
     #     return f"""ListFieldsTrigger({self.liestFields}, {self.listName}, {self.localFun}, {self.globalFun})"""
@@ -169,7 +159,9 @@ class NumberedFields(NamedListFields):
         assert(isinstance(greater, int))
         
         self.numberedFields = [fieldPrefix]+[f"""{fieldPrefix}{i}""" for i in range(2,greater+1)]
-        def localFun(field):
+        def localAskedFun(field):
+            return Filled(field = field, child = QuestionnedField(field).assumeAnswer(field))
+        def localDefaultFun(field):
             return Filled(field = field, child = QuestionnedField(field))
             
         def globalFun(lines):
@@ -177,7 +169,8 @@ class NumberedFields(NamedListFields):
         
         super().__init__(fields = self.numberedFields,
                          listName = f"""{fieldPrefix}s""",
-                         localFun = localFun,
+                         localAskedFun = localAskedFun,
+                         localDefaultFun = localDefaultFun,
                          globalFun = globalFun,
                          **kwargs)
     # def __repr__(self):

@@ -1,5 +1,7 @@
 import re
 from inspect import stack
+optimize = False
+mayDebug = False
 
 shouldDebug = False
 def startDebug():
@@ -16,6 +18,9 @@ def debug(text, indentToAdd=0):
     if not shouldDebug:
         return
     global indentation
+    glob = stack()[1].frame.f_globals
+    loc = stack()[1].frame.f_locals
+    text = eval(f"""f"{text}" """,glob,loc)
     indentToPrint = indentation
     t = " "*indentToPrint
     if indentToAdd>0:
@@ -63,6 +68,8 @@ def assertType(element,types):
 
 
 def debugFun(fun):
+    if not mayDebug:
+        return fun
     def aux(*args, **kwargs):
         t = f"{fun.__qualname__}("
         first = False
@@ -88,6 +95,8 @@ def debugFun(fun):
 
 
 def debugInit(fun):
+    if not mayDebug:
+        return fun
     def aux(self, *args, **kwargs):
         t = f"{fun.__qualname__}("
         needSeparator = False

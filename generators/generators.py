@@ -1,11 +1,14 @@
 import sys
-from ..debug import debug, assertType, debugFun, ExceptionInverse
+from ..debug import debug, assertType, debugFun, ExceptionInverse, optimize
 from ..utils import identity
 from .ensureGen import ensureGen, addTypeToGenerator
 from .constants import *
 
-def memoize(computeKey):
+
+def memoize(computeKey = (lambda:None)):
     def actualArobase(f):
+        if not optimize:
+            return f
         fname = f.__name__
         #@debugFun
         def f_(self, *args, **kwargs):
@@ -49,35 +52,64 @@ def ensureGenAndSetState(state):
         f_.__qualname__=f"SetState({State})__{f.__qualname__}"
     return actualArobase
 
-def emptyToEmpty(f):
-    #@debugFun
+def ensureReturnGen(f):
     def f_(self, *args, **kwargs):
-        if self.isEmpty():
-            return None
-        else:
-            return f(self, *args, **kwargs)
-    f_.__name__=f"EmptyToEmpty_{f.__name__}"
-    f_.__qualname__=f"EmptyToEmpty_{f.__qualname__}"
+        return self._ensureGen(f(self, *args, **kwargs))
     return f_
+
+# def emptyToEmpty(f):
+#     #@debugFun
+#     def f_(self, *args, **kwargs):
+#         if self.isEmpty():
+#             return None
+#         else:
+#             return f(self, *args, **kwargs)
+#     f_.__name__=f"EmptyToEmpty_{f.__name__}"
+#     f_.__qualname__=f"EmptyToEmpty_{f.__qualname__}"
+#     return f_
 
 #refer to README.md to understand what this class is about
 class Gen:
     """
-    Inheriting classes should implement: 
-    # - either:
-    -- _callOnChildren(self, method, *args, force = True, **kwargs):
-    a copy of self's class, with method called on each children.
-    kwargs are passed to the method's argument.  
-    -- assumeFoo: when assuming foo change the element. Otherwise, it is just called recursively on child. Leafs are returned unchanged.
-    # - or reimplement:
-    # -- _computeStep(step, **kwargs): 
-    # --- _assumeFieldInSet(element,fieldName), assume that element
-    # belongs to fieldName.
+    Super class for all objects allowing to generate content in templates.
+    Should never be instancied directly.
 
-    Furthermore:
-    _applyTag(self, tag, soup): edit the BeautifulSoup tag, appending the
-    current object to the end of it.
-    __hash__, __eq__, __repr__
+    Each instance has a state, defined in constant. This state allow
+    to know what was already processed in the compilation. Ensuring no
+    steps are omitted. States can be accessed and edited using some method
+    defined below in "finding status". Those methods should not be overided.
+
+    An instance may be «toKeep» or not, according to the variable. A
+    list of instances may be discarded if each of its elements are not
+    to keep. This is for example the case if the list represents a set
+    of fields, and separators between those fields. If there are no
+    fields and only separator, there is no reason to keep the list.
+    #TODO: check whether "to keep" is still useful.
+
+    There are a lot of method which transform the content of the
+    field. Methods not starting with _ call the method of the same
+    name, starting with _. They may or may not memoize the result of
+    the computation (this is mostly done for steps which are done for
+    the compilation, and not for intermediary steps). The method
+    without _ must always return a Gen. 
+    
+    By default, the method _foo, (i.e. starting with _) create a copy
+    of self, with each child replaced by child.foo(). This method
+    should be reimplemented in subclasses where this method should
+    actually have an action.
+    
+    Each inheriting class must implement:
+    - clone(self, children), which create a copy of oneself, with new
+    children. 
+    - It must also implement _getChildren(self) returning the set of
+    children (not necessirily gen)
+    __hash__, __eq__, 
+    
+     - _repr: print the representation of this Gen, without indenting
+       it. Call child.repr to call children. You can use
+       genRepr(child, label = None) to print the parameter, prefixed
+       by «label =», if you want to print some parameters.
+    
     """
     #@debugFun
     def __init__(self,
@@ -95,7 +127,14 @@ class Gen:
     def _ensureGen(self, element):
         return ensureGen(element, self.locals_)
 
+    @debugFun
+    def clone(self,children):
+        assert False
 
+    #######################
+    # Method used for debugging
+
+    @memoize()
     def __repr__(self):
         return self.repr()
 
@@ -113,6 +152,22 @@ class Gen:
     def _repr(self):
         return f"""{self.__class__.__name__}(without repr,{self.params()})"""
         
+    def params(self, show = True):
+        """The list of params as string. So that it can be printed."""
+        if not hasattr(self,"toKeep"):
+            self.toKeep = None
+        if not hasattr(self,"state"):
+            self.state = None
+        if not show:
+            return ""
+        space = "  "*Gen.indentation
+        return f"""
+{space}toKeep = {self.toKeep},
+{space}state = {self.getState()}"""
+
+    #######################
+    # Finding status
+
 
     @debugFun
     def setState(self, state):
@@ -124,10 +179,6 @@ class Gen:
             self.state = self.state.union(state)
         return self.getState()
     
-    @debugFun
-    def clone(self,children):
-        assert False
-
     #@debugFun
     def getState(self):
         return self.state
@@ -180,9 +231,13 @@ class Gen:
     def dontKeep(self):
         self.toKeep = False
 
-    #@debugFun
+        #@debugFun
     def doKeep(self):
         self.toKeep = True
+
+    @memoize()
+    def getChildren(self):
+        return self._getChildren()
 
     # @debugFun
     # def _toKeep(self):
@@ -191,32 +246,47 @@ class Gen:
     #             return True
     #     return False
 
-    #@debugFun
-    def getKey(state,
-               model = None,
-               asked = None,
-               hide = None,
-               isQuestion = None):
-        if state == NORMAL or state == WITHOUT_REDUNDANCY:
-            key = None
-        elif state == MODEL_APPLIED:
-            assert model is not None
-            key = modelToHash(model)
-        elif state  ==  QUESTION_ANSWER:
-            assert isinstance(isQuestion, bool)
-            key = isQuestion
-        elif state  ==  TEMPLATE_APPLIED:
-            key = (asked, hide)
-        else:
-            raise ExceptionInverse(f"State should not be {state}")
-        return key
+    ##########################################
+    ## Transform the gen                  #
+    #########################################
+    #############
+    # Meta changing gen
+
     def ensureSingleStep(self,goal):
-        if self.getState().nextStep() < goal:
+        if self.getState() < goal.previousStep():
             raise ExceptionInverse(f"Can't compute {goal} from state {self.getState()} of {self}")
-        
-    @memoize((lambda:None))
+
+    @debugFun
+    @ensureReturnGen
+    def callOnChildren(self, method, *args, force = True, **kwargs):
+        # memoize.__name__ = f"memoize_of_{method}"
+        # memoize.__qualname__ = f"memoize_of_{method}"
+        # fun_ = fun if force else memoize
+        ret = self._callOnChildren(method, *args, **kwargs)
+        return ret
+    
+    @debugFun
+    def _callOnChildren(self, method, *args, force = True, **kwargs):
+        elements = []
+        someChange = False
+        for element in self.getChildren():
+            newElement = (getattr(element, method))(*args, **kwargs)
+            if newElement != element:
+                someChange = True
+            elements.append(newElement)
+        if someChange:
+            ret = self.clone(elements = elements)
+            if ret == self:
+                ret = self
+        else:
+            ret = self
+        return ret
+
+    ###########################
+    # Changing step
+    @memoize()
     @ensureGenAndSetState(NORMAL)
-    @emptyToEmpty
+    #@emptyToEmpty
     @debugFun
     def getNormalForm(self):
         self.ensureSingleStep(NORMAL)
@@ -225,9 +295,9 @@ class Gen:
     def _getNormalForm(self):
         return self.callOnChildren(method = "getNormalForm")
     
-    @memoize((lambda:None))
+    @memoize()
     @ensureGenAndSetState(WITHOUT_REDUNDANCY)
-    @emptyToEmpty
+    #@emptyToEmpty
     @debugFun
     def getWithoutRedundance(self):
         """Remove redundant, like {{#foo}}{{#foo}}, {{#foo}}{{^foo}}
@@ -249,7 +319,7 @@ class Gen:
     
     @memoize((lambda isQuestion:isQuestion))
     @ensureGenAndSetState(QUESTION_ANSWER)
-    @emptyToEmpty
+    #@emptyToEmpty
     @debugFun
     def questionOrAnswer(self, isQuestion):
         self.ensureSingleStep(QUESTION_ANSWER)
@@ -264,7 +334,7 @@ class Gen:
 
     @memoize((lambda fields:fields))
     @ensureGenAndSetState(MODEL_APPLIED)
-    @emptyToEmpty
+    #@emptyToEmpty
     @debugFun
     def restrictToModel(self,fields):
         """Given the model, restrict the generator according the fields
@@ -276,75 +346,42 @@ class Gen:
         """
         self.ensureSingleStep(MODEL_APPLIED)
         return self._restrictToModel(fields = fields)
-    
     @debugFun
     def _restrictToModel(self,fields):
         return self.callOnChildren(method = "restrictToModel", fields = fields)
 
     @memoize((lambda asked, hide:(asked,hide)))
     @ensureGenAndSetState(TEMPLATE_APPLIED)
-    @emptyToEmpty
+    #@emptyToEmpty
     @debugFun
     def template(self, asked, hide):
         self.ensureSingleStep(TEMPLATE_APPLIED)
         return self._template(asked = asked, hide = hide)
     @debugFun
     def _template(self, asked = frozenset(), hide = frozenset()):
-        return self.callOnChildren(method = "template", asked = asked, hide = hide)
+        current = self
+        for name in asked:
+            current = current.assumeAsked(name)
+        for name in hide:
+            current = current.removeName(name)
+        return current.noMoreAsk()
 
-    @debugFun
-    def callOnChildren(self, method, *args, force = True, **kwargs):
-        # memoize.__name__ = f"memoize_of_{method}"
-        # memoize.__qualname__ = f"memoize_of_{method}"
-        # fun_ = fun if force else memoize
-        ret = self._callOnChildren(method, *args, **kwargs)
-        ret = self._ensureGen(ret)
-        if ret.isEmpty():
-            ret = self._ensureGen(None)
-        return ret
-    
-    @debugFun
-    def _callOnChildren(self, method, *args, force = True, **kwargs):
-        elements = []
-        someChange = False
-        for element in self.getChildren():
-            newElement = (getattr(element, method))(*args, **kwargs)
-            if newElement != element:
-                someChange = True
-            elements.append(newElement)
-        if someChange:
-            ret = self.clone(elements = elements)
-            if ret == self:
-                ret = self
-        else:
-            ret = self
-        return ret
-
+    @ensureReturnGen
     @debugFun
     def force(self):
         """Ensure that ensureGen is called on each element recursively."""
         self.callOnChildren(method = "force")
-    
-    # @debugFun
-    # def assumeFieldInSet(self, field, setName):
-    #     """return a copy of self, where the field is assumed to be in the set.
         
-    #     Assume self and descendant unredundant and normal.
-    #     set should be one of "requireAbsentOfModel", "requireInModel", "requireEmpty",
-    #     "requireFilled", "remove".
-    #     Don't redefine. Call _assumeFieldInSet
-    #     """
-    #     return self._assumeFieldInSet(field,setName)
-    
-    # @debugFun
-    # def _assumeFieldInSet(self, field, setName):
-    #     """Similar to assumeFieldInSet. 
-        
-    #     Recompute instead of memoizing.
-    #     """
-    #     return self.callOnChildren("assumeFieldInSet", field = field, setName = setName)
-    
-    @emptyToEmpty
+    @ensureReturnGen
+    @debugFun
+    def noMoreAsk(self):
+        return self._noMoreAsk()
+    @debugFun
+    def _noMoreAsk(self):
+        return self.callOnChildren(method = "noMoreAsk")
+
+    #@emptyToEmpty
+    @ensureReturnGen
     @debugFun
     def assumeFieldFilled(self, field):
         return self._assumeFieldFilled(field)
@@ -353,7 +390,8 @@ class Gen:
     def _assumeFieldFilled(self, field):
         return self.callOnChildren("assumeFieldFilled", field = field)
     
-    @emptyToEmpty
+    #@emptyToEmpty
+    @ensureReturnGen
     @debugFun
     def assumeFieldEmpty(self, field):
         return self._assumeFieldEmpty(field)
@@ -361,7 +399,8 @@ class Gen:
     def _assumeFieldEmpty(self, field):
         return self.callOnChildren("assumeFieldEmpty", field = field)
         
-    @emptyToEmpty
+    #@emptyToEmpty
+    @ensureReturnGen
     @debugFun
     def assumeFieldPresent(self, field):
         return self._assumeFieldPresent(field)
@@ -369,7 +408,8 @@ class Gen:
     def _assumeFieldPresent(self, field):
         return self.callOnChildren("assumeFieldPresent", field = field)
     
-    @emptyToEmpty
+    #@emptyToEmpty
+    @ensureReturnGen
     @debugFun
     def assumeQuestion(self, changeStep = False):
         ret = self._assumeQuestion(changeStep = changeStep)
@@ -380,7 +420,8 @@ class Gen:
     def _assumeQuestion(self, changeStep):
         return self.callOnChildren("assumeQuestion", changeStep = changeStep)
     
-    @emptyToEmpty
+    #@emptyToEmpty
+    @ensureReturnGen
     @debugFun
     def assumeAnswer(self, changeStep = False):
         ret = self._assumeAnswer(changeStep = changeStep)
@@ -391,29 +432,44 @@ class Gen:
     def _assumeAnswer(self, changeStep = False):
         return self.callOnChildren("assumeAnswer", changeStep = changeStep)
         
-    @emptyToEmpty
+    #@emptyToEmpty
+    @ensureReturnGen
     @debugFun
     def assumeAsked(self, name):
-        return self._assumeAsked(changeStep = changeStep)
+        return self._assumeAsked(name)
     @debugFun
     def _assumeAsked(self, name):
-        return self.callOnChildren("assumeAsked", changeStep = changeStep)
+        return self.callOnChildren("assumeAsked", name)
         
-    @emptyToEmpty
+    #@emptyToEmpty
+    @ensureReturnGen
     @debugFun
     def assumeNotAsked(self, name):
-        return self._assumeNotAsked(changeStep = changeStep)
+        return self._assumeNotAsked(name)
     @debugFun
     def _assumeNotAsked(self, name):
-        return self.callOnChildren("assumeNotAsked", changeStep = changeStep)
+        return self.callOnChildren("assumeNotAsked", name)
         
-    @emptyToEmpty
+    #@emptyToEmpty
+    @ensureReturnGen
+    @debugFun
+    def removeName(self, name):
+        return self._removeName(name)
+    @debugFun
+    def _removeName(self, name):
+        return self.callOnChildren("removeName", name)
+        
+    #@emptyToEmpty
+    @ensureReturnGen
     @debugFun
     def assumeFieldAbsent(self, field):
         return self._assumeFieldAbsent(field)    
     @debugFun
     def _assumeFieldAbsent(self, field):
         return self.callOnChildren("assumeFieldAbsent", field = field)
+
+    #################
+    # Consider the end of compilation
         
     @debugFun
     def applyTag(self, tag, soup):
@@ -427,19 +483,6 @@ class Gen:
     @debugFun
     def _applyTag(self, tag, soup):
         raise ExceptionInverse(f"""_applyTag in gen for: "{self}".""")
-
-    def params(self, show = False):
-        """The list of params as string. So that it can be printed."""
-        if not hasattr(self,"toKeep"):
-            self.toKeep = None
-        if not hasattr(self,"state"):
-            self.state = None
-        if not show:
-            return ""
-        space = "  "*Gen.indentation
-        return f"""
-{space}toKeep = {self.toKeep},
-{space}state = {self.getState()}"""
 
     @debugFun
     def compile(self,

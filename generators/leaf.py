@@ -16,7 +16,7 @@ class Leaf(Gen):
         super().__init__(**kwargs)
         
     @debugFun
-    def getChildren(self):
+    def _getChildren(self):
         return frozenset()
 
     @debugFun

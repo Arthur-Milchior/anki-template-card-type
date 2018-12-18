@@ -23,8 +23,6 @@ class NotNormal(Gen):
         raise ExceptionInverse("_assumeQuestion from not normal")
     def _applyTag(self, *args, **kwargs):
         raise ExceptionInverse("_applyTag from not normal")
-    def _template(self, *args, **kwargs):
-        raise ExceptionInverse("_template from not normal")
     def _restrictToModel(self, *args, **kwargs):
         raise ExceptionInverse("_restrictToModel from not normal")
     

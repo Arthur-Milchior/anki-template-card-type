@@ -25,9 +25,9 @@ class AtLeastNField(SingleChild, NotNormal):
         if n> len(fields):
             self.setState(EMPTY)
         
-    def __repr__(self):
-        space  = "  "*Gen.indentation
-        return f"""{space}AtLeastNField(\n{space}  {self.child},\n{space}  {self.fields},{self.n})"""
+    # def __repr__(self):
+    #     space  = "  "*Gen.indentation
+    #     return f"""{space}AtLeastNField(\n{space}  {self.child},\n{space}  {self.fields},{self.n})"""
 
     @debugFun
     def _getNormalForm(self):

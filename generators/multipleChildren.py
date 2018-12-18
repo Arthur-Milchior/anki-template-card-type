@@ -73,7 +73,7 @@ class ListElement(MultipleChildren):
         return isinstance(other,ListElement) and self.elements == other.elements
     
     @debugFun
-    def getChildren(self):
+    def _getChildren(self):
         if self.childEnsured == False:
             for i in range(len(self.elements)):
                 self.elements[i] = self._ensureGen(self.elements[i])

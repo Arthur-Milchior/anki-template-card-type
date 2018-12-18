@@ -12,8 +12,9 @@ from .data.imports import *
 #     goal = QUESTION_ANSWER
 # )
 #print(f"twoQuestionsAsTable is \n{twoQuestionsAsTable}")
-comp = compileGen(NumberedFields('Definition', 2),toPrint = True, asked = frozenset({"Definitions"}))
-print(f"result: {comp}")
+# comp = compileGen(NumberedFields('Definition', 2),toPrint = True, asked = frozenset({"Definitions"}))
+# print(f"result: {comp}")
+print(f"Normal form: {orderedList.getNormalForm()}")
 
 startDebug()
 #compileGen(twoQuestionsAsTable, asked =frozenset({"Definition"}), toPrint = True)

@@ -1,81 +1,13 @@
 from ...debug import ExceptionInverse, debug, debugFun
 from ..leaf import emptyGen
 from ..constants import *
-from ..multipleChildren import MultipleChildren, ListElement, Name
-from ..singleChild import Question, Answer, SingleChild, Filled, Empty, Present, Absent
+from ..multipleChildren import MultipleChildren, ListElement
+from ..singleChild import Question, Answer, SingleChild, Filled, Empty, Present, Absent, Asked, NotAsked
 from .sugar import NotNormal
 from ...utils import firstTruth
 import sys
 
 
-class Branch(Name):
-    """The class which expands differently in function of the question/hidden value.
-
-    name -- the name of this question.
-    children[isQuestion][isAsked] -- the field to show on the side question/answer of card (depending on isQuestion). Depending on whether this value is asked or not.
-    cascadeAsked -- a set of things which will also be considered to be asked if this is asked."""
-
-    def __init__(self,
-                 name = None,
-                 default = None,
-                 question = None,
-                 answerAsked = None,
-                 answerNotAsked = None,
-                 answer = None,
-                 asked = None,
-                 notAsked = None,
-                 questionAsked = None,
-                 questionNotAsked = None,
-                 children = dict(),
-                 cascadeAsked = frozenset(),
-                 **kwargs):
-        """
-        The value of self.children[isQuestion,isAsked] is:
-        {isQuestion}{IsAsked} if it exists.
-        {isAsked} if it exists
-        {isQuestion} if it exists
-        children[isQuestion,isAsked]
-        {default} if it exists
-        empty otherwise.
-
-        """
-        self.inputs = dict()
-        def addIfNotNone(key, value):
-            if value is not None:
-                self.inputs[key] = value
-        addIfNotNone("default", default)
-        addIfNotNone("question", question)
-        addIfNotNone("answerAsked", answerAsked)
-        addIfNotNone("answerNotAsked", answerNotAsked)
-        addIfNotNone("answer", answer)
-        addIfNotNone("asked", asked)
-        addIfNotNone("notAsked", notAsked)
-        addIfNotNone("questionAsked", questionAsked)
-        addIfNotNone("questionNotAsked", questionNotAsked)
-        addIfNotNone("children", children)
-        addIfNotNone("cascadeAsked", cascadeAsked)
-        addIfNotNone("name", name)
- 
-        questionAsked = firstTruth([questionAsked, asked, question, children.get((True,True)), default, emptyGen])
-        questionNotAsked = firstTruth([questionNotAsked, notAsked, question, children.get((True,False)), default, emptyGen])
-        answerAsked = firstTruth([answerAsked, asked, answer, children.get((False,True)), default, emptyGen])
-        answerNotAsked = firstTruth([answerNotAsked, notAsked, answer, children.get((False,False)), default, emptyGen])
-        
-        asked = questionAsked if questionAsked == answerAsked else QuestionOrAnswer(questionAsked, answerAsked, **kwargs)
-        notAsked = questionNotAsked if questionNotAsked == answerNotAsked else QuestionOrAnswer(questionNotAsked, answerNotAsked, **kwargs)
-
-        super().__init__(name = name,
-                         asked = asked,
-                         notAsked = notAsked,
-                         cascadeAsked = cascadeAsked,
-                         **kwargs)
-
-    # def __repr__(self):
-    #     t= f"Branch("
-    #     for key in self.inputs:
-    #         t+=f"{key}: {self.inputs[key]}, "
-    #     t+=")"
-    #     return t
 
 class FilledOrEmpty(ListElement):
     # def __repr__(self):
@@ -359,11 +291,76 @@ class QuestionOrAnswer(ListElement):
 class AskedOrNot(ListElement):
     """The class which expands differently in function of whether a name is asked or not."""
     def __init__(self,
-                 name
+                 field,
                  asked = None,
                  notAsked = None,
                  **kwargs):
         self.asked = asked
         self.notAsked = notAsked
-        super().__init__([Asked(name, asked), NotAsked(name, notAsked)], **kwargs)
+        super().__init__([Asked(field = field, child = asked), NotAsked(field = field,child = notAsked)], **kwargs)
 
+class Branch(AskedOrNot):
+    """The class which expands differently in function of the question/hidden value.
+
+    name -- the name of this question.
+    children[isQuestion][isAsked] -- the field to show on the side question/answer of card (depending on isQuestion). Depending on whether this value is asked or not.
+"""
+
+    def __init__(self,
+                 name = None,
+                 default = None,
+                 question = None,
+                 answerAsked = None,
+                 answerNotAsked = None,
+                 answer = None,
+                 asked = None,
+                 notAsked = None,
+                 questionAsked = None,
+                 questionNotAsked = None,
+                 children = dict(),
+                 **kwargs):
+        """
+        The value of self.children[isQuestion,isAsked] is:
+        {isQuestion}{IsAsked} if it exists.
+        {isAsked} if it exists
+        {isQuestion} if it exists
+        children[isQuestion,isAsked]
+        {default} if it exists
+        empty otherwise.
+
+        """
+        self.inputs = dict()
+        def addIfNotNone(key, value):
+            if value is not None:
+                self.inputs[key] = value
+        addIfNotNone("default", default)
+        addIfNotNone("question", question)
+        addIfNotNone("answerAsked", answerAsked)
+        addIfNotNone("answerNotAsked", answerNotAsked)
+        addIfNotNone("answer", answer)
+        addIfNotNone("asked", asked)
+        addIfNotNone("notAsked", notAsked)
+        addIfNotNone("questionAsked", questionAsked)
+        addIfNotNone("questionNotAsked", questionNotAsked)
+        addIfNotNone("children", children)
+        addIfNotNone("name", name)
+ 
+        questionAsked = firstTruth([questionAsked, asked, question, children.get((True,True)), default, emptyGen])
+        questionNotAsked = firstTruth([questionNotAsked, notAsked, question, children.get((True,False)), default, emptyGen])
+        answerAsked = firstTruth([answerAsked, asked, answer, children.get((False,True)), default, emptyGen])
+        answerNotAsked = firstTruth([answerNotAsked, notAsked, answer, children.get((False,False)), default, emptyGen])
+        
+        asked = questionAsked if questionAsked == answerAsked else QuestionOrAnswer(questionAsked, answerAsked, **kwargs)
+        notAsked = questionNotAsked if questionNotAsked == answerNotAsked else QuestionOrAnswer(questionNotAsked, answerNotAsked, **kwargs)
+
+        super().__init__(field = name,
+                         asked = asked,
+                         notAsked = notAsked,
+                         **kwargs)
+
+    # def __repr__(self):
+    #     t= f"Branch("
+    #     for key in self.inputs:
+    #         t+=f"{key}: {self.inputs[key]}, "
+    #     t+=")"
+    #     return t

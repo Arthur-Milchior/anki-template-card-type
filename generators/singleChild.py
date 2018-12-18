@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup, NavigableString
 import copy
 import sys
 from .constants import *
-from .generators import Gen, modelToFields, shouldBeKept, genRepr
+from .generators import Gen, modelToFields, shouldBeKept, genRepr, ensureReturnGen, memoize
 from .leaf import emptyGen
 from ..tag import singleTag, tagContent
 from ..debug import debug, assertType, debugFun, ExceptionInverse
@@ -11,7 +11,6 @@ from .multipleChildren import MultipleChildren
 class SingleChild(MultipleChildren):
     def __init__(self, child = None, toKeep = None, **kwargs):
         self.child = child
-        self.childComputed = False
         super().__init__(toKeep = toKeep, **kwargs)
 
     def clone(self, elements):
@@ -34,14 +33,14 @@ class SingleChild(MultipleChildren):
     #     if child == self.child:
     #         return self
     #     return self.__class__(child = child)
-    
+
+    @memoize()
+    @ensureReturnGen
+    @debugFun
     def getChild(self):
-        if not self.childComputed:
-            self.child = self._ensureGen(self.child)
-            self.childComputed = True
         return self.child
         
-    def getChildren(self):
+    def _getChildren(self):
         return [self.getChild()]
     def __hash__(self):
         return hash((self.__class__,self.child))
@@ -349,117 +348,60 @@ class Answer(SingleChild):
     def _getWithoutRedundance(self):
         return self.cloneSingle(self.getChild().assumeAnswer())
 
-class Asked(SingleChild):
-    """The class which expands differently in function of whether name is asked, hidden, neither."""
-    def __init__(self,
-                 name = None,
-                 cascadeAsked = frozenset(),
-                 **kwargs):
-        assert assertType(name, str)
-        assert assertType(cascadeAsked, frozenset)
-        for cascading in cascadeAsked:
-            assert assertType(cascading, str)
-        self.name = name
-        self.cascadeAsked = cascadeAsked
-        super().__init__(**kwargs)
-
-    def cloneSingle(self, child):
-        if not child:
-            return emptyGen
-        if child == self.child:
-            return self
-        return Asked(name = self.name,
-                     child = child,
-                     cascadeAsked = self.cascadeAsked)
-
+class Asked(FieldChild):
+    """The class which expands only if its field is asked."""
     def _getWithoutRedundance(self):
-        return self.cloneSingle(self.getChild().assumeAsked(self.name)).getWithoutRedundance()
+        return self.cloneSingle(self.getChild().getWithoutRedundance().assumeAsked(self.field))
 
-    def _assumeAsked(self, name):
-        if self.name == name:
-            return self.getChild().assumeAsked(name)
+    def _assumeAsked(self, field):
+        if self.field == field:
+            return self.getChild().assumeAsked(field)
         else:
-            return self.cloneSingle(self.getChild().assumeAsked(name))
-    def _assumeNotAsked(self, name):
-        if self.name == name:
+            return self.cloneSingle(self.getChild().assumeAsked(field))
+    def _assumeNotAsked(self, field):
+        if self.field == field:
             return None
         else:
-            return self.getChild().assumeAsked(name)
-    
-    def _repr(self):
-        space = "  " * Gen.indentation
-        t= f"""Asked(name = "{self.name}",
-{genRepr(self.child, label = "child")}"""
-        if self.cascadeAsked:
-            t+=f""",\n{genRepr(self.cascadeAsked,"cascadeAsked")}"""
-        t+=")"
-        return t
-    
-    def __eq__(self,other):
-        return isinstance(other,Asked) and self.name == other.name and self.child == other.child and self.cascadeAsked == other.cascadeAsked
-    
-    def _template(self, asked = frozenset(), hide = frozenset()):
-        if self.name in hide:
-            return None
-        if self.name in asked:
-            asked = asked | self.cascadeAsked
-            return child.template(asked = asked, hide = hide)
-        else:
-            return None
+            return self.getChild().assumeAsked(field)
+
+    def _noMoreAsk(self):
+        return None
         
+    def _removeName(self, field):
+        if self.field == field:
+            return None
+        else:
+            return self.cloneSingle(self.getChild().removeName(field))
         
     def _applyTag(self, *args, **kwargs):
-        raise ExceptionInverse("Name._applyTag should not exists")
-class NotAsked(SingleChild):
-    """The class which expands differently in function of whether name is asked, hidden, neither."""
-    def __init__(self,
-                 name = None,
-                  **kwargs):
-        assert assertType(name, str)
+        raise ExceptionInverse("Asked._applyTag should not exists")
 
-        self.name = name
-        self.notAsked = notAsked
-        super().__init__(**kwargs)
-
-    def cloneSingle(self, child):
-        if not child:
-            return emptyGen
-        if child == self.child:
-            return self
-        return NotAsked(name = self.name,
-                     child = child)
-       
+    
+class NotAsked(FieldChild):
+    """The class which expands only if its field is not asked."""
     def _getWithoutRedundance(self):
-        return self.cloneSingle(self.getChild().assumeNotAsked(self.name)).getWithoutRedundance()
+        return self.cloneSingle(self.getChild().getWithoutRedundance().assumeNotAsked(self.field))
     
-    def _assumeNotAsked(self, name):
-        if self.name == name:
-            return self.getChild().assumeAsked(name)
+    def _assumeNotAsked(self, field):
+        if self.field == field:
+            return self.getChild().assumeAsked(field)
         else:
-            return self.cloneSingle(self.getChild().assumeAsked(name))
-    def _assumeAsked(self, name):
-        if self.name == name:
+            return self.cloneSingle(self.getChild().assumeAsked(field))
+
+    def _removeName(self, field):
+        if self.field == field:
             return None
         else:
-            return self.getChild().assumeAsked(name)
-    
-    def _repr(self):
-        space = "  " * Gen.indentation
-        t= f"""NotAsked(name = "{self.name}",
-{genRepr(self.child, label = "child")}"""
-        t+=")"
-        return t
-    
-    def __eq__(self,other):
-        return isinstance(other,NotAsked) and self.name == other.name and self.child == other.child
-    
-    def _template(self, asked = frozenset(), hide = frozenset()):
-        if self.name in hide:
+            return self.cloneSingle(self.getChild().removeName(field))
+
+    def _noMoreAsk(self):
+        return self.getChild().noMoreAsk()
+                
+    def _assumeAsked(self, field):
+        if self.field == field:
             return None
-        if self.name in asked:
-            return None
-        return self.child.template(asked = asked, hide = hide)
-        
+        else:
+            return self.getChild().assumeAsked(field)
     def _applyTag(self, *args, **kwargs):
-        raise ExceptionInverse("Name._applyTag should not exists")
+        raise ExceptionInverse("NotAsked._applyTag should not exists")
     

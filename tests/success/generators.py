@@ -124,6 +124,12 @@ assert assertEqual(compileGen(presentAbsent),emptyGen)
 assert assertEqual(compileGen(absentQuestion),emptyGen)
 assert assertEqual(compileGen(absentAbsent),Literal("Absent is absent in the model"))
 
+assert assertEqual(compileGen(asked,asked = frozenset({"asked"})),Literal("is asked"))
+assert assertEqual(compileGen(asked,asked = frozenset({})),emptyGen)
+assert assertEqual(compileGen(notAsked,asked = frozenset({"asked"})),emptyGen)
+assert assertEqual(compileGen(notAsked,asked = frozenset({})),Literal("is not asked"))
+assert assertEqual(compileGen(notAsked,hide = frozenset({"asked"})),emptyGen)
+assert assertEqual(compileGen(asked,hide = frozenset({"asked"})),emptyGen)
 
 
 ## MultipleChildren
@@ -141,13 +147,8 @@ assert assertEqual(compileGen(listEmptyInexistingField), literalFoo)
 
 assert assertEqual(compileGen(listEmptyExistingField), ListElement([literalFoo, fieldQuestion]))
 
-assert singletonList
 
-### Name
-assert assertEqual(compileGen(name, asked = frozenset({"name"})),Literal("Asked"))
-assert assertEqual(compileGen(recursiveName, asked = frozenset({"name"})),ListElement(elements = [Literal(text = "prefix", ), Literal(text = "Asked", ), Literal(text = "suffix", )], ))
-assert assertEqual(compileGen(name, asked = frozenset()),Literal(text = "notAsked", ))
-assert assertEqual(compileGen(recursiveName, asked = frozenset()),Literal(text = "notAsked", ))
+
 
 ### QuestionOrAnswer
 assert assertEqual(compileGen(qoa),Literal("question side"))
@@ -162,6 +163,10 @@ assert assertEqual(compileGen(filledOrEmpty),
 
 assert assertEqual(compileGen(presentOrAbsentQuestion),Literal("Question is present in the model"))
 assert assertEqual(compileGen(presentOrAbsentAbsent),Literal("Absent is absent from the model"))
+
+### Asked or Not
+assert assertEqual(compileGen(askedOrNot, asked = frozenset({"askedOrNot"})),Literal("Asked"))
+assert assertEqual(compileGen(askedOrNot, asked = frozenset()),Literal(text = "notAsked", ))
 ## Fields
 assert assertEqual(compileGen(questionnedField, asked = frozenset({"Question"})), 
                    Literal("???"))

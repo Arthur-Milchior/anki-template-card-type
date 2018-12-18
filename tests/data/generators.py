@@ -55,14 +55,9 @@ listEmptyExistingField = ListElement([literalFoo, emptyGen, fieldQuestion]) #foo
 singletonList = ensureGen([Field('foo')]) #fooList
 twoQuestionsListed = ListElement([DecoratedField('Definition1'),DecoratedField('Definition2')]) #similar to twoQuestionsListedAsFields
 
-### Name
-name = Name(name = "name", asked = "Asked", notAsked = "notAsked")
-recursiveName = Name(
-    name = "name",
-    asked = ["prefix", Name(name = "recursiveName", asked = "Asked", notAsked = "notAskedRecursive", cascadeAsked = frozenset({"recu"})), "suffix"],
-    notAsked = "notAsked",
-    cascadeAsked = frozenset({"recursiveName"})
-)
+### Asked or Not
+asked = Asked(field = "asked", child = "is asked")
+notAsked = NotAsked(field = "asked", child = "is not asked")
 
 ### QuestionOrAnswer
 qoa = QuestionOrAnswer(question = "question side", answer = "answer side")
@@ -81,6 +76,7 @@ presentOrAbsentAbsent = PresentOrAbsent(
     field = "Absent",
     presentCase = "Absent is present in the model",
     absentCase = "Absent is absent from the model")
+askedOrNot = AskedOrNot(field = "askedOrNot", asked = "Asked", notAsked = "notAsked")
 
 ## Fields
 questionnedField =QuestionnedField('Question')
