@@ -6,15 +6,32 @@ from ..generators.imports import *
 from ..debug import startDebug, endDebug, debug
 from .data.imports import *
 
+# qa = compileGen(
+#     twoQuestionsAsTable,
+#     asked =frozenset(),
+#     goal = QUESTION_ANSWER
+# )
+#print(f"twoQuestionsAsTable is \n{twoQuestionsAsTable}")
+comp = compileGen(NumberedFields('Definition', 2),toPrint = True, asked = frozenset({"Definitions"}))
+print(f"result: {comp}")
+
+startDebug()
+#compileGen(twoQuestionsAsTable, asked =frozenset({"Definition"}), toPrint = True)
+
+# mr = qa.restrictToModel(fields)
+# print(f"mr: {mr}")
+
+# print(f"nf: {compileGen(requirements3, toPrint = True)}")
+# assert False
 #compileGen(atLeastTwoQuestion,toPrint = True)
 # test = AtLeastTwoFields(child = "At least two",
 #                         fields = ([ "Definition2", "Definition"]))
 # # cg = compileGen(test)
 # # print(cg)
 
-# startDebug()
 # nf =test.getNormalForm()
 # print(f"nf is {nf}")
-# endDebug()
+endDebug()
 # # debug("current")
 
+#assert False

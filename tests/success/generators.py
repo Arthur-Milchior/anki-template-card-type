@@ -169,24 +169,28 @@ assert assertEqual(compileGen(questionnedField, asked = frozenset()),
                    Field("Question"))
 assert assertEqual(compileGen(questionnedField, isQuestion = False),
                    Field("Question"))
-assert assertEqual(compileGen(decoratedField, asked = frozenset({"Question"})), 
-                   ListElement([
-                       Literal("Question"),
-                       Literal(": "),
-                       Literal("???")]
-                   ))
-assert assertEqual(compileGen(decoratedField, asked = {}), 
-                   ListElement([
-                       Literal("Question"),
-                       Literal(": "),
-                       Field("Question")]
-                   ))
+assert assertEqual(
+    compileGen(
+        decoratedField,
+        asked = frozenset({"Question"})),
+    Filled(field = "Question",
+           child = ListElement([
+               Literal("Question"), Literal(": "), Literal("???")]
+           )))
+assert assertEqual(compileGen(decoratedField, asked = frozenset()), 
+                   Filled(field = "Question",
+                          child = ListElement([
+                              Literal("Question"),
+                              Literal(": "),
+                              Field("Question")]
+                          )))
 assert assertEqual(compileGen(decoratedField, isQuestion = False),
-                   ListElement([
-                       Literal("Question"),
-                       Literal(": "),
-                       Field("Question")]
-                   ))
+                   Filled(field = "Question",
+                          child = ListElement([
+                              Literal("Question"),
+                              Literal(": "),
+                              Field("Question")]
+                          )))
 
 ## Numbers
 assert assertEqual(compileGen(atLeastOneQuestion),
@@ -195,109 +199,123 @@ assert assertEqual(compileGen(atLeastOneQuestion),
 assert assertEqual(compileGen(atLeastTwoQuestion),
                    emptyGen)
 assert assertEqual(atLeastOneDefinition.getNormalForm(),
-ListElement(elements = [Filled(field = "Definition3", child = Literal(text = "At least one", ), ), Empty(field = "Definition3", child = ListElement(elements = [Filled(field = "Definition2", child = Literal(text = "At least one", ), ), Empty(field = "Definition2", child = ListElement(elements = [Filled(field = "Definition", child = Literal(text = "At least one", ), ), Empty(field = "Definition", child = emptyGen, )], ), )], ), )], ) )
+                   ListElement([
+                       Filled(
+                           field = 'Definition3',
+                           child = Literal(text = "At least one", ),
+                       ),
+                       Empty(
+        field = 'Definition3',
+        child = ListElement([
+            Filled(
+                field = 'Definition2',
+                child = Literal(text = "At least one", ),
+            ),
+            Empty(
+                field = 'Definition2',
+                child = Filled(
+                    field = 'Definition',
+                    child = Literal(text = "At least one", ),
+                ),
+            )],
+        ),
+    )],
+))
 
 assert assertEqual(compileGen(atLeastTwoDefinition),#this is false, 
-                   ListElement([
-                       Requirement(requireFilled = {"Definition"},
-                                   child = Literal("At least two")),
-                       Requirement(requireEmpty = {"Definition"},
-                                   child = 
-                                   ListElement([
-                                       Requirement(requireFilled = {"Definition2"},
-                                                   child = Literal("At least two")),
-                                       Requirement(requireEmpty = {"Definition2"},
-                                                   child = 
-                                                   ListElement([
-                                                       Requirement(requireFilled = {"Definition3"},
-                                                                   child = Literal("At least two")),
-                                                   ])                                                   
-                                       ),
-                                   ])
-                       ),
-                   ])
+ListElement([
+  Filled(
+    field = 'Definition3',
+    child = ListElement([
+      Filled(
+        field = 'Definition2',
+        child = Literal(text = "At least two", ),
+          ),
+      Empty(
+        field = 'Definition2',
+        child = Filled(
+          field = 'Definition',
+          child = Literal(text = "At least two", ),
+            ),
+          )],
+        ),
+      ),
+  Empty(
+    field = 'Definition3',
+    child = Filled(
+      field = 'Definition2',
+      child = Filled(
+        field = 'Definition',
+        child = Literal(text = "At least two", ),
+          ),
+        ),
+      )],
+    )
 )
 
 ## Conditionals
 
 ### Requirement
-assert assertEqual(compileGen(requireQuestion),requireQuestion)
+assert assertEqual(compileGen(requireQuestion),Filled(
+  field = 'Question',
+  child = Literal(text = "Question", ),
+))
 assert assertEqual(compileGen(requirements3),
-                   Requirement(
-                       child = Literal(text = "Foo", ),
-                       requireFilled = frozenset({'Question'}),
-                       requireEmpty = frozenset({'Definition3'})
-                   )
-)
+                   Empty(
+  field = 'Definition3',
+  child = Filled(
+    field = 'Question',
+    child = Literal(text = "Foo",))))
 assert assertEqual(contradictionRequirement.getNormalForm(), emptyGen)
 assert assertEqual(compileGen(requiringInexistant),emptyGen)
 ## List Fields
 assert assertEqual(fieldToPair("field"), ("field",Field("field")))
-assert assertEqual(fieldToPair(("label","field")), ("label","field"))
+assert assertEqual(fieldToPair(("label","field")), ("label",Field("field")))
 assert assertEqual(fieldToPair(Field("field")), ("field",Field("field")))
 
-assert assertEqual(compileGen(twoQuestionsAsList, asked ={}),
-                   compileGen([["Definition", ": ", Field("Definition")],["Definition2", ": ", Field("Definition2")]]))
-assert assertEqual(compileGen(twoQuestionsAsList, asked ={"Definition"}, isQuestion = False),
-                   compileGen([["Definition", ": ", Field("Definition")],["Definition2", ": ", Field("Definition2")]]))
-assert assertEqual(compileGen(twoQuestionsAsList, asked ={"Definition"}),
-                   compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Field("Definition2")]]))
+# assert assertEqual(compileGen(twoQuestionsAsList, asked =frozenset()),
+#                    compileGen([["Definition", ": ", Field("Definition")],["Definition2", ": ", Field("Definition2")]]))
+# assert assertEqual(compileGen(twoQuestionsAsList, asked ={"Definition"}, isQuestion = False),
+#                    compileGen([["Definition", ": ", Field("Definition")],["Definition2", ": ", Field("Definition2")]]))
+# assert assertEqual(compileGen(twoQuestionsAsList, asked ={"Definition"}),
+#                    compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Field("Definition2")]]))
 
-assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={}),
-                   compileGen([["Definition", ": ", Field("Definition")],["Definition2", ": ", Field("Definition2")]]))
-assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"Definition"}, isQuestion = False),
-                   compileGen([["Definition", ": ", Field("Definition")],["Definition2", ": ", Field("Definition2")]]))
-assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"Definition"}),
-                   compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Field("Definition2")]]))
-assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"ListName"}),
-                   compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Literal("???")]]))
+# assert assertEqual(compileGen(twoQuestionsAsNamedList, asked =frozenset()),
+#                    compileGen([["Definition", ": ", Field("Definition")],["Definition2", ": ", Field("Definition2")]]))
+# assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"Definition"}, isQuestion = False),
+#                    compileGen([["Definition", ": ", Field("Definition")],["Definition2", ": ", Field("Definition2")]]))
+# assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"Definition"}),
+#                    compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Field("Definition2")]]))
+# assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"ListName"}),
+#                    compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Literal("???")]]))
 
 assert assertEqual(
     compileGen(
         twoQuestionsAsTable,
-        asked ={}
+        asked =frozenset()
     ),
-    compileGen(
-        Table(
-            [
-                ["Definition", Field("Definition")],
-                ["Definition2", Field("Definition2")]]
-        )
-    )
+    tableTwoShown
 )
                    
 assert assertEqual(
     compileGen(
         twoQuestionsAsTable,
-        asked ={"Definition"},
+        asked =frozenset({"Definition"}),
         isQuestion = False
     ),
-    compileGen(
-        Table(
-            [
-                [
-                    "Definition",
-                    Field("Definition")
-                ],
-                [
-                    "Definition2",
-                    Field("Definition2")
-                ]
-            ]
-        )
-    )
+    tableTwoShown
 )
                    
-assert assertEqual(compileGen(twoQuestionsAsTable, asked ={"Definition"}),
-                   compileGen(Table([["Definition", Literal("???")],["Definition2", Field("Definition2")]])))
+assert assertEqual(compileGen(twoQuestionsAsTable, asked =frozenset({"Definition"})),
+                   tableTwoQuestionned)
 
 
-assert assertEqual(compileGen(twoQuestionsNumbered, asked ={}),
-                   compileGen(["Definition", ":", UL([Field("Definition"), Field("Definition2")])]))
-assert assertEqual(compileGen(twoQuestionsNumbered, asked ={"Definition"}, isQuestion = False),
-                   compileGen(["Definition", ":", UL([Field("Definition"), Field("Definition2")])]))
-assert assertEqual(compileGen(twoQuestionsNumbered, asked ={"Definition"}),
-                   compileGen(["Definition", ":", UL([Field("???"), Field("Definition2")])]))
-assert assertEqual(compileGen(twoQuestionsNumbered, asked ={"ListName"}),
-                   compileGen(["Definition", ":", UL([Field("???"), Field("???")])]))
+assert assertEqual(compileGen(twoQuestionsNumbered, asked =frozenset()),
+                   twoQuestionsNumberedShown)
+assert assertEqual(compileGen(twoQuestionsNumbered, asked =frozenset({"Definition"}), isQuestion = False),
+                   twoQuestionsNumberedShown)
+assert assertEqual(compileGen(twoQuestionsNumbered, asked =frozenset({"Definition"})),
+                   twoQuestionsNumberedAskDefinition)
+assert assertEqual(compileGen(twoQuestionsNumbered, asked =frozenset({"Definitions"})),
+                   twoQuestionsNumberedAllAsked)
 

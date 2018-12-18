@@ -115,7 +115,94 @@ requiringInexistant = Requirement(child = (Literal("Foo")),
 branch = Branch(name="Question", questionAsked = "???", default = Field("Question"))
 ## List Fields
 
-twoQuestionsAsList = ListFields(['Definition', 'Definition2'])
-twoQuestionsAsNamedList = ListFields(['Definition', 'Definition2'], "ListName")
+#twoQuestionsAsList = ListFields(fields = ['Definition', 'Definition2'])
+#twoQuestionsAsNamedList = ListFields(['Definition', 'Definition2'], "ListName")
 twoQuestionsAsTable = TableFields(['Definition', 'Definition2'])
+tableTwoShown= HTML(
+        child = ListElement([
+            Filled(
+                field = 'Definition',
+                child = HTML(
+                    child = ListElement([
+                        HTML(
+                            child = Literal(text = "Definition",),
+                            tag = 'td'),
+                        HTML(
+                            child = Field(field = "Definition"),
+                            tag = 'td')],),
+                    tag = 'tr'),),
+            Filled(
+                field = 'Definition2',
+                child = HTML(
+                    child = ListElement([
+                        HTML(
+                            child = Literal(text = "Definition2",),
+                            tag = 'td'),
+                        HTML(
+                            child = Field(field = "Definition2"),
+                            tag = 'td')],),
+                    tag = 'tr'),)],),
+        tag = 'table')
+tableTwoQuestionned= HTML(
+        child = ListElement([
+            Filled(
+                field = 'Definition',
+                child = HTML(
+                    child = ListElement([
+                        HTML(
+                            child = Literal(text = "Definition",),
+                            tag = 'td'),
+                        HTML(
+                            child = Literal(text = "???",),
+                            tag = 'td')],),
+                    tag = 'tr'),),
+            Filled(
+                field = 'Definition2',
+                child = HTML(
+                    child = ListElement([
+                        HTML(
+                            child = Literal(text = "Definition2",),
+                            tag = 'td'),
+                        HTML(
+                            child = Field(field = "Definition2"),
+                            tag = 'td')],),
+                    tag = 'tr'),)],),
+        tag = 'table')
+
 twoQuestionsNumbered = NumberedFields('Definition', 2)
+twoQuestionsNumberedShown = ListElement([
+    Literal(text = "Definition"),
+    Literal(text = ": "),
+    HTML("ul",
+         child = ListElement([
+             Filled(
+                 field = 'Definition',
+                 child = Field(field = "Definition")),
+             Filled(
+                 field = 'Definition2',
+                 child = Field(field = "Definition2"))]))])
+twoQuestionsNumberedAskDefinition = ListElement([
+    Literal(text = "Definition"),
+    Literal(text = ": "),
+    HTML("ul",
+         child = ListElement([
+             Filled(
+                 field = 'Definition',
+                 child = Literal("???")),
+             Filled(
+                 field = 'Definition2',
+                 child = Field(field = "Definition2"))]))])
+
+twoQuestionsNumberedAllAsked = ListElement([
+    Literal(text = "Definition"),
+    Literal(text = ": "),
+    HTML("ul",
+         child = ListElement([
+             Filled(
+                 field = 'Definition',
+                 child = Literal("???")),
+             Filled(
+                 field = 'Definition2',
+                 child = Literal("???"))]))])
+
+

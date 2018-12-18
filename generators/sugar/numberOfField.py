@@ -3,6 +3,8 @@ from ..singleChild import SingleChild
 from ..leaf import emptyGen
 from .sugar import NotNormal
 from .conditionals import FilledOrEmpty
+from ..constants import *
+from ..generators import Gen
 
 class AtLeastNField(SingleChild, NotNormal):
     """Show the child if at least n of the fields have content.
@@ -24,7 +26,8 @@ class AtLeastNField(SingleChild, NotNormal):
             self.setState(EMPTY)
         
     def __repr__(self):
-        return f"""AtLeastNField({self.child},{self.fields},{self.n})"""
+        space  = "  "*Gen.indentation
+        return f"""{space}AtLeastNField(\n{space}  {self.child},\n{space}  {self.fields},{self.n})"""
 
     @debugFun
     def _getNormalForm(self):
@@ -36,10 +39,10 @@ class AtLeastNField(SingleChild, NotNormal):
         remaining = self.fields[:-1]
         filledCase = AtLeastNField(child = self.child,
                                    fields = remaining,
-                                   n = n-1)
+                                   n = self.n-1)
         emptyCase = AtLeastNField(child = self.child,
                                   fields = remaining,
-                                  n = n)
+                                  n = self.n)
         dichotomy = FilledOrEmpty(element,
                                   filledCase = filledCase,
                                   emptyCase =  emptyCase,

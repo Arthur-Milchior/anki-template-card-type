@@ -1,7 +1,7 @@
 import copy
 import types
 from .constants import *
-from .generators import Gen, modelToFields, modelToFields
+from .generators import Gen, modelToFields, modelToFields, genRepr
 from .ensureGen import addTypeToGenerator
 from ..debug import debug, assertType, debugFun, ExceptionInverse
 from bs4 import NavigableString
@@ -47,11 +47,11 @@ class Empty(Leaf):
                          toKeep = toKeep,
                          **kwargs)
     
-    def __repr__(self):
+    def _repr(self):
         if self == emptyGen:
             return "emptyGen"
         else:
-            return f"""Empty(createOther = True, {self.params()})"""
+            return f"""Empty(createOther = True,{self.params()})"""
 
     def _applyTag(self, tag, soup):
         pass
@@ -88,8 +88,8 @@ class Literal(Leaf):
     def __hash__(self):
         return hash(self.text)
 
-    def __repr__(self):
-        return f"""Literal(text = "{self.text}", {self.params()})"""
+    def _repr(self):
+            return f"""Literal(text = "{self.text}",{self.params()})"""
     
     def __eq__(self,other):
         #debug(f"""{self!r} == {other!r}, self being Literal""",1)
@@ -134,9 +134,8 @@ class Field(Leaf):
             assert len(elt) == 1
             field = elt.pop
             elt.add(field)
-        else:
-            assert assertType(field, str)
         self.field = field
+        assert assertType(field, str)
         super().__init__(state = state,
                          toKeep = toKeep,
                          **kwargs)
@@ -146,8 +145,14 @@ class Field(Leaf):
     def __eq__(self,other):
         return isinstance(other,Field) and self.field == other.field
     
-    def __repr__(self):
-        return f"""Field(field = "{self.field}", type = {self.typ}, cloze = {self.cloze}, {self.params()})"""
+    def _repr(self):
+        t= f"""Field(field = "{self.field}","""
+        if self.typ:
+            t+="\n"+genRepr(self.typ, label="type")+","
+        if self.cloze:
+            t+="\n"+genRepr(self.cloze, label="cloze")+","
+        t+=self.params()+")"
+        return t
 
     def _assumeFieldEmpty(field):
         if field == self.field:

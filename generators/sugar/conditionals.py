@@ -1,4 +1,4 @@
-from ...debug import ExceptionInverse
+from ...debug import ExceptionInverse, debug, debugFun
 from ..leaf import emptyGen
 from ..constants import *
 from ..multipleChildren import MultipleChildren, ListElement, Name
@@ -188,19 +188,23 @@ class Requirement(SingleChild, NotNormal):
         super().__init__(state = state,
                          **kwargs)
 
+    @debugFun
     def _getNormalForm(self):
         current = self.getChild()
         assoc = {"requireFilled":Filled,
-                   "remove": None,
-                   "requireEmpty":Empty,
-                   "requireInModel":Present,
-                   "requireAbsentOfModel":Absent}
+                 "remove": None,
+                 "requireEmpty":Empty,
+                 "requireInModel":Present,
+                 "requireAbsentOfModel":Absent}
         for key in assoc:
+            debug(f"  Considering key {key}")
             gen = assoc[key]
             for field in self.requirements[key]:
+                debug(f"    Considering field {field}")
                 current = gen(field = field, child = current)
+                debug(f"    current now is {current}")
 
-        return current
+        return current.getNormalForm()
     # def clone(self, elements):
     #     assert len(elements) ==1
     #     element = elements[0]
@@ -210,14 +214,14 @@ class Requirement(SingleChild, NotNormal):
     #                        child = element)
         
     
-    def __repr__(self):
-        t = f"""Requirement(child = {self.child}"""
-        for key in self.requirements:
-            set_ = self.requirements[key]
-            if set_:
-                t+=f", {key}={self.requirements[key]}"
-        t+=f", {self.params()})"
-        return t
+    # def __repr__(self):
+    #     t = f"""Requirement(child = {self.child}"""
+    #     for key in self.requirements:
+    #         set_ = self.requirements[key]
+    #         if set_:
+    #             t+=f", {key}={self.requirements[key]}"
+    #     t+=f", {self.params()})"
+    #     return t
 
     def __eq__(self,other):
         return super().__eq__(other) and isinstance(other,Requirement) and self.requirements == other.requirements
@@ -351,3 +355,15 @@ class QuestionOrAnswer(ListElement):
         self.question = question
         self.answer = answer
         super().__init__([Question(question), Answer(answer)], **kwargs)
+
+class AskedOrNot(ListElement):
+    """The class which expands differently in function of whether a name is asked or not."""
+    def __init__(self,
+                 name
+                 asked = None,
+                 notAsked = None,
+                 **kwargs):
+        self.asked = asked
+        self.notAsked = notAsked
+        super().__init__([Asked(name, asked), NotAsked(name, notAsked)], **kwargs)
+

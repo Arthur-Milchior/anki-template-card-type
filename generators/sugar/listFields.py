@@ -1,19 +1,19 @@
 from .html import TR, TD
 from .sugar import NotNormal
 from .fields import QuestionnedField
-from ...debug import debug, ExceptionInverse
+from ...debug import debug, ExceptionInverse, debugFun, assertType
 from ...utils import identity
 from ..ensureGen import ensureGen
-from ..singleChild import HTML
+from ..singleChild import HTML, Filled
 from ..leaf import Field
 from .conditionals import FilledOrEmpty
 from .numberOfField import AtLeastOneField
 from ..multipleChildren import MultipleChildren
 from .conditionals import Branch
 
+@debugFun
 def fieldToPair(field):
     """Given a representation of a field, returns the label to use, and the Field object"""
-    debug("""fieldToPair({field})""",-1)
     if isinstance(field, str):
         debug("string case")
         ret = (field,Field(field))
@@ -31,11 +31,14 @@ def fieldToPair(field):
         ret = (field.field, field)
     else:
         raise ExceptionInverse(field)
-    debug(f"""fieldToPair() returns {ret}""",-1)
+    # (label,field) =ret
+    # assert assertType(label, str)
+    # assert assertType(field, Field)
+    # assert assertType(field.field, str)
     return ret
     
 
-class ListFields(MultipleChildren, NotNormal):
+class ListFields(NotNormal):
     """
     Apply functions to each field, add separators between them, apply a function to the result
 
@@ -77,14 +80,16 @@ class ListFields(MultipleChildren, NotNormal):
             if processedField is not None:
                 elements.append(processedField)
         elements.append(self.globalSep(seen))
-        return ensureGen(self.globalFun(elements)).getNormalForm()
+        globalApplied = self.globalFun(elements)
+        globalEnsured = ensureGen(globalApplied)
+        return globalEnsured.getNormalForm()
 
 class NamedListFields(ListFields):
     """Similar to ListFields.
 
-    localFun returns a pair, with a question to cascade, or None.
-    Then the result is added to a Branch, with listName as name, and
-    all generated elements cascading.
+    localFun -- should returns a pair. First element is the name/set of names of things to cascade (or none). Second thing is added to the list.
+    Only the second element is returned to ListField's localFun
+    globalFun -- applied to the result of ListField's process. Then a Name is applied on it.
     """
 
     def __init__(self,
@@ -96,6 +101,7 @@ class NamedListFields(ListFields):
         self.listName = listName
         cascadeAsked = set()
         def localFun_(field):
+            nonlocal cascadeAsked
             ret = localFun(field)
             if isinstance(ret,tuple):
                 asked, ret =ret
@@ -105,10 +111,12 @@ class NamedListFields(ListFields):
                     else:
                         cascadeAsked.add(asked)
             return ret
-        def globalFun_(self, l):
-            return Branch(name = listName,
+        def globalFun_(l):
+            nonlocal cascadeAsked
+            frozenCascadeAsked = frozenset(cascadeAsked)
+            return Name(name = listName,
                           default = globalFun(l),
-                          cascadeAsked = cascadeAsked
+                          cascadeAsked = frozenCascadeAsked
             )
         self.listFields = fields
         super().__init__(fields,
@@ -127,14 +135,14 @@ class TableFields(ListFields):
         def localFun(field):
             debug(f"""TableFields.localFun({field})""",1)
             (label,field) = fieldToPair(field)
+            questionnedField = QuestionnedField(field)
             debug(f"""pair is "{label}", "{field}".""")
-            ret = (#field.field,
-                FilledField(
-                    field = field,
-                    child = TR(
-                        child = [TD(child = label),
-                                 TD(child = field)]
-                    )))
+            tdLabel = TD(child = label)
+            tdField = TD(child = questionnedField)
+            tr = TR(child = [tdLabel, tdField])
+            ret = Filled(
+                field = field.field,
+                child = tr)
             debug(f"""TableFields.localFun() returns {ret}""",-1)
             return ret
         def globalFun(lines):
@@ -162,10 +170,10 @@ class NumberedFields(NamedListFields):
         
         self.numberedFields = [fieldPrefix]+[f"""{fieldPrefix}{i}""" for i in range(2,greater+1)]
         def localFun(field):
-            return FilledField(field = field, child = QuestionnedField(field))
+            return Filled(field = field, child = QuestionnedField(field))
             
         def globalFun(lines):
-            return [fieldPrefix, ": ", HTML(tag = "ul",child = lines)]
+            return [f"{fieldPrefix}s", ": ", HTML(tag = "ul",child = lines)]
         
         super().__init__(fields = self.numberedFields,
                          listName = f"""{fieldPrefix}s""",

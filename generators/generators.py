@@ -90,14 +90,29 @@ class Gen:
         self.toKeep = toKeep
         self.state = state
 
+    indentation = 0
     #@debugFun
     def _ensureGen(self, element):
         return ensureGen(element, self.locals_)
-        
+
 
     def __repr__(self):
+        return self.repr()
+
+    def repr(self, indentDone = False):
+        space = "  "*Gen.indentation
+        Gen.indentation +=1
+        if not indentDone:
+            t= space
+        else:
+            t =""
+        t+= self._repr()
+        Gen.indentation -=1
+        return t
+
+    def _repr(self):
         return f"""{self.__class__.__name__}(without repr,{self.params()})"""
-    
+        
 
     @debugFun
     def setState(self, state):
@@ -144,9 +159,7 @@ class Gen:
     
     #@debugFun
     def __bool__(self):
-        #debug(f"""__bool__({self})""",1)
         ret = not self.isEmpty()
-        #debug(f"""__bool__() returns {ret}""",-1)
         return ret
     
 
@@ -197,94 +210,10 @@ class Gen:
         else:
             raise ExceptionInverse(f"State should not be {state}")
         return key
-            
-    # @debugFun
-    # def computeStep(self, goal, **kwargs):
-    #     """Compute step goal. Do the recursive computation if it is a step
-    #     before QUESTION_ANSWER.
-    #     """
-    #     key = Gen.getKey(goal, **kwargs)
-    #     if goal not in self.versions:
-    #         debug(f"goal is not present in versions")
-    #         self.versions[goal] = dict()
-    #     else:
-    #         debug(f"goal is present in versions")
-    #     if key not in self.versions[goal]:
-    #         debug(f"key is not present in versions[goal]")
-    #         self.versions[goal][key] = self.computeMultiStep(goal, **kwargs)
-    #     else:
-    #         debug(f"key is present in versions[goal]")
-    #     self.versions[goal][key] = self._ensureGen(self.versions[goal][key])
-    #     self.versions[goal][key].setState(goal)
-    #     debug(f"versions[goal][key] has been set to {ret}")
-    #     return self.versions[goal][key]
-
     def ensureSingleStep(self,goal):
         if self.getState().nextStep() < goal:
             raise ExceptionInverse(f"Can't compute {goal} from state {self.getState()} of {self}")
-    
-    # @debugFun
-    # def computeMultiStep(self, goal, **kwargs):
-    #     currentState = self.getState()
-    #     if self.isEmpty():
-    #         return None
-    #     if goal <= currentState:
-    #         #debug("computeStep: step<=currentState, thus return self")
-    #         return self
-    #     previousStep = goal.previousStep()
-    #     if currentState < previousStep:
-    #         if goal > QUESTION_ANSWER:
-    #             raise ExceptionInverse(f"Trying to have goal {goal}, while at state {self.getState()} for {self}")
-    #         #debug("computeStep: currentState < goal.previousStep()")
-    #         stepMinusOne = self.computeStep(goal.previousStep(), **kwargs)
-    #     elif currentState == previousStep:
-    #         #debug("computeStep: currentState == previousStep")
-    #         stepMinusOne = self
-    #     else:
-    #         print(f"goal is {goal}, previousStep is {previousStep}, state is {currentState}", file=sys.stderr)
-    #         assert False
-    #     #debug(f"computeStep: stepMinusOne is {stepMinusOne}")
-    #     single = stepMinusOne.computeSingleStep(goal, **kwargs)
-    #     #debug(f"computeStep: single is {single}")
-    #     return self._ensureGen(single)
-            
-    # @debugFun
-    # def computeSingleStep(self, goal, model = None, asked = None, isQuestion = None, hide = None):
-    #     """compute the next step. 
-
-    #     Assume current state.successor ==goal."""
-    #     if self.isEmpty():
-    #         return None
-    #     if goal == NORMAL:
-    #         debug(f"calling _getNormalForm()")
-    #         ret = self._getNormalForm()
-    #     elif goal == WITHOUT_REDUNDANCY:
-    #         debug(f"calling _getWithoutRedundance()")
-    #         ret = self._getWithoutRedundance()
-    #     elif goal == QUESTION_ANSWER:
-    #         debug(f"calling _questionOrAnswer()")
-    #         ret = self._questionOrAnswer(isQuestion = isQuestion)
-    #     elif goal == MODEL_APPLIED:
-    #         debug(f"calling _restrictToModel()")
-    #         ret = self._restrictToModel(model)
-    #     elif goal == TEMPLATE_APPLIED:
-    #         debug(f"calling _template()")
-    #         ret = self._template(asked = asked,
-    #                              hide = hide)
-    #     else:
-    #         raise ExceptionInverse(f"goal should not be {goal}")
-    #     ret = ret._ensureGen(ret)
-    #     ret.setState(goal)
-    #     return ret
         
-    # @debugFun
-    # def _computeStep(self, goal, **kwargs):
-    #     #not directly called from computeGoal, but from functions _getFoo
-    #     ret = self.callOnChildren(method = "computeStep", goal = goal, **kwargs)
-    #     ret = self._ensureGen(ret)
-    #     return ret
-
-
     @memoize((lambda:None))
     @ensureGenAndSetState(NORMAL)
     @emptyToEmpty
@@ -443,9 +372,10 @@ class Gen:
     @emptyToEmpty
     @debugFun
     def assumeQuestion(self, changeStep = False):
+        ret = self._assumeQuestion(changeStep = changeStep)
         if changeStep:
-            self.setState(QUESTION_ANSWER)
-        return self._assumeQuestion(changeStep = changeStep)
+            ret.setState(QUESTION_ANSWER)
+        return ret
     @debugFun
     def _assumeQuestion(self, changeStep):
         return self.callOnChildren("assumeQuestion", changeStep = changeStep)
@@ -453,10 +383,29 @@ class Gen:
     @emptyToEmpty
     @debugFun
     def assumeAnswer(self, changeStep = False):
-        return self._assumeAnswer(changeStep = changeStep)
+        ret = self._assumeAnswer(changeStep = changeStep)
+        if changeStep:
+            ret.setState(QUESTION_ANSWER)
+        return ret
     @debugFun
     def _assumeAnswer(self, changeStep = False):
         return self.callOnChildren("assumeAnswer", changeStep = changeStep)
+        
+    @emptyToEmpty
+    @debugFun
+    def assumeAsked(self, name):
+        return self._assumeAsked(changeStep = changeStep)
+    @debugFun
+    def _assumeAsked(self, name):
+        return self.callOnChildren("assumeAsked", changeStep = changeStep)
+        
+    @emptyToEmpty
+    @debugFun
+    def assumeNotAsked(self, name):
+        return self._assumeNotAsked(changeStep = changeStep)
+    @debugFun
+    def _assumeNotAsked(self, name):
+        return self.callOnChildren("assumeNotAsked", changeStep = changeStep)
         
     @emptyToEmpty
     @debugFun
@@ -487,38 +436,83 @@ class Gen:
             self.state = None
         if not show:
             return ""
-        return f"toKeep = {self.toKeep}, state = {self.getState()}"
+        space = "  "*Gen.indentation
+        return f"""
+{space}toKeep = {self.toKeep},
+{space}state = {self.getState()}"""
 
     @debugFun
     def compile(self,
-            fields = None,
-            isQuestion = None,
-            asked = frozenset(),
-            hide = frozenset()):
-        return self.getNormalForm(
-        ).getWithoutRedundance(
-        ).questionOrAnswer(
-            isQuestion
-        ).restrictToModel(
-            fields
-        ).template(
-            asked = asked,
-            hide = hide,
-        )
+                tag = None,
+                soup = None,
+                goal = None,
+                fields = None,
+                isQuestion = None,
+                asked = None,
+                hide = None,
+                toPrint = False
+    ):
+        """Compile as much as possible given the informations. Or up to goal."""
+        assert (soup is not None) == (tag is not None)
+        if goal is None:
+            if isQuestion is None:
+                goal = WITHOUT_REDUNDANCY
+            elif fields is None:
+                goal = QUESTION_ANSWER
+            elif asked is not None or hide is not None:
+                goal = MODEL_APPLIED
+            if soup is None:
+                goal = TEMPLATE_APPLIED
+            else :
+                goal = SOUP
+                
+        if toPrint: print(f"""\ntesting each step of "{self}".""")
+        if goal == BASIC:
+            return self
 
-    def compileAndTag(self,
-                      tag = None,
-                      soup = None,
-                      fields = None,
-                      isQuestion = None,
-                      asked = frozenset(),
-                      hide = frozenset()):
-        return self.compile(
-            fields = fields,
-            isQuestion = isQuestion,
-            asked = asked,
-            hide = hide,
-        ).applyTag(tag, soup)
+        nf = self.getNormalForm()
+        if toPrint: print(f"""\nnormal form is "{nf}".""")
+        if goal == NORMAL:
+            return nf
+
+        wr = nf.getWithoutRedundance()
+        if toPrint: print(f"""\nwithout redundance is "{wr}".""")
+        if goal == WITHOUT_REDUNDANCY:
+            return wr
+
+        assert isQuestion is not None
+        questionRestriction = wr.questionOrAnswer(isQuestion = isQuestion)
+        assert QUESTION_ANSWER<= questionRestriction.getState()
+        if toPrint: print(f"""\nWith question restricted, "{questionRestriction}".""")
+        if goal == QUESTION_ANSWER:
+            return questionRestriction
+
+        assert fields is not None
+        modelRestriction = questionRestriction.restrictToModel(fields)
+        if toPrint: print(f"""\nWith model applied, "{modelRestriction}".""")
+        if goal == MODEL_APPLIED:
+            return modelRestriction
+        
+        if asked is None:
+            asked = frozenset()
+        if hide is None:
+            hide = frozenset()
+        templateRestriction = modelRestriction.template(asked = asked,
+                                                        hide = hide)
+        if toPrint: print(f"""\nWith template applied, "{templateRestriction}".""")
+        if goal == TEMPLATE_APPLIED:
+            return templateRestriction
+
+        assert soup is not None
+        assert tag is not None
+        templateRestriction.applyTag(tag = soup.enclose, soup = soup)
+        prettified = templateFromSoup(soup)
+        if toPrint: print(prettified)
+        if goal == SOUP:
+            return soup
+        
+        assert False
+        
         
 addTypeToGenerator(Gen, identity)
 
@@ -532,3 +526,13 @@ def shouldBeKept(gen):
         return gen.toKeep
     else:
         return None
+    
+def genRepr(g, label = None):
+    t="  "*Gen.indentation
+    if label is not None:
+        t+= f"{label} = "
+    if isinstance(g,Gen):
+        t+= g.repr(indentDone = True)
+    else:
+        t+=repr(g)
+    return t

@@ -17,7 +17,7 @@ class Function(Gen):
         self.fun = fun
         super().__init__()
 
-    def __repr__(self):
+    def _repr(self):
         if self.processed:
             return f"""Function({self.value})"""
         else:            

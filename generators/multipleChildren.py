@@ -1,5 +1,5 @@
 import copy
-from .generators import Gen, shouldBeKept
+from .generators import Gen, shouldBeKept, genRepr
 from .constants import *
 from .ensureGen import addTypeToGenerator
 from ..debug import debug, assertType, debugFun, ExceptionInverse
@@ -55,8 +55,19 @@ class ListElement(MultipleChildren):
         else:
             return ListElement(truthyElements)
         
-    def __repr__(self):
-        return f"""ListElement({self.elements}, {self.params()})"""
+    def _repr(self):
+        space  = "  "*Gen.indentation
+        t = f"""ListElement(["""
+        first = True
+        for element in self.elements:
+            if first:
+                first = False
+            else:
+                t+=","
+            t+="\n"
+            t+=genRepr(element)
+        t+=f"""],{self.params()})"""
+        return t
 
     def __eq__(self,other):
         return isinstance(other,ListElement) and self.elements == other.elements
@@ -76,64 +87,6 @@ class ListElement(MultipleChildren):
             
 addTypeToGenerator(list,ListElement)
 
-class Name(Gen):
-    """The class which expands differently in function of whether name is asked, hidden, neither."""
-    def __init__(self,
-                 name = None,
-                 asked = None,
-                 notAsked = None,
-                 cascadeAsked = frozenset(),
-                 **kwargs):
-        assert assertType(name, str)
-        assert assertType(cascadeAsked, frozenset)
-        for cascading in cascadeAsked:
-            assert assertType(cascading, str)
-        self.name = name
-        self.cascadeAsked = cascadeAsked
-        
-        self.asked = asked
-        self.notAsked = notAsked
-        self.childEnsured = False
-        super().__init__(**kwargs)
-
-    def clone(self, elements):
-        assert len(elements) ==2
-        asked, notAsked = elements
-        if not asked and not notAsked:
-            return emptyGen
-        if asked == self.asked and notAsked == self.notAsked:
-            return self
-        return Name(name = self.name,
-                    asked = asked,
-                    notAsked = notAsked,
-                    cascadeAsked = self.cascadeAsked)
-       
-    
-    def __repr__(self):
-        return f"""Name(name = "{self.name}", asked = {self.asked}, notAsked = {self.notAsked}, {self.params()})"""
-    
-    def __eq__(self,other):
-        return isinstance(other,Name) and self.name == other.name and self.asked == other.asked and self.notAsked == other.notAsked
-    
-    def getChildren(self):
-        if not self.childEnsured:
-            self.asked = self._ensureGen(self.asked)
-            self.notAsked = self._ensureGen(self.notAsked)
-            self.childEnsured = True
-        return (self.asked, self.notAsked)
-
-    def _template(self, asked = frozenset(), hide = frozenset()):
-        if self.name in hide:
-            return None
-        if self.name in asked:
-            asked = asked | self.cascadeAsked
-            child = self.asked
-        else:
-            child = self.notAsked
-        return child.template(asked = asked, hide = hide)
-        
-    def _applyTag(self, *args, **kwargs):
-        raise ExceptionInverse("Name._applyTag should not exists")
     
 # class RecursiveFields(MultipleChildren):
 #     """
