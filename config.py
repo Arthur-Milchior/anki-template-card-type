@@ -38,7 +38,7 @@ def jsonToDic(json, dic = dict()):
     for instruction in instructions:
         if isinstance(instruction,list):
             (name,value) = instruction
-            #debug(f"""Evaluating "{name}" as "{value}" of type {type(value)}.""")
+            #debug("""Evaluating "{name}" as "{value}" of type {type(value)}.""")
             dic[name] =  ensureGen(eval(value,globals(), dic))
         elif isinstance(instruction,str):
             exec(instruction,globals(), dic)
@@ -53,23 +53,23 @@ def reread(objects=objects):
     jsonToDic(userOption, objects)
 
 def execute(t):
-    #debug(f"execute({t})",1 )
+    #debug("execute({t})",1 )
     exec(t, globals(),locals = objects)
-    #debug(f"reread()",-1 )
+    #debug("reread()",-1 )
 
 def evaluate(t, objects = objects):
-    #debug(f"""evaluating "{t}" """)
+    #debug("""evaluating "{t}" """)
     return eval(t, globals(), objects)
         
 def define(name, value):
-    #debug(f"define({name},{value})",1 )
+    #debug("define({name},{value})",1 )
     r = evaluate(value)
-    #debug(f"define() find {r}")
+    #debug("define() find {r}")
     # r = ensureGen(r).getNormalForm()
-    # #debug(f"define()'s normal form is {r}")
+    # #debug("define()'s normal form is {r}")
     r = ensureGen(r,objects).getWithoutRedundance()
     objects[name] = r
-    #debug(f"define() returns {r}",-1 )
+    #debug("define() returns {r}",-1 )
     return r
 
 

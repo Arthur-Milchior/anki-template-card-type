@@ -11,13 +11,13 @@ def compile_(tag, soup = None, FrontSoup = None, FrontHtml = None,  **kwargs):
     assert FrontSoup is not None or FrontHtml is not None
     if FrontHtml is not None:
         FrontSoup = soupFromTemplate(FrontHtml)
-    #debug(f"""frontSide.compile_("{tag}","{FrontSoup}")""",1)
+    #debug("""frontSide.compile_("{tag}","{FrontSoup}")""",1)
     #(text, newTag) =
     newFrontSoup = copy(FrontSoup)
     templateCompile(newFrontSoup, soup = FrontSoup, **kwargs)
-    #debug(f"""newFrontSoup is "{newFrontSoup}" """)
+    #debug("""newFrontSoup is "{newFrontSoup}" """)
     tag.contents = newFrontSoup.enclose.contents
-    #debug(f"""tag becomes "{tag}" """)
+    #debug("""tag becomes "{tag}" """)
     #newText = tagContent(tag.name, tag.attrs, text)
     #debug("",-1)
 

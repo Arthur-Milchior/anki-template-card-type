@@ -1,5 +1,5 @@
 import copy
-from .generators import Gen, shouldBeKept, genRepr
+from .generators import Gen, shouldBeKept, genRepr, thisClassIsClonable
 from .constants import *
 from .ensureGen import addTypeToGenerator
 from ..debug import debug, assertType, debugFun, ExceptionInverse
@@ -27,6 +27,7 @@ class MultipleChildren(Gen):
             self.dontKeep()
             
  
+@thisClassIsClonable
 class ListElement(MultipleChildren):
     #@debugFun
     def __init__(self,
@@ -38,7 +39,7 @@ class ListElement(MultipleChildren):
         elements -- list of elements
         """
         self.childEnsured = False
-        debug(f"ListElement({elements})",1)
+        debug("ListElement({elements})",1)
         self.elements = elements
         super().__init__(toKeep = toKeep, **kwargs)
         debug("",-1)

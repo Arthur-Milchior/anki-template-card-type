@@ -1,7 +1,7 @@
 import copy
 import types
 from .constants import *
-from .generators import Gen, modelToFields, modelToFields, genRepr
+from .generators import Gen, modelToFields, modelToFields, genRepr, thisClassIsClonable
 from .ensureGen import addTypeToGenerator
 from ..debug import debug, assertType, debugFun, ExceptionInverse
 from bs4 import NavigableString
@@ -25,6 +25,7 @@ class Leaf(Gen):
         return self
 
 emptyGen = None
+@thisClassIsClonable
 class Empty(Leaf):
     """A generator without any content"""
     instance = None
@@ -57,7 +58,7 @@ class Empty(Leaf):
         pass
     
     def __eq__(self,other):
-        #debug(f"{self!r} == {other!r}",1)
+        #debug("{self!r} == {other!r}",1)
         l = isinstance(other,Empty)
         #if l:
             #debug("other is Empty")
@@ -71,6 +72,7 @@ def constEmpty(x):
     return emptyGen
 addTypeToGenerator(type(None),constEmpty)
 
+@thisClassIsClonable
 class Literal(Leaf):
     """A text to be printed, as-is, unconditionally."""
     def __init__(self,
@@ -92,25 +94,26 @@ class Literal(Leaf):
             return f"""Literal(text = "{self.text}",{self.params()})"""
     
     def __eq__(self,other):
-        #debug(f"""{self!r} == {other!r}, self being Literal""",1)
+        #debug("""{self!r} == {other!r}, self being Literal""",1)
         if not isinstance(other,Literal):
             #debug("other is not a Literal")
             ret= False
         elif self.text != other.text:
-            #debug(f"{self.text} is distinct from {other.text}")
+            #debug("{self.text} is distinct from {other.text}")
             ret= False
         else:
-            #debug(f"they are equal")
+            #debug("they are equal")
             ret = True
         #debug("",-1)
         return ret
     
     def _applyTag(self, tag, soup):
-        #debug(f"appending text {self.text} to {tag}")
+        #debug("appending text {self.text} to {tag}")
         tag.append(NavigableString(escape(self.text)))
         #return self.text
 addTypeToGenerator(str,Literal)
 
+@thisClassIsClonable
 class Field(Leaf):
     def __init__(self,
                  field = None,
@@ -169,7 +172,7 @@ class Field(Leaf):
         if self.field in fields:
             ret = self
         else:
-            #debug(f"""Field {self.field} not in fields""")
+            #debug("""Field {self.field} not in fields""")
             ret =emptyGen
         return ret
             

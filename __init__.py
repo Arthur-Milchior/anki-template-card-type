@@ -28,7 +28,7 @@ try:
             mids.add(mid)
         for mid in mids:
             model = mw.col.models.get(mid)
-            #debug(f"""dealing with model ""\"{model}""\".""")
+            #debug("""dealing with model ""\"{model}""\".""")
             readIfRequired()
             compileAndSaveModel(model, toClean = toClean, objects = objects)
         mw.progress.finish()

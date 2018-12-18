@@ -17,7 +17,7 @@ class TestHTML:
         soup = soupFromTemplate(self.source)
         if self.numberOfTagToEdit is not None:
             assert self.numberOfTagToEdit == len(tagsToEdit(soup))
-        #debug(f"""TestHTML: kwargs is {self.kwargs}""")
+        #debug("""TestHTML: kwargs is {self.kwargs}""")
         compile_(soup, soup = soup, model = model, **self.kwargs)
         assert assertEqual(self.compiled, templateFromSoup(soup, prettify = True))
 

@@ -1,7 +1,7 @@
 import re
 from inspect import stack
 optimize = False
-mayDebug = False
+mayDebug = True
 
 shouldDebug = False
 def startDebug():
@@ -70,7 +70,7 @@ def assertType(element,types):
 def debugFun(fun):
     if not mayDebug:
         return fun
-    def aux(*args, **kwargs):
+    def aux_debugFun(*args, **kwargs):
         t = f"{fun.__qualname__}("
         first = False
         def comma(text):
@@ -85,20 +85,20 @@ def debugFun(fun):
         for kw in kwargs:
             comma(f"{kw}={kwargs[kw]}")
         t+=")"
-        debug(f"{t}",1)
+        debug("{t}",1)
         ret = fun(*args, **kwargs)
-        debug(f"returns {ret}",-1)
+        debug("returns {ret}",-1)
         return ret
-    aux.__name__ = f"debug_{fun.__name__}"
-    aux.__qualname__ = f"debug_{fun.__qualname__}"
-    return aux
+    aux_debugFun.__name__ = f"debug_{fun.__name__}"
+    aux_debugFun.__qualname__ = f"debug_{fun.__qualname__}"
+    return aux_debugFun
 
 
 def debugInit(fun):
     if not mayDebug:
         return fun
-    def aux(self, *args, **kwargs):
-        t = f"{fun.__qualname__}("
+    def aux_debugInit(self, *args, **kwargs):
+        t = f"{fun.__name__}("
         needSeparator = False
         def comma(text):
             nonlocal needSeparator, t
@@ -116,12 +116,12 @@ def debugInit(fun):
         for kw in kwargs:
             comma(f"{kw}={kwargs[kw]}")
         t+=")"
-        debug(f"{t}",1)
+        debug("{t}",1)
         fun(self, *args, **kwargs)
-        debug(f"returns {self}",-1)
-    aux.__name__ = f"debug_{fun.__name__}"
-    aux.__qualname__ = f"debug_{fun.__qualname__}"
-    return aux
+        debug("returns {self}",-1)
+    aux_debugInit.__name__ = f"debug_{fun.__name__}"
+    aux_debugInit.__qualname__ = f"debug_{fun.__qualname__}"
+    return aux_debugInit
 
 
 class ExceptionInverse(Exception):

@@ -128,6 +128,7 @@ assert assertEqual(compileGen(asked,asked = frozenset({"asked"})),Literal("is as
 assert assertEqual(compileGen(asked,asked = frozenset({})),emptyGen)
 assert assertEqual(compileGen(notAsked,asked = frozenset({"asked"})),emptyGen)
 assert assertEqual(compileGen(notAsked,asked = frozenset({})),Literal("is not asked"))
+assert assertEqual(compileGen(notAsked, asked = frozenset({}), hide = frozenset({"asked"})),emptyGen)
 assert assertEqual(compileGen(notAsked,hide = frozenset({"asked"})),emptyGen)
 assert assertEqual(compileGen(asked,hide = frozenset({"asked"})),emptyGen)
 

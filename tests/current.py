@@ -14,9 +14,13 @@ from .data.imports import *
 #print(f"twoQuestionsAsTable is \n{twoQuestionsAsTable}")
 # comp = compileGen(NumberedFields('Definition', 2),toPrint = True, asked = frozenset({"Definitions"}))
 # print(f"result: {comp}")
-print(f"Normal form: {orderedList.getNormalForm()}")
-
 startDebug()
+#print(f"Child is {orderedList.getNormalForm()}")
+
+#compileGen(orderedList.getNormalForm(), toPrint = True)
+#debug("Normal form: {orderedList.getNormalForm()}")
+
+
 #compileGen(twoQuestionsAsTable, asked =frozenset({"Definition"}), toPrint = True)
 
 # mr = qa.restrictToModel(fields)

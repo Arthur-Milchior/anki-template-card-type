@@ -16,14 +16,14 @@ def split(text):
 
 def _tagGetParams(tag):
     """The information usefull to process an object template. """
-    #debug(f"_tagGetParams({tag})", 1)
+    #debug("_tagGetParams({tag})", 1)
     asked = split(tag.attrs.get("asked"))
     hide = split(tag.attrs.get("hide"))
     objName = tag.attrs.get("name")
     if objName is None:
         raise ExceptionInverse(f"""Name missing in {tag}.""")
     ret = (objName, asked, hide)
-    #debug(f"_tagGetParams({tag.name}) returns {ret}", -1)
+    #debug("_tagGetParams({tag.name}) returns {ret}", -1)
     return ret
 
 def tagGetParamsConfig(tag, objects):
@@ -34,19 +34,19 @@ def tagGetParamsConfig(tag, objects):
     add objectabsent to tag if this name is absent from Objects.
     Remove objectabsent if an object with this name is present
     """
-    #debug(f"tagGetParamsConfig({tag})",1)
+    #debug("tagGetParamsConfig({tag})",1)
     (objName, asked, hide) = _tagGetParams(tag)
     assert asked is not None
     assert hide is not None
     obj = objects.get(objName)
     if obj is None:
-        #debug(f"""Adding "objectabsent ={objName}" to "{tag}".""",-1)
+        #debug("""Adding "objectabsent ={objName}" to "{tag}".""",-1)
         tag.attrs["objectabsent"] = objName
         return None
     elif "objectAbsent" in tag.attrs:
         del tag.attrs["objectAbsent"]
     ret = (obj, asked, hide)
-    #debug(f"tagGetParamsConfig() returns {ret}",-1)
+    #debug("tagGetParamsConfig() returns {ret}",-1)
     return ret
 
 def tagGetParamsEval(tag, objects):
@@ -54,14 +54,14 @@ def tagGetParamsEval(tag, objects):
     Return everything required from the tag to add its object in it.
     The object is evaluated, and python error may rise
     """
-    #debug(f"tagGetParamsEval({tag})",1)
+    #debug("tagGetParamsEval({tag})",1)
     (objName, asked, hide) = _tagGetParams(tag)
     assert asked is not None
     assert hide is not None
-    #debug(f"objName is {objName}")
+    #debug("objName is {objName}")
     obj = ensureGen(evaluate(objName, objects = objects))
     ret = (obj, asked, hide)
-    #debug(f"tagGetParamsEval() returns {ret}",-1)
+    #debug("tagGetParamsEval() returns {ret}",-1)
     return ret
 
 def compile_(tag, soup, *, isQuestion = None, model = None, objects = None, inConfig = True, **kwargs):

@@ -4,14 +4,18 @@ from ..utils import identity
 from .ensureGen import ensureGen, addTypeToGenerator
 from .constants import *
 
+def thisClassIsClonable(cl):
+    cl.classToClone = cl
+    return cl
 
 def memoize(computeKey = (lambda:None)):
-    def actualArobase(f):
+    CURRENTLY_COMPUTED = ("CURRENTLY COMPUTED",)
+    def actualArobase(fun):
         if not optimize:
-            return f
-        fname = f.__name__
+            return fun
+        fname = fun.__name__
         #@debugFun
-        def f_(self, *args, **kwargs):
+        def fun_(self, *args, **kwargs):
             if not hasattr(self, "versions"):
                 self.versions = dict()
             if fname not in self.versions:
@@ -19,13 +23,18 @@ def memoize(computeKey = (lambda:None)):
             key = computeKey(*args, **kwargs)
             if key not in self.versions:
                 debug("Computation is done explicitly")
-                self.versions[fname][key] = f(self, *args, **kwargs)
+                self.versions[fname][key] = ("CURRENTLY COMPUTED",)
+                self.versions[fname][key] = fun(self, *args, **kwargs)
             else:
-                debug("Computation is retrieved from memoization")
+                if self.versions[fname][key] == CURRENTLY_COMPUTED:
+                    debug("Infinite loop for {fun.__qualname__}({key})")
+                    assert False
+                else:
+                    debug("Computation is retrieved from memoization")
             return self.versions[fname][key]
-        f_.__name__=f"Memoized_{f.__name__}"
-        f_.__qualname__=f"Memoized_{f.__qualname__}"
-        return f_
+        fun_.__name__=f"Memoized_{fun.__name__}"
+        fun_.__qualname__=f"Memoized_{fun.__qualname__}"
+        return fun_
     return actualArobase
     
 
@@ -42,20 +51,22 @@ def modelToHash(model):
 def ensureGenAndSetState(state):
     def actualArobase(f):
         #@debugFun
-        def f_(self, *args, **kwargs):
+        def aux_ensureGenAndSetState(self, *args, **kwargs):
             ret = f(self, *args, **kwargs)
             ret = self._ensureGen(ret)
             ret.setState(state)
             return ret
-        return f_
-        f_.__name__=f"SetState({State})__{f.__name__}"
-        f_.__qualname__=f"SetState({State})__{f.__qualname__}"
+        return aux_ensureGenAndSetState
+        aux_ensureGenAndSetState.__name__=f"SetState({State})__{f.__name__}"
+        aux_ensureGenAndSetState.__qualname__=f"SetState({State})__{f.__qualname__}"
     return actualArobase
 
 def ensureReturnGen(f):
-    def f_(self, *args, **kwargs):
+    def aux_ensureReturnGen(self, *args, **kwargs):
         return self._ensureGen(f(self, *args, **kwargs))
-    return f_
+    aux_ensureReturnGen.__name__ = f"ensureReturnGen_of_{f.__name__}"
+    aux_ensureReturnGen.__qualname__ = f"ensureReturnGen_of_{f.__qualname__}"
+    return aux_ensureReturnGen
 
 # def emptyToEmpty(f):
 #     #@debugFun
@@ -236,6 +247,7 @@ class Gen:
         self.toKeep = True
 
     @memoize()
+    @debugFun
     def getChildren(self):
         return self._getChildren()
 
@@ -270,24 +282,32 @@ class Gen:
         elements = []
         someChange = False
         for element in self.getChildren():
+            debug("Considering {element}")
             newElement = (getattr(element, method))(*args, **kwargs)
+            debug("it becomes {newElement}")
             if newElement != element:
+                debug("thus changed")
                 someChange = True
             elements.append(newElement)
         if someChange:
+            debug("Some change did occurs, thus we clone")
             ret = self.clone(elements = elements)
             if ret == self:
+                debug("However the clone is identic")
                 ret = self
+            else:
+                debug("and the clone is different")
         else:
+            debug("No change found, so we keep the old element")
             ret = self
         return ret
 
     ###########################
     # Changing step
     @memoize()
+    @debugFun
     @ensureGenAndSetState(NORMAL)
     #@emptyToEmpty
-    @debugFun
     def getNormalForm(self):
         self.ensureSingleStep(NORMAL)
         return self._getNormalForm()
@@ -360,10 +380,10 @@ class Gen:
     @debugFun
     def _template(self, asked = frozenset(), hide = frozenset()):
         current = self
-        for name in asked:
-            current = current.assumeAsked(name)
         for name in hide:
             current = current.removeName(name)
+        for name in asked:
+            current = current.assumeAsked(name)
         return current.noMoreAsk()
 
     @ensureReturnGen

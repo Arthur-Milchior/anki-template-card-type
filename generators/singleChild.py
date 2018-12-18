@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup, NavigableString
 import copy
 import sys
 from .constants import *
-from .generators import Gen, modelToFields, shouldBeKept, genRepr, ensureReturnGen, memoize
+from .generators import Gen, modelToFields, shouldBeKept, genRepr, ensureReturnGen, memoize, thisClassIsClonable
 from .leaf import emptyGen
 from ..tag import singleTag, tagContent
 from ..debug import debug, assertType, debugFun, ExceptionInverse
@@ -13,33 +13,31 @@ class SingleChild(MultipleChildren):
         self.child = child
         super().__init__(toKeep = toKeep, **kwargs)
 
+    @debugFun
     def clone(self, elements):
         assert len(elements)==1
         child = elements[0]
         return self.cloneSingle(child)
 
+    @debugFun
     def cloneSingle(self, child):
         if not child:
             return emptyGen
-        if child == self.child:
+        if child == self.getChild():
             return self
-        return self.__class__(child = child)
+        return self.classToClone(child = child)
     
-    # def cloneSingle(self, elements):
-    #     assert len(elements) ==1
-    #     child = elements[0]
-    #     if not child:
-    #         return emptyGen
-    #     if child == self.child:
-    #         return self
-    #     return self.__class__(child = child)
-
-    @memoize()
-    @ensureReturnGen
-    @debugFun
     def getChild(self):
+        self.child = self._ensureGen(self.child)
         return self.child
+    
+    # @ensureReturnGen
+    # #@debugFun
+    # @memoize()
+    # def getChild(self):
+    #     return self.child
         
+    #@debugFun
     def _getChildren(self):
         return [self.getChild()]
     def __hash__(self):
@@ -48,13 +46,14 @@ class SingleChild(MultipleChildren):
     def _repr(self):
         space = "  "*Gen.indentation
         t= f"""{self.__class__.__name__}(
-{genRepr(self.child, label="child")},{self.params()})"""
+{genRepr(self.getChild(), label="child")},{self.params()})"""
         return t
     
     def __eq__(self,other):
         """It may require to actually compute the child"""
         return isinstance(other,SingleChild) and self.getChild() == other.getChild()
     
+@thisClassIsClonable
 class HTML(SingleChild):
     """A html tag, and its content.
 
@@ -80,11 +79,11 @@ class HTML(SingleChild):
         return ((not self.atom) and self.getChild().isEmpty())
 
     def __hash__(self):
-        return hash((self.tag,self.attrs,self.child))
+        return hash((self.tag,self.attrs,self.getChild()))
 
     @debugFun
     def cloneSingle(self, child):
-        if child == self.child:
+        if child == self.getChild():
             return self
         if not child and not self.atom:
             return emptyGen
@@ -113,8 +112,8 @@ class HTML(SingleChild):
         t= f"""HTML("{self.tag}","""
         if self.attrs:
             t+= "\n"+genRepr(self.attrs, label ="attrs")+","
-        if self.child:
-            t+= "\n"+genRepr(self.child, label ="child")+","
+        if self.getChild():
+            t+= "\n"+genRepr(self.getChild(), label ="child")+","
         if self.atom:
             t+= "\n"+genRepr(self.atom, label ="atom")+","
         t+=self.params()+")"
@@ -125,15 +124,15 @@ class HTML(SingleChild):
 
     @debugFun
     def _applyTag(self, tag, soup):
-        #debug(f"self.tag = {self.tag}")
-        #debug(f"self.attrs = {self.attrs}")
+        #debug("self.tag = {self.tag}")
+        #debug("self.attrs = {self.attrs}")
         newtag = soup.new_tag(self.tag, **self.attrs)
-        #debug(f"New tag is {newtag}")
+        #debug("New tag is {newtag}")
         if not self.emptyTag:
-            self.child.applyTag(newtag, soup)
-        #debug(f"New tag became {newtag}")
+            self.getChild().applyTag(newtag, soup)
+        #debug("New tag became {newtag}")
         tag.append(newtag)
-        #debug(f"Tag became {tag}")
+        #debug("Tag became {tag}")
 
 class FieldChild(SingleChild):
     def __init__(self,
@@ -146,9 +145,9 @@ class FieldChild(SingleChild):
     def cloneSingle(self, child):
         if not child:
             return emptyGen
-        if child == self.child:
+        if child == self.getChild():
             return self
-        return self.__class__(
+        return self.classToClone(
             field = self.field,
             child = child)
     
@@ -167,15 +166,16 @@ class FieldChild(SingleChild):
         space  = "  "*Gen.indentation
         return f"""{self.__class__.__name__}(
 {genRepr(self.field, label = "field")},
-{genRepr(self.child, label = "child")},{self.params()})"""
+{genRepr(self.getChild(), label = "child")},{self.params()})"""
     
     def __eq__(self,other):
-        return isinstance(other,self.__class__) and self.field == other.field and self.child == other.child
+        return isinstance(other,self.classToClone) and self.field == other.field and self.getChild() == other.getChild()
     
     def __hash__(self):
         return hash((self.field,super().__hash__()))
         
          
+@thisClassIsClonable
 class Absent(FieldChild):
     """The class which expends only if a field is not present in a model."""
 
@@ -193,7 +193,7 @@ class Absent(FieldChild):
         
     def _assumeFieldAbsent(self, field):
         if self.field == field:
-            return self.child.assumeFieldAbsent(field)
+            return self.getChild().assumeFieldAbsent(field)
         else:
             return emptyGen
         
@@ -213,17 +213,18 @@ class Absent(FieldChild):
         if self.field in fields:
             return emptyGen
         else:
-            return self.child.restrictToModel(fields)
+            return self.getChild().restrictToModel(fields)
         
 
     def _applyTag(self, tag, soup):
         assert False
 
+@thisClassIsClonable
 class Present(FieldChild):
     """The class which expands only if a field is contained in a model."""
     def _assumeFieldPresent(self, field):
         if self.field == field:
-            return self.child.assumeFieldPresent(field)
+            return self.getChild().assumeFieldPresent(field)
         else:
             return self.cloneSingle(self.getChild().assumeFieldPresent(field))
         
@@ -241,13 +242,14 @@ class Present(FieldChild):
     @debugFun
     def _restrictToModel(self,fields):
         if self.field in fields:
-            return self.child.restrictToModel(fields)
+            return self.getChild().restrictToModel(fields)
         else:
             return emptyGen
         
     def _applyTag(self, tag, soup):
         assert False
 
+@thisClassIsClonable
 class Empty(FieldChild):
     """The class which expands differently in function of the question/answer side."""
     def _assumeFieldFilled(self, field):
@@ -286,11 +288,12 @@ class Empty(FieldChild):
         tag.append(NavigableString(f"{{{{/{self.field}}}}}"))
 
         
+@thisClassIsClonable
 class Filled(FieldChild):
     """The class which expands differently in function of the question/answer side."""
     def _assumeFieldFilled(self, field):
         if self.field == field:
-            return self.child.assumeFieldFilled(field)
+            return self.getChild().assumeFieldFilled(field)
         else:
             return self.cloneSingle(self.getChild().assumeFieldFilled(field))
         
@@ -314,10 +317,10 @@ class Filled(FieldChild):
     @debugFun
     def _restrictToModel(self,fields):
         if self.field not in fields:
-            #debug(f"self.field({self.field}) not in fields({fields})")
+            #debug("self.field({self.field}) not in fields({fields})")
             return emptyGen
         else:
-            return self.cloneSingle(self.child.restrictToModel(fields))
+            return self.cloneSingle(self.getChild().restrictToModel(fields))
         
     def _applyTag(self, tag, soup):
         assert soup is not None
@@ -325,6 +328,7 @@ class Filled(FieldChild):
         self.filled.applyTag(tag, soup)
         tag.append(NavigableString(f"{{{{/{self.field}}}}}"))
     
+@thisClassIsClonable
 class Question(SingleChild):
     """The class which expands only on the question side"""
     def _assumeQuestion(self, changeStep = False):
@@ -336,6 +340,7 @@ class Question(SingleChild):
     def _getWithoutRedundance(self):
         return self.cloneSingle(self.getChild().assumeQuestion())
     
+@thisClassIsClonable
 class Answer(SingleChild):
     """The class which  expands only on the answer side."""
     @debugFun
@@ -348,6 +353,7 @@ class Answer(SingleChild):
     def _getWithoutRedundance(self):
         return self.cloneSingle(self.getChild().assumeAnswer())
 
+@thisClassIsClonable
 class Asked(FieldChild):
     """The class which expands only if its field is asked."""
     def _getWithoutRedundance(self):
@@ -377,6 +383,7 @@ class Asked(FieldChild):
         raise ExceptionInverse("Asked._applyTag should not exists")
 
     
+@thisClassIsClonable
 class NotAsked(FieldChild):
     """The class which expands only if its field is not asked."""
     def _getWithoutRedundance(self):
@@ -388,6 +395,7 @@ class NotAsked(FieldChild):
         else:
             return self.cloneSingle(self.getChild().assumeAsked(field))
 
+    @debugFun
     def _removeName(self, field):
         if self.field == field:
             return None

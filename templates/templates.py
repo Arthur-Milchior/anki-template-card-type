@@ -13,7 +13,7 @@ class Template:
 #     """If template as argument "name", then f is applied to the tag.
 
 #     t should take as first argument: tag, potentially other arguments."""
-#     #debug(f"Adding {name}")
+#     #debug("Adding {name}")
 #     kindOfTemplate[name.lower()]=f
 
 def getFunctionFromKind(kind):
@@ -25,12 +25,12 @@ def getFunctionFromKind(kind):
 
 
 def tagsToEdit(tag):
-    #debug(f"tagsToEdit({tag})",1)
+    #debug("tagsToEdit({tag})",1)
     assert assertType(tag, [bs4.element.Tag, bs4.BeautifulSoup])
     ret = tag.find_all(template = (lambda x: x))
     if tag.attrs.get("template"):
         ret.insert(0,self)
-    #debug(f"{ret}",-1)
+    #debug("{ret}",-1)
     return ret
 
 def getKind(tag):
@@ -42,16 +42,16 @@ def getModule(tag):
     return getFunctionFromKind(getKind(tag))
 
 def compile_(tag, soup, **kwargs):
-    #debug(f"compile_({tag})",+1)
+    #debug("compile_({tag})",+1)
     assert soup is not None
     assert assertType(tag, [bs4.element.Tag, bs4.BeautifulSoup])
-    #debug(f"""templates.compile_: kwargs is {kwargs}""")
+    #debug("""templates.compile_: kwargs is {kwargs}""")
     for tag_ in tagsToEdit(tag):
-        #debug(f"found {tag_} to compile",+1)
+        #debug("found {tag_} to compile",+1)
         tag_.contents = []
         getModule(tag_).compile_(tag_, soup, **kwargs)
-        #debug(f"",-1)
-    #debug(f"",-1)
+        #debug("",-1)
+    #debug("",-1)
 
 def clean(tag):
     for tag_ in tagsToEdit(tag):

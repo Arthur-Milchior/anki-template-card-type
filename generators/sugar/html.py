@@ -21,21 +21,21 @@ class Table(HTML):
         element of content have the same length. """
         table = []
         for content_ in content:
-            debug(f"Considering {content_}")
+            debug("Considering {content_}")
             line = []
             for content__ in content_:
-                debug(f"Considering {content__}")
+                debug("Considering {content__}")
                 td = HTML(tag = "td",
                           attrs = tdAttrs,
                           child = content__)
-                debug(f"adding td {td}") 
+                debug("adding td {td}") 
                 line.append(td)
             tr = HTML(tag = "tr",
                       attrs = trAttrs,
                       child = ListElement(elements = line))
-            debug(f"adding tr {tr}") 
+            debug("adding tr {tr}") 
             table.append(tr)
-        debug(f"super on {table}") 
+        debug("super on {table}") 
         super().__init__("table",
                          child = ListElement(
                              elements = table),
@@ -58,6 +58,8 @@ class _LIST(HTML):
     def __init__(self, elements, enclosing = None, **kwargs):
         assert enclosing is not None
         self.elements = elements
+        self.enclosing = enclosing
+        
         lis = [HTML("li",child = element) for element in elements]
         super().__init__(enclosing, child = lis, **kwargs)
 class OL(_LIST):

@@ -123,22 +123,22 @@ class TableFields(ListFields):
                  **kwargs):
         self.tableFields = fields
         def localFun(field):
-            debug(f"""TableFields.localFun({field})""",1)
+            debug("""TableFields.localFun({field})""",1)
             (label,field) = fieldToPair(field)
             questionnedField = QuestionnedField(field)
-            debug(f"""pair is "{label}", "{field}".""")
+            debug("""pair is "{label}", "{field}".""")
             tdLabel = TD(child = label)
             tdField = TD(child = questionnedField)
             tr = TR(child = [tdLabel, tdField])
             ret = Filled(
                 field = field.field,
                 child = tr)
-            debug(f"""TableFields.localFun() returns {ret}""",-1)
+            debug("""TableFields.localFun() returns {ret}""",-1)
             return ret
         def globalFun(lines):
-            debug(f"""TableFields.globalFun({lines})""",1)
+            debug("""TableFields.globalFun({lines})""",1)
             ret=HTML(tag = "table", child = lines)
-            debug(f"""TableFields.globalFun() returns {ret}""", -1)
+            debug("""TableFields.globalFun() returns {ret}""", -1)
             return ret
         super().__init__(fields, localFun = localFun, globalFun = globalFun, **kwargs)
         

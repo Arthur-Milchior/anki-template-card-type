@@ -129,12 +129,12 @@ class Requirement(SingleChild, NotNormal):
                  "requireInModel":Present,
                  "requireAbsentOfModel":Absent}
         for key in assoc:
-            debug(f"  Considering key {key}")
+            debug("  Considering key {key}")
             gen = assoc[key]
             for field in self.requirements[key]:
-                debug(f"    Considering field {field}")
+                debug("    Considering field {field}")
                 current = gen(field = field, child = current)
-                debug(f"    current now is {current}")
+                debug("    current now is {current}")
 
         return current.getNormalForm()
     # def clone(self, elements):
@@ -159,14 +159,14 @@ class Requirement(SingleChild, NotNormal):
         return super().__eq__(other) and isinstance(other,Requirement) and self.requirements == other.requirements
     
     def isInconsistent(self):
-        #debug(f"""isInconsistent("{self}")""",1)
+        #debug("""isInconsistent("{self}")""",1)
         for left, right in [("requireFilled", "requireEmpty"), ("requireFilled", "requireAbsentOfModel"), ("requireInModel", "requireAbsentOfModel")]:
             intersection = self.requirements[left] & self.requirements[right]
-            #debug(f"""Computing intersection of {left} and {right}, ie. "{self.requirements["requireFilled"]}" & "{self.requirements["requireEmpty"]}".""")
+            #debug("""Computing intersection of {left} and {right}, ie. "{self.requirements["requireFilled"]}" & "{self.requirements["requireEmpty"]}".""")
             if intersection:
-                #debug(f"is not empty, thus {filledAndEmpty}, thus returning True", -1)
+                #debug("is not empty, thus {filledAndEmpty}, thus returning True", -1)
                 return True
-        #debug(f"""isInconsistent() returns False""",-1)
+        #debug("""isInconsistent() returns False""",-1)
         return False
             
         
@@ -229,31 +229,31 @@ class Requirement(SingleChild, NotNormal):
     # @debugFun
     # def _restrictToModel(self,model):
     #     fields = modelToFields(model)
-    #     #debug(f"""Requirement._restrictToModel({self},{model},{fields})""",1)
+    #     #debug("""Requirement._restrictToModel({self},{model},{fields})""",1)
     #     if fields is None:
     #         fields =  modelToFields(model)
-    #         #debug(f"""Fields become {fields} """)
+    #         #debug("""Fields become {fields} """)
     #     shouldBeInModel = self.requirements["requireInModel"] - fields
     #     if shouldBeInModel:
-    #         #debug(f"""should be in model: {shouldBeInModel}. Thus empty.""")
+    #         #debug("""should be in model: {shouldBeInModel}. Thus empty.""")
     #         return emptyGen
     #     cantBiFilledIfAbsent = self.requirements["requireFilled"] - fields
     #     if cantBiFilledIfAbsent:
-    #         #debug(f"""should be in model: {cantBiFilledIfAbsent}. Thus empty.""")
+    #         #debug("""should be in model: {cantBiFilledIfAbsent}. Thus empty.""")
     #         return emptyGen
     #     shouldBeAbsent = self.requirements["requireAbsentOfModel"]&fields
     #     if shouldBeAbsent:
-    #         #debug(f"""should be absent: {shouldBeAbsent}. Thus empty.""")
+    #         #debug("""should be absent: {shouldBeAbsent}. Thus empty.""")
     #         return emptyGen
     #     child = self.child.restrictToModel(model)
     #     if not child:
-    #         #debug(f"""Child false: {child}, thus empty""")
+    #         #debug("""Child false: {child}, thus empty""")
     #         return emptyGen
     #     ret = Requirement(child = child,
     #                       requireFilled = self.requirements["requireFilled"],
     #                       requireEmpty = self.requirements["requireEmpty"] & fields,
     #                       remove =  self.requirements["remove"])
-    #     #debug(f"Requirement._restrictToModel() returns {ret}",-1)
+    #     #debug("Requirement._restrictToModel() returns {ret}",-1)
     #     return ret
 
     # def _applyTag(self, tag, soup):
@@ -267,10 +267,10 @@ class Requirement(SingleChild, NotNormal):
     #         for element in set:
     #             before = NavigableString(f"""{{{{{symbol}{element}}}}}""")
     #             after = NavigableString(f"""{{{{/{element}}}}}""")
-    #             #debug(f"Enclosing {conditional_span} by {before}/{after}")
+    #             #debug("Enclosing {conditional_span} by {before}/{after}")
     #             conditional_span.insert(0,before)
     #             conditional_span.append(after)
-    #     #debug(f"Extending {tag} by {conditional_span}")
+    #     #debug("Extending {tag} by {conditional_span}")
     #     tag.contents.extend(conditional_span.contents)
     #     if self.requirements["remove"]:
     #         raise ExceptionInverse(f"Asking to require to remove something")

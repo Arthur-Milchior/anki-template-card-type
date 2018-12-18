@@ -21,13 +21,13 @@ def ensureGen(element, locals_ = None):
         if isinstance(element, typ):
             gen = typeToGenerator[typ]
             ret = gen(element)
-            debug(f"{element} has type {typ}, thus use function {gen}")
+            debug("{element} has type {typ}, thus use function {gen}")
             break
         else:
-            debug(f"{element} has not type {typ}")
+            debug("{element} has not type {typ}")
             pass
     if ret is None:
-        debug(f"{element} has type {type(element)} which we can not consider")
+        debug("{element} has type {type(element)} which we can not consider")
         assert False
     return ret
 
