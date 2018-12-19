@@ -1,4 +1,4 @@
-from ..imports import *
+from ..data.imports import *
 from ..functions import TestHTML
 from ..data.templatesToCompile import *
 

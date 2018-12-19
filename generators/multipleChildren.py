@@ -40,7 +40,7 @@ class ListElement(MultipleChildren):
         """
         self.childEnsured = False
         debug("ListElement({elements})",1)
-        self.elements = elements
+        self.elements = [element for element in elements if element]
         super().__init__(toKeep = toKeep, **kwargs)
         debug("",-1)
         

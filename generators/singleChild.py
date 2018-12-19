@@ -27,6 +27,7 @@ class SingleChild(MultipleChildren):
             return self
         return self.classToClone(child = child)
     
+    @debugFun
     def getChild(self):
         self.child = self._ensureGen(self.child)
         return self.child
@@ -37,7 +38,7 @@ class SingleChild(MultipleChildren):
     # def getChild(self):
     #     return self.child
         
-    #@debugFun
+    @debugFun
     def _getChildren(self):
         return [self.getChild()]
     def __hash__(self):
@@ -46,7 +47,7 @@ class SingleChild(MultipleChildren):
     def _repr(self):
         space = "  "*Gen.indentation
         t= f"""{self.__class__.__name__}(
-{genRepr(self.getChild(), label="child")},{self.params()})"""
+{genRepr(self.child, label="child")},{self.params()})"""
         return t
     
     def __eq__(self,other):
@@ -112,8 +113,8 @@ class HTML(SingleChild):
         t= f"""HTML("{self.tag}","""
         if self.attrs:
             t+= "\n"+genRepr(self.attrs, label ="attrs")+","
-        if self.getChild():
-            t+= "\n"+genRepr(self.getChild(), label ="child")+","
+        if self.child:
+            t+= "\n"+genRepr(self.child, label ="child")+","
         if self.atom:
             t+= "\n"+genRepr(self.atom, label ="atom")+","
         t+=self.params()+")"
@@ -128,8 +129,7 @@ class HTML(SingleChild):
         #debug("self.attrs = {self.attrs}")
         newtag = soup.new_tag(self.tag, **self.attrs)
         #debug("New tag is {newtag}")
-        if not self.emptyTag:
-            self.getChild().applyTag(newtag, soup)
+        self.getChild().applyTag(newtag, soup)
         #debug("New tag became {newtag}")
         tag.append(newtag)
         #debug("Tag became {tag}")
@@ -166,7 +166,7 @@ class FieldChild(SingleChild):
         space  = "  "*Gen.indentation
         return f"""{self.__class__.__name__}(
 {genRepr(self.field, label = "field")},
-{genRepr(self.getChild(), label = "child")},{self.params()})"""
+{genRepr(self.child, label = "child")},{self.params()})"""
     
     def __eq__(self,other):
         return isinstance(other,self.classToClone) and self.field == other.field and self.getChild() == other.getChild()
@@ -284,7 +284,7 @@ class Empty(FieldChild):
     def _applyTag(self, tag, soup):
         assert soup is not None
         tag.append(NavigableString(f"{{{{^{self.field}}}}}"))
-        self.empty.applyTag(tag, soup)
+        self.child.applyTag(tag, soup)
         tag.append(NavigableString(f"{{{{/{self.field}}}}}"))
 
         
@@ -325,7 +325,7 @@ class Filled(FieldChild):
     def _applyTag(self, tag, soup):
         assert soup is not None
         tag.append(NavigableString(f"{{{{#{self.field}}}}}"))
-        self.filled.applyTag(tag, soup)
+        self.child.applyTag(tag, soup)
         tag.append(NavigableString(f"{{{{/{self.field}}}}}"))
     
 @thisClassIsClonable
@@ -368,7 +368,7 @@ class Asked(FieldChild):
         if self.field == field:
             return None
         else:
-            return self.getChild().assumeAsked(field)
+            return self.cloneSingle(self.getChild().assumeAsked(field))
 
     def _noMoreAsk(self):
         return None

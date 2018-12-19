@@ -82,7 +82,7 @@ class ListFields(NotNormal):
         globalEnsured = ensureGen(globalApplied)
         return globalEnsured.getNormalForm()
 
-class NamedListFields(NotNormal):
+class NamedListFields(AskedOrNot):
     """Similar to ListFields.
 
     similar to ListField, where localFun depends on whether listName is asked or not.
@@ -102,16 +102,12 @@ class NamedListFields(NotNormal):
         self.localDefaultFun = localDefaultFun
         self.globalSep = globalSep
         self.globalFun = globalFun
-        
-        super().__init__(**kwargs)
-
-    def _getNormalForm(self):
         asked = ListFields(self.listFields, localFun = self.localAskedFun, globalFun = self.globalFun, globalSep = self.globalSep)
         notAsked = ListFields(self.listFields, localFun = self.localDefaultFun, globalFun = self.globalFun, globalSep = self.globalSep)
-        return AskedOrNot(field = self.listName,
-                          asked = asked,
-                          notAsked = notAsked,
-        ).getNormalForm()
+        return super().__init__(field = self.listName,
+                                asked = asked,
+                                notAsked = notAsked,
+        )
         
     
     # def __repr__(self):
@@ -160,7 +156,7 @@ class NumberedFields(NamedListFields):
         
         self.numberedFields = [fieldPrefix]+[f"""{fieldPrefix}{i}""" for i in range(2,greater+1)]
         def localAskedFun(field):
-            return Filled(field = field, child = QuestionnedField(field).assumeAnswer(field))
+            return Filled(field = field, child = QuestionnedField(field).assumeAsked(field))
         def localDefaultFun(field):
             return Filled(field = field, child = QuestionnedField(field))
             

@@ -272,7 +272,7 @@ assert assertEqual(compileGen(requirements3),
   child = Filled(
     field = 'Question',
     child = Literal(text = "Foo",))))
-assert assertEqual(contradictionRequirement.getNormalForm(), emptyGen)
+assert assertEqual(compileGen(contradictionRequirement), emptyGen)
 assert assertEqual(compileGen(requiringInexistant),emptyGen)
 ## List Fields
 assert assertEqual(fieldToPair("field"), ("field",Field("field")))

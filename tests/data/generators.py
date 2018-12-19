@@ -97,7 +97,7 @@ atLeastTwoDefinition = AtLeastTwoFields(child = "At least two",
 ### Requirement
 requireQuestion =Requirement(child = (Literal("Question")),
                              requireFilled = frozenset({"Question"}))
-requirements3 = Requirement(child = (Literal("Foo")),
+requirements3 = Requirement(child = "Foo",
                             requireFilled = frozenset({"Question"}),
                             requireEmpty = frozenset({"Definition3", "AbsentFromModel"}))
 
@@ -167,7 +167,7 @@ tableTwoQuestionned= HTML(
 
 twoQuestionsNumbered = NumberedFields('Definition', 2)
 twoQuestionsNumberedShown = ListElement([
-    Literal(text = "Definition"),
+    Literal(text = "Definitions"),
     Literal(text = ": "),
     HTML("ul",
          child = ListElement([
@@ -178,7 +178,7 @@ twoQuestionsNumberedShown = ListElement([
                  field = 'Definition2',
                  child = Field(field = "Definition2"))]))])
 twoQuestionsNumberedAskDefinition = ListElement([
-    Literal(text = "Definition"),
+    Literal(text = "Definitions"),
     Literal(text = ": "),
     HTML("ul",
          child = ListElement([
@@ -190,7 +190,7 @@ twoQuestionsNumberedAskDefinition = ListElement([
                  child = Field(field = "Definition2"))]))])
 
 twoQuestionsNumberedAllAsked = ListElement([
-    Literal(text = "Definition"),
+    Literal(text = "Definitions"),
     Literal(text = ": "),
     HTML("ul",
          child = ListElement([

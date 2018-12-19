@@ -4,7 +4,7 @@ from ..imports import *
 from ..debug import ExceptionInverse
 from . import templates
 from ..config import evaluate
-from ..generators.generators import ensureGen
+from ..generators.generators import ensureGen, modelToFields
 from .templates import Template
 
 def split(text):
@@ -83,6 +83,7 @@ def compile_(tag, soup, *, isQuestion = None, model = None, objects = None, inCo
     """
     assert assertType(isQuestion, bool)
     assert model is not None
+    fields = modelToFields(model)
     assert isinstance(objects, dict)
     assert soup is not None
     if inConfig:
@@ -92,17 +93,20 @@ def compile_(tag, soup, *, isQuestion = None, model = None, objects = None, inCo
     if params is not None:
         tag.clear()
         (obj, asked, hide) = params
-        obj.allAndTag(tag = tag,
+        obj.compile(tag = tag,
                       soup = soup,
-                      model = model,
+                      fields = fields,
                       isQuestion = isQuestion,
                       asked = asked,
                       hide = hide)
 
 def compile_eval(*args, **kwargs):
+    """Do the compilation, assuming the string is a Python object"""
     compile_(*args, inConfig=False, **kwargs)
 
 def compile_config(*args, **kwargs):
+    """Do the compilation, assuming the string is an element from the
+    configuration"""
     compile_(*args, inConfig=True, **kwargs)
 
     

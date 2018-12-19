@@ -25,6 +25,7 @@ def getFunctionFromKind(kind):
 
 
 def tagsToEdit(tag):
+    """List of tag having a "template" attribute with a non-empty value."""
     #debug("tagsToEdit({tag})",1)
     assert assertType(tag, [bs4.element.Tag, bs4.BeautifulSoup])
     ret = tag.find_all(template = (lambda x: x))
@@ -42,6 +43,10 @@ def getModule(tag):
     return getFunctionFromKind(getKind(tag))
 
 def compile_(tag, soup, **kwargs):
+    """For each tag having a template non-empty attribute, apply the
+    generator according to this value.
+
+    """
     #debug("compile_({tag})",+1)
     assert soup is not None
     assert assertType(tag, [bs4.element.Tag, bs4.BeautifulSoup])

@@ -3,6 +3,8 @@ from ..debug import debug, assertType, debugFun, ExceptionInverse, optimize
 from ..utils import identity
 from .ensureGen import ensureGen, addTypeToGenerator
 from .constants import *
+#from ..templates.soupAndHtml import templateFromSoup
+
 
 def thisClassIsClonable(cl):
     cl.classToClone = cl
@@ -52,6 +54,7 @@ def ensureGenAndSetState(state):
     def actualArobase(f):
         #@debugFun
         def aux_ensureGenAndSetState(self, *args, **kwargs):
+            self.ensureSingleStep(state)
             ret = f(self, *args, **kwargs)
             ret = self._ensureGen(ret)
             ret.setState(state)
@@ -309,7 +312,9 @@ class Gen:
     @ensureGenAndSetState(NORMAL)
     #@emptyToEmpty
     def getNormalForm(self):
-        self.ensureSingleStep(NORMAL)
+        """A copy of self, where only used classes are «normal»
+        classes. In particular, only Gens , and no othe type, are
+        returned."""  
         return self._getNormalForm()
     @debugFun
     def _getNormalForm(self):
@@ -320,17 +325,11 @@ class Gen:
     #@emptyToEmpty
     @debugFun
     def getWithoutRedundance(self):
-        """Remove redundant, like {{#foo}}{{#foo}}, {{#foo}}{{^foo}}
-        on the normal form of self.
-        
-        Memoize. Unreduntate is also set for each descendant of self.
-        
-        The time is square in the depth of the tree. However, a
-        descendant occurring in mulitple tree to be containsRedundant won't
-        have to be considered multiple time, except for the elements
-        which are specific to the new tree.
+        """Remove redundant, like {{#foo}}{{#foo}}, {{#foo}}{{^foo}}.
+        Similarly, Question/Answer inside Question/Answer. And
+        Asked(foo) inside Asked(Foo)
+
         """        
-        self.ensureSingleStep(WITHOUT_REDUNDANCY)
         return self._getWithoutRedundance()
     
     @debugFun
@@ -342,7 +341,13 @@ class Gen:
     #@emptyToEmpty
     @debugFun
     def questionOrAnswer(self, isQuestion):
-        self.ensureSingleStep(QUESTION_ANSWER)
+        """Assert that this is the question side if isQuestion is
+        True. Otherwise answer side.
+        
+        Thus remove the Answer(), and replace Question() by its content
+        """
+    
+    
         return self._questionOrAnswer(isQuestion = isQuestion)
     
     @debugFun
@@ -359,23 +364,23 @@ class Gen:
     def restrictToModel(self,fields):
         """Given the model, restrict the generator according the fields
         existing. It follows that the returned answer contains no
-        requireInModel/requireAbsentOfModel requirement.
-
-        memoized. 
-        don't reimplement.
+        requireInModel/requireAbsentOfModel requirement. It contains
+        no Field(foo), or Filled(foo), if foo does not belong to the model.
         """
-        self.ensureSingleStep(MODEL_APPLIED)
         return self._restrictToModel(fields = fields)
     @debugFun
     def _restrictToModel(self,fields):
         return self.callOnChildren(method = "restrictToModel", fields = fields)
 
     @memoize((lambda asked, hide:(asked,hide)))
-    @ensureGenAndSetState(TEMPLATE_APPLIED)
+    #@ensureGenAndSetState(TEMPLATE_APPLIED) done in NoMoreAsk
     #@emptyToEmpty
     @debugFun
     def template(self, asked, hide):
-        self.ensureSingleStep(TEMPLATE_APPLIED)
+        """A copy of self where every Asked(foo) or NotAsked(foo), with foo in
+        hide, is hidden. And everything in asked is asked. Everything else
+        is not hidden.
+        """
         return self._template(asked = asked, hide = hide)
     @debugFun
     def _template(self, asked = frozenset(), hide = frozenset()):
@@ -391,10 +396,12 @@ class Gen:
     def force(self):
         """Ensure that ensureGen is called on each element recursively."""
         self.callOnChildren(method = "force")
-        
+
+    @ensureGenAndSetState(TEMPLATE_APPLIED)
     @ensureReturnGen
     @debugFun
     def noMoreAsk(self):
+        """Remove all Asked(foo), and replace NotAsked(foo) with foo"""
         return self._noMoreAsk()
     @debugFun
     def _noMoreAsk(self):
@@ -404,6 +411,7 @@ class Gen:
     @ensureReturnGen
     @debugFun
     def assumeFieldFilled(self, field):
+        """Remove Empty(field,foo) and Absent(field,foo), replace Filled(field,foo) by foo"""
         return self._assumeFieldFilled(field)
     
     @debugFun
@@ -414,6 +422,7 @@ class Gen:
     @ensureReturnGen
     @debugFun
     def assumeFieldEmpty(self, field):
+        """Remove Filled(field,foo), replace Empty(field,foo) by foo"""
         return self._assumeFieldEmpty(field)
     @debugFun
     def _assumeFieldEmpty(self, field):
@@ -423,6 +432,7 @@ class Gen:
     @ensureReturnGen
     @debugFun
     def assumeFieldPresent(self, field):
+        """Remove Absent(field,foo), replace Present(field,foo) by foo"""
         return self._assumeFieldPresent(field)
     @debugFun
     def _assumeFieldPresent(self, field):
@@ -431,7 +441,20 @@ class Gen:
     #@emptyToEmpty
     @ensureReturnGen
     @debugFun
+    def assumeFieldAbsent(self, field):
+        """Remove Present(field,foo) and Filled(field,foo), replace Absent(field,foo) by foo"""
+        return self._assumeFieldAbsent(field)    
+    @debugFun
+    def _assumeFieldAbsent(self, field):
+        return self.callOnChildren("assumeFieldAbsent", field = field)
+
+    #@emptyToEmpty
+    @ensureReturnGen
+    @debugFun
     def assumeQuestion(self, changeStep = False):
+        """Assume this is question side. Replace Question(foo) by
+    foo. Remove Answer(foo)"""
+        assert assertType(changeStep, bool)
         ret = self._assumeQuestion(changeStep = changeStep)
         if changeStep:
             ret.setState(QUESTION_ANSWER)
@@ -444,6 +467,8 @@ class Gen:
     @ensureReturnGen
     @debugFun
     def assumeAnswer(self, changeStep = False):
+        """Assume this is answer side. Replace Answer(foo) by
+        foo. Remove Question(foo)"""
         ret = self._assumeAnswer(changeStep = changeStep)
         if changeStep:
             ret.setState(QUESTION_ANSWER)
@@ -456,6 +481,8 @@ class Gen:
     @ensureReturnGen
     @debugFun
     def assumeAsked(self, name):
+        """Assume that name is asked. Thus remove
+        notAsked(name,foo). Replace Asked(name,foo) by foo"""
         return self._assumeAsked(name)
     @debugFun
     def _assumeAsked(self, name):
@@ -465,6 +492,8 @@ class Gen:
     @ensureReturnGen
     @debugFun
     def assumeNotAsked(self, name):
+        """Assume that name is not asked. Thus remove
+        Asked(name,foo). Replace NotAsked(name,foo) by foo."""
         return self._assumeNotAsked(name)
     @debugFun
     def _assumeNotAsked(self, name):
@@ -474,34 +503,30 @@ class Gen:
     @ensureReturnGen
     @debugFun
     def removeName(self, name):
+        """remove each instance of Asked(name,foo) and NotAsked(name,Foo)"""
         return self._removeName(name)
     @debugFun
     def _removeName(self, name):
         return self.callOnChildren("removeName", name)
-        
-    #@emptyToEmpty
-    @ensureReturnGen
-    @debugFun
-    def assumeFieldAbsent(self, field):
-        return self._assumeFieldAbsent(field)    
-    @debugFun
-    def _assumeFieldAbsent(self, field):
-        return self.callOnChildren("assumeFieldAbsent", field = field)
 
     #################
     # Consider the end of compilation
         
     @debugFun
+    @ensureGenAndSetState(SOUP)
     def applyTag(self, tag, soup):
-        """Print the actual template, given the asked questions, list
-        of things to hide (as frozen set)."""
+        # """Insert as last element of the content of this tag the BeautifulSoup
+        # object representing this generator"""
         assert soup is not None
         assert tag is not None
-        assert TEMPLATE_APPLIED <= self.getState()
-        self._applyTag(tag, soup)
+        # new_tag = self._applyTag(tag, soup)
+        # tag.append(new_tag)
+        return self._applyTag(tag, soup)
 
     @debugFun
     def _applyTag(self, tag, soup):
+        """A BeautifulSoup object representing this generator. TODO:
+        Is tag useful ?"""
         raise ExceptionInverse(f"""_applyTag in gen for: "{self}".""")
 
     @debugFun
@@ -569,14 +594,18 @@ class Gen:
         assert soup is not None
         assert tag is not None
         templateRestriction.applyTag(tag = soup.enclose, soup = soup)
-        prettified = templateFromSoup(soup)
-        if toPrint: print(prettified)
         if goal == SOUP:
             return soup
         
         assert False
         
-        
+
+# class Normal(Gen):
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(self, *args, **kwargs)
+#         if not hasattr(hasNormalType)
+#     pass
+
 addTypeToGenerator(Gen, identity)
 
 #@debugFun

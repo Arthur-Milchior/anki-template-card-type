@@ -1,5 +1,6 @@
-from ..imports import *
+from ..data.imports import *
 from ..functions import prettifyGen
+from ...debug import assertEqual
 
 
 assert assertEqual(prettifyGen(image), imageHtml)
@@ -10,5 +11,6 @@ assert assertEqual(prettifyGen(requireQuestion),requirementHtml)
 assert assertEqual(prettifyGen(requirements3),requirement2Html)
 assert assertEqual(prettifyGen(contradictionRequirement),emptyHtml)
 assert assertEqual(prettifyGen(requiringInexistant),emptyHtml)
-assert assertEqual(prettifyGen(fooQuestion),listHtml)
+assert assertEqual(prettifyGen(listEmptyExistingField),listHtml)
+
 

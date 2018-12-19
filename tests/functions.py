@@ -1,8 +1,11 @@
 from .data.models import *
+from ..debug import assertEqual
 from ..generators.constants import *
 from ..generators.generators import modelToFields
 from ..templates.soupAndHtml import soupFromTemplate, templateFromSoup
 from ..generators.ensureGen import ensureGen
+from ..templates.templates import tagsToEdit, compile_
+
 
 class TestHTML:
     def  __init__(self,source, compiled, *, numberOfTagToEdit = None, model = model, **kwargs):
@@ -44,12 +47,13 @@ def testEachStep(gen,
 
 def prettifyGen(*args, **kwargs):
     soup = genToSoup(*args, **kwargs)
-    return soup.prettify()
+    prettified = templateFromSoup(soup)
+    return prettified
  
 def compileGen(*args, goal = TEMPLATE_APPLIED, **kwargs):
     return testEachStep(*args, goal = goal, **kwargs)
  
 def genToSoup(*args, **kwargs):
-    return testEachStep(goal = SOUP_PRETTIFIED, *args, **kwargs)
+    return testEachStep(goal = SOUP, *args, **kwargs)
 
  
