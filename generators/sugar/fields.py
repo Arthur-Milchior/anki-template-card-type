@@ -50,6 +50,7 @@ class DecoratedField(Gen):
                  field,
                  label = None,
                  separator = ": ",
+                 prefix = None,
                  suffix = br,
                  **kwargs):
         """field -- a field object, or a string"""
