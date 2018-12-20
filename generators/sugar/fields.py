@@ -49,6 +49,8 @@ class DecoratedField(Gen):
     def __init__(self,
                  field,
                  label = None,
+                 separator = ": ",
+                 suffix = br,
                  **kwargs):
         """field -- a field object, or a string"""
         if isinstance(field,str):
@@ -63,8 +65,10 @@ class DecoratedField(Gen):
         return Filled(field = self.field.field,
                       child = [
                           self.label,
-                          ": ",
-                          QuestionnedField(self.field)]
+                          separator,
+                          QuestionnedField(self.field),
+                          suffix
+                      ]
         ).getNormalForm()
         
 

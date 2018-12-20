@@ -1,8 +1,9 @@
 import sys
-from ..debug import debug, assertType, debugFun, ExceptionInverse, optimize
+from ..debug import debug, assertType, debugFun, ExceptionInverse, optimize, debugOnlyThisMethod
 from ..utils import identity
 from .ensureGen import ensureGen, addTypeToGenerator
 from .constants import *
+import bs4
 #from ..templates.soupAndHtml import templateFromSoup
 
 
@@ -139,7 +140,10 @@ class Gen:
     indentation = 0
     #@debugFun
     def _ensureGen(self, element):
-        return ensureGen(element, self.locals_)
+        """Ensure that a generator is returned, with the state of self"""
+        gen = ensureGen(element, self.locals_)
+        gen.setState(self.getState())
+        return gen
 
     @debugFun
     def clone(self,children):
@@ -166,7 +170,7 @@ class Gen:
     def _repr(self):
         return f"""{self.__class__.__name__}(without repr,{self.params()})"""
         
-    def params(self, show = True):
+    def params(self, show = False):
         """The list of params as string. So that it can be printed."""
         if not hasattr(self,"toKeep"):
             self.toKeep = None
@@ -376,12 +380,15 @@ class Gen:
     #@ensureGenAndSetState(TEMPLATE_APPLIED) done in NoMoreAsk
     #@emptyToEmpty
     @debugFun
-    def template(self, asked, hide):
+    def template(self, asked = frozenset(), hide = frozenset(), mandatory = frozenset()):
         """A copy of self where every Asked(foo) or NotAsked(foo), with foo in
         hide, is hidden. And everything in asked is asked. Everything else
         is not hidden.
         """
-        return self._template(asked = asked, hide = hide)
+        step = self
+        if mandatory:
+            step = step.addMandatory(mandatory)
+        return step._template(asked = asked, hide = hide)
     @debugFun
     def _template(self, asked = frozenset(), hide = frozenset()):
         current = self
@@ -390,6 +397,15 @@ class Gen:
         for name in asked:
             current = current.assumeAsked(name)
         return current.noMoreAsk()
+    @debugFun
+    def addMandatory(self, mandatory):
+        current = self
+        for field in mandatory:
+            current = current.assumeFieldFilled(field)
+        for field in mandatory:
+            #EnsureGen of a tuple create a FilledObject.
+            current = self._ensureGen((field,current))
+        return current
 
     @ensureReturnGen
     @debugFun
@@ -513,46 +529,54 @@ class Gen:
     # Consider the end of compilation
         
     @debugFun
-    @ensureGenAndSetState(SOUP)
-    def applyTag(self, tag, soup):
-        # """Insert as last element of the content of this tag the BeautifulSoup
-        # object representing this generator"""
+    def applyTag(self, soup):
+        """A list of BeautifulSoup object representing this
+        generator. 
+        """
+        self.ensureSingleStep(TAG)
         assert soup is not None
-        assert tag is not None
-        # new_tag = self._applyTag(tag, soup)
-        # tag.append(new_tag)
-        return self._applyTag(tag, soup)
+        new_tag = self._applyTag(soup)
+        if new_tag is None:
+            ret = []
+        elif isinstance(new_tag, list):
+            ret = new_tag
+        elif isinstance(new_tag, bs4.element.NavigableString) or isinstance(new_tag, bs4.element.Tag):
+            ret = [new_tag]
+        else:
+            assert False
+        assert assertType(ret, list)
+        return ret
 
     @debugFun
-    def _applyTag(self, tag, soup):
-        """A BeautifulSoup object representing this generator. TODO:
-        Is tag useful ?"""
+    def _applyTag(self, soup):
+        """A (list of) BeautifulSoup object representing this
+        generator. Or None
+        """
         raise ExceptionInverse(f"""_applyTag in gen for: "{self}".""")
 
     @debugFun
     def compile(self,
-                tag = None,
                 soup = None,
                 goal = None,
                 fields = None,
                 isQuestion = None,
                 asked = None,
+                mandatory = None,
                 hide = None,
                 toPrint = False
     ):
         """Compile as much as possible given the informations. Or up to goal."""
-        assert (soup is not None) == (tag is not None)
         if goal is None:
             if isQuestion is None:
                 goal = WITHOUT_REDUNDANCY
             elif fields is None:
                 goal = QUESTION_ANSWER
-            elif asked is not None or hide is not None:
+            elif asked is not None or hide is not None or mandatory is not None:
                 goal = MODEL_APPLIED
             if soup is None:
                 goal = TEMPLATE_APPLIED
             else :
-                goal = SOUP
+                goal = TAG
                 
         if toPrint: print(f"""\ntesting each step of "{self}".""")
         if goal == BASIC:
@@ -585,17 +609,19 @@ class Gen:
             asked = frozenset()
         if hide is None:
             hide = frozenset()
+        if mandatory is None:
+            mandatory = frozenset()
         templateRestriction = modelRestriction.template(asked = asked,
-                                                        hide = hide)
+                                                        hide = hide,
+                                                        mandatory = mandatory)
         if toPrint: print(f"""\nWith template applied, "{templateRestriction}".""")
         if goal == TEMPLATE_APPLIED:
             return templateRestriction
 
         assert soup is not None
-        assert tag is not None
-        templateRestriction.applyTag(tag = soup.enclose, soup = soup)
-        if goal == SOUP:
-            return soup
+        resultTags = templateRestriction.applyTag(soup = soup)
+        if goal == TAG:
+            return resultTags
         
         assert False
         

@@ -1,8 +1,8 @@
-from bs4 import BeautifulSoup, NavigableString
+import bs4
 import copy
 import sys
 from .constants import *
-from .generators import Gen, modelToFields, shouldBeKept, genRepr, ensureReturnGen, memoize, thisClassIsClonable
+from .generators import Gen, modelToFields, shouldBeKept, genRepr, ensureReturnGen, memoize, thisClassIsClonable, addTypeToGenerator
 from .leaf import emptyGen
 from ..tag import singleTag, tagContent
 from ..debug import debug, assertType, debugFun, ExceptionInverse
@@ -54,93 +54,15 @@ class SingleChild(MultipleChildren):
         """It may require to actually compute the child"""
         return isinstance(other,SingleChild) and self.getChild() == other.getChild()
     
-@thisClassIsClonable
-class HTML(SingleChild):
-    """A html tag, and its content.
-
-    A tag directly closed, such as br or img, should have child emptyGen
-    (default value). Values are escaped.
-    If child is an Empty object, then toKeep is assumed to be
-    true."""
-
-    def __init__(self,
-                 tag = None,
-                 atom = False,
-                 attrs={},
-                 **kwargs):
-        assert assertType(tag,str)
-        self.tag = tag
-        self.attrs = attrs
-        toKeep = atom is True
-        self.atom = atom
-        super().__init__(toKeep = toKeep, **kwargs)
-
-    @debugFun
-    def isEmpty(self):
-        return ((not self.atom) and self.getChild().isEmpty())
-
-    def __hash__(self):
-        return hash((self.tag,self.attrs,self.getChild()))
-
-    @debugFun
-    def cloneSingle(self, child):
-        if child == self.getChild():
-            return self
-        if not child and not self.atom:
-            return emptyGen
-        return HTML(tag = self.tag,
-                    attrs = self.attrs,
-                    child = child,
-                    atom = self.atom
-        )
-    
-    # @debugFun
-    # def cloneSingle(self, elements):
-    #     assert len(elements)==1
-    #     element = elements[0]
-    #     if element == self.child:
-    #         return self
-    #     if not element and not self.atom:
-    #         return emptyGen
-    #     return HTML(tag = self.tag,
-    #                 attrs = self.attrs,
-    #                 child = element,
-    #                 atom = self.atom
-    #     )
-    
-    def _repr(self):
-        space = "  "*Gen.indentation
-        t= f"""HTML("{self.tag}","""
-        if self.attrs:
-            t+= "\n"+genRepr(self.attrs, label ="attrs")+","
-        if self.child:
-            t+= "\n"+genRepr(self.child, label ="child")+","
-        if self.atom:
-            t+= "\n"+genRepr(self.atom, label ="atom")+","
-        t+=self.params()+")"
-        return t
-
-    def __eq__(self,other):
-        return super().__eq__(other) and isinstance(other,HTML) and self.tag == other.tag and self.attrs == other.attrs
-
-    @debugFun
-    def _applyTag(self, tag, soup):
-        #debug("self.tag = {self.tag}")
-        #debug("self.attrs = {self.attrs}")
-        newtag = soup.new_tag(self.tag, **self.attrs)
-        #debug("New tag is {newtag}")
-        self.getChild().applyTag(newtag, soup)
-        #debug("New tag became {newtag}")
-        tag.append(newtag)
-        #debug("Tag became {tag}")
 
 class FieldChild(SingleChild):
     def __init__(self,
                  field,
+                 child,
                  **kwargs):
         self.field = field
         assert assertType (field, str)
-        super().__init__(**kwargs)
+        super().__init__(child, **kwargs)
         
     def cloneSingle(self, child):
         if not child:
@@ -216,7 +138,7 @@ class Absent(FieldChild):
             return self.getChild().restrictToModel(fields)
         
 
-    def _applyTag(self, tag, soup):
+    def _applyTag(self, soup):
         assert False
 
 @thisClassIsClonable
@@ -246,7 +168,7 @@ class Present(FieldChild):
         else:
             return emptyGen
         
-    def _applyTag(self, tag, soup):
+    def _applyTag(self, soup):
         assert False
 
 @thisClassIsClonable
@@ -281,11 +203,10 @@ class Empty(FieldChild):
         child =child.assumeFieldEmpty(self.field)
         return self.cloneSingle(child)
 
-    def _applyTag(self, tag, soup):
-        assert soup is not None
-        tag.append(NavigableString(f"{{{{^{self.field}}}}}"))
-        self.child.applyTag(tag, soup)
-        tag.append(NavigableString(f"{{{{/{self.field}}}}}"))
+    def _applyTag(self, soup):
+        return ([bs4.NavigableString(f"{{{{^{self.field}}}}}")]+
+                self.child.applyTag(soup)+
+                [bs4.NavigableString(f"{{{{/{self.field}}}}}")])
 
         
 @thisClassIsClonable
@@ -322,11 +243,17 @@ class Filled(FieldChild):
         else:
             return self.cloneSingle(self.getChild().restrictToModel(fields))
         
-    def _applyTag(self, tag, soup):
-        assert soup is not None
-        tag.append(NavigableString(f"{{{{#{self.field}}}}}"))
-        self.child.applyTag(tag, soup)
-        tag.append(NavigableString(f"{{{{/{self.field}}}}}"))
+    def _applyTag(self, soup):
+        return ([bs4.NavigableString(f"{{{{#{self.field}}}}}")]+
+                self.child.applyTag(soup)+
+                [bs4.NavigableString(f"{{{{/{self.field}}}}}")])
+
+def tupleToFilled(tup):
+    assert len(tup) == 2
+    field, child = tup
+    return Filled(field = field,child = child)
+addTypeToGenerator(tuple, tupleToFilled)
+#It is useful to be able to create Filled from generators. Thus it should be in typeToGenerator. Tuple is a type not yet used, which have sens.
     
 @thisClassIsClonable
 class Question(SingleChild):

@@ -1,10 +1,11 @@
-from .html import TR, TD
+from ..html import TR, TD
 from .sugar import NotNormal
 from .fields import QuestionnedField
 from ...debug import debug, ExceptionInverse, debugFun, assertType
 from ...utils import identity
 from ..ensureGen import ensureGen
-from ..singleChild import HTML, Filled
+from ..singleChild import Filled
+from ..html import HTML, LI
 from ..leaf import Field
 from .conditionals import FilledOrEmpty, AskedOrNot
 from .numberOfField import AtLeastOneField
@@ -156,9 +157,9 @@ class NumberedFields(NamedListFields):
         
         self.numberedFields = [fieldPrefix]+[f"""{fieldPrefix}{i}""" for i in range(2,greater+1)]
         def localAskedFun(field):
-            return Filled(field = field, child = QuestionnedField(field).assumeAsked(field))
+            return LI(child = Filled(field = field, child = QuestionnedField(field).assumeAsked(field)))
         def localDefaultFun(field):
-            return Filled(field = field, child = QuestionnedField(field))
+            return LI(child = Filled(field = field, child = QuestionnedField(field)))
             
         def globalFun(lines):
             return [f"{fieldPrefix}s", ": ", HTML(tag = "ul",child = lines)]
@@ -175,7 +176,7 @@ class NumberedFields(NamedListFields):
 class PotentiallyNumberedFields(FilledOrEmpty):
     """If the second element is present, a list is used. Otherwise, assume
 no other elements are present, and show only the first element."""
-    def __init__(self, fieldPrefix,greater,**kwargs):
+    def __init__(self, fieldPrefix, greater,**kwargs):
         nf = NumberedFields(fieldPrefix,greater)
         
         super().__init__(field = f"""{fieldPrefix}2""",

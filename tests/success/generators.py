@@ -325,3 +325,7 @@ assert assertEqual(compileGen(twoQuestionsNumbered, asked =frozenset({"Definitio
 assert assertEqual(compileGen(twoQuestionsNumbered, asked =frozenset({"Definitions"})),
                    twoQuestionsNumberedAllAsked)
 
+assert assertEqual(compileGen(twoQuestionsNumbered,
+                              asked =frozenset({"Definition"}),
+                              mandatory = frozenset({"Definition"})),
+                   twoQuestionsNumberedAskDefinitionMandatory)

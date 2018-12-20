@@ -3,6 +3,7 @@ from .ensureGen import *
 from .function import *
 from .generators import *
 from .leaf import *
+from .html import *
 from .multipleChildren import *
 from .singleChild import *
 from .sugar.imports import *

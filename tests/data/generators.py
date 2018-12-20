@@ -95,8 +95,8 @@ atLeastTwoDefinition = AtLeastTwoFields(child = "At least two",
                                     fields = (["Definition", "Definition2", "Definition3"]))
 
 ### Requirement
-requireQuestion =Requirement(child = (Literal("Question")),
-                             requireFilled = frozenset({"Question"}))
+requireQuestion =Filled(field = "Question",
+                        child = (Literal("Question")))
 requirements3 = Requirement(child = "Foo",
                             requireFilled = frozenset({"Question"}),
                             requireEmpty = frozenset({"Definition3", "AbsentFromModel"}))
@@ -167,38 +167,58 @@ tableTwoQuestionned= HTML(
 
 twoQuestionsNumbered = NumberedFields('Definition', 2)
 twoQuestionsNumberedShown = ListElement([
-    Literal(text = "Definitions"),
-    Literal(text = ": "),
-    HTML("ul",
-         child = ListElement([
-             Filled(
-                 field = 'Definition',
-                 child = Field(field = "Definition")),
-             Filled(
-                 field = 'Definition2',
-                 child = Field(field = "Definition2"))]))])
+  Literal(text = "Definitions",),
+  Literal(text = ": ",),
+  HTML("ul",
+    child = ListElement([
+      HTML("li",
+        child = Filled(
+          field = 'Definition',
+          child = Field(field = "Definition",),),),
+      HTML("li",
+        child = Filled(
+          field = 'Definition2',
+          child = Field(field = "Definition2",),),)],),)],)
 twoQuestionsNumberedAskDefinition = ListElement([
-    Literal(text = "Definitions"),
-    Literal(text = ": "),
-    HTML("ul",
-         child = ListElement([
-             Filled(
-                 field = 'Definition',
-                 child = Literal("???")),
-             Filled(
-                 field = 'Definition2',
-                 child = Field(field = "Definition2"))]))])
+  Literal(text = "Definitions",),
+  Literal(text = ": ",),
+  HTML("ul",
+    child = ListElement([
+      HTML("li",
+        child = Filled(
+          field = 'Definition',
+          child = Literal("???"),),),
+      HTML("li",
+        child = Filled(
+          field = 'Definition2',
+          child = Field(field = "Definition2",),),)],),)],)
 
+twoQuestionsNumberedAskDefinitionMandatory = Filled(
+    field = 'Definition',
+    child = ListElement([
+        Literal(text = "Definitions",),
+        Literal(text = ": ",),
+        HTML("ul",
+             child = ListElement([
+                 HTML("li",
+                      child = Literal("???"),),
+                 HTML("li",
+                      child = Filled(
+                          field = 'Definition2',
+                          child = Field(field = "Definition2",),),)],),)],))
+    
 twoQuestionsNumberedAllAsked = ListElement([
-    Literal(text = "Definitions"),
-    Literal(text = ": "),
-    HTML("ul",
-         child = ListElement([
-             Filled(
-                 field = 'Definition',
-                 child = Literal("???")),
-             Filled(
-                 field = 'Definition2',
-                 child = Literal("???"))]))])
+  Literal(text = "Definitions",),
+  Literal(text = ": ",),
+  HTML("ul",
+    child = ListElement([
+      HTML("li",
+        child = Filled(
+          field = 'Definition',
+          child = Literal("???"),),),
+      HTML("li",
+        child = Filled(
+          field = 'Definition2',
+          child = Literal("???"),),)],),)],)
 
 

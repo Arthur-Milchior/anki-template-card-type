@@ -16,14 +16,13 @@ def split(text):
 
 def _tagGetParams(tag):
     """The information usefull to process an object template. """
-    #debug("_tagGetParams({tag})", 1)
     asked = split(tag.attrs.get("asked"))
     hide = split(tag.attrs.get("hide"))
     objName = tag.attrs.get("name")
+    mandatory = split(tag.attrs.get("mandatory"))
     if objName is None:
         raise ExceptionInverse(f"""Name missing in {tag}.""")
-    ret = (objName, asked, hide)
-    #debug("_tagGetParams({tag.name}) returns {ret}", -1)
+    ret = (objName, asked, hide, mandatory)
     return ret
 
 def tagGetParamsConfig(tag, objects):
@@ -34,8 +33,7 @@ def tagGetParamsConfig(tag, objects):
     add objectabsent to tag if this name is absent from Objects.
     Remove objectabsent if an object with this name is present
     """
-    #debug("tagGetParamsConfig({tag})",1)
-    (objName, asked, hide) = _tagGetParams(tag)
+    (objName, asked, hide, mandatory) = _tagGetParams(tag)
     assert asked is not None
     assert hide is not None
     obj = objects.get(objName)
@@ -45,8 +43,7 @@ def tagGetParamsConfig(tag, objects):
         return None
     elif "objectAbsent" in tag.attrs:
         del tag.attrs["objectAbsent"]
-    ret = (obj, asked, hide)
-    #debug("tagGetParamsConfig() returns {ret}",-1)
+    ret = (obj, asked, hide, mandatory)
     return ret
 
 def tagGetParamsEval(tag, objects):
@@ -54,14 +51,12 @@ def tagGetParamsEval(tag, objects):
     Return everything required from the tag to add its object in it.
     The object is evaluated, and python error may rise
     """
-    #debug("tagGetParamsEval({tag})",1)
-    (objName, asked, hide) = _tagGetParams(tag)
+    (objName, asked, hide, mandatory) = _tagGetParams(tag)
     assert asked is not None
     assert hide is not None
     #debug("objName is {objName}")
     obj = ensureGen(evaluate(objName, objects = objects))
-    ret = (obj, asked, hide)
-    #debug("tagGetParamsEval() returns {ret}",-1)
+    ret = (obj, asked, hide, mandatory)
     return ret
 
 def compile_(tag, soup, *, isQuestion = None, model = None, objects = None, inConfig = True, **kwargs):
@@ -91,14 +86,14 @@ def compile_(tag, soup, *, isQuestion = None, model = None, objects = None, inCo
     else:
         params = tagGetParamsEval(tag, objects)
     if params is not None:
-        tag.clear()
-        (obj, asked, hide) = params
-        obj.compile(tag = tag,
-                      soup = soup,
-                      fields = fields,
-                      isQuestion = isQuestion,
-                      asked = asked,
-                      hide = hide)
+        (obj, asked, hide, mandatory) = params
+        new_tags = obj.compile(soup = soup,
+                               fields = fields,
+                               isQuestion = isQuestion,
+                               asked = asked,
+                               hide = hide,
+                               mandatory = mandatory)
+        tag.contents = new_tags
 
 def compile_eval(*args, **kwargs):
     """Do the compilation, assuming the string is a Python object"""

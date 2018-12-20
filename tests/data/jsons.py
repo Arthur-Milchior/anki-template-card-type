@@ -6,12 +6,12 @@ jsonTest = """{
         ["test", "'test'"],
         ["foo","['foo',None, Field('Question')]"],
         ["Question", "DecoratedField('Question')"],
-        ["TwoDefsMiddle","ListFields(['Definition1', 'Definition2'])"],
         ["TwoDefsHard","NumberedFields('Definition', 2)"],
-        ["TwoDefsEasy","ListElement([DecoratedField('Definition1'),DecoratedField('Definition2')])"]
+        ["TwoDefsEasy","ListElement([DecoratedField('Definition'),DecoratedField('Definition2')])"]
     ]
 }"""
-#,
+#,        ["TwoDefsMiddle","ListFields(['Definition', 'Definition2'])"],
+
 
 #        ["Definitions_","NumberedFields(\\"Definition\\", 16)"]
 #,\\"Definition3\\",\\"Definition4\\",\\"Definition5\\",\\"Definition6\\",\\"Definition7\\",

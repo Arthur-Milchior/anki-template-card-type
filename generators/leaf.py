@@ -54,8 +54,8 @@ class Empty(Leaf):
         else:
             return f"""Empty(createOther = True,{self.params()})"""
 
-    def _applyTag(self, tag, soup):
-        pass
+    def _applyTag(self, soup):
+        return None
     
     def __eq__(self,other):
         #debug("{self!r} == {other!r}",1)
@@ -107,9 +107,9 @@ class Literal(Leaf):
         #debug("",-1)
         return ret
     
-    def _applyTag(self, tag, soup):
+    def _applyTag(self, soup):
         #debug("appending text {self.text} to {tag}")
-        tag.append(NavigableString(escape(self.text)))
+        return NavigableString(escape(self.text))
         #return self.text
 addTypeToGenerator(str,Literal)
 
@@ -121,7 +121,9 @@ class Field(Leaf):
                  typ = None,
                  cloze = None,
                  state = WITHOUT_REDUNDANCY,
+                 special = False,
                  **kwargs):
+        self.special = special
         if typ is None:
             typ = False
         if cloze is None:
@@ -139,9 +141,38 @@ class Field(Leaf):
             elt.add(field)
         self.field = field
         assert assertType(field, str)
+        self.dealWithClozeAndType()
+        self.dealWithSpecial()
         super().__init__(state = state,
                          toKeep = toKeep,
                          **kwargs)
+        
+
+    def dealWithClozeAndType(self):
+        if self.field.startswith("type:"):
+            print(f"""Beware: you used "type:" in prefix of your field name. Please use "typ= True" in the Field object creator instead. "type:" is removed from the name.""", file=sys.stderr)
+            self.typ = True
+            self.field = self.field[5:]
+        if self.field.startswith("cloze:"):
+            print(f"""Beware: you used "cloze:" in prefix of your field name. Please use "cloze= True" in the Field object creator instead. "cloze:" is removed from the name.""", file=sys.stderr)
+            self.cloze = True
+            self.field = self.field[6:]
+        
+    def dealWithSpecial(self):
+        specialName = self.field in {"FrontSide":"frontside", "Tags":"tags", "Type":"typ", "Deck":"deck", "Card":"card"}
+        if specialName and not self.special:
+            print(f"""Beware: you use field "{self.field}", which is a special field. If you want to use this special field, use the constant "{specialName(self.field)}".""", file=sys.stderr)
+        if not self.special and specialName:
+            print(f"""Beware: you want to create a special field, which does not belong to {specialName}, thus is not a special name.""", file=sys.stderr)
+        if self.special:
+            if self.typ:
+                print(f"""Beware: you want to have "type:" before a special field {self.field}, this makes no sens.""", file=sys.stderr)
+            if self.typ:
+                print(f"""Beware: you want to have "cloze:" before a special field {self.field}, this makes no sens.""", file=sys.stderr)
+                
+            
+        
+        
     def __hash__(self):
         return hash(self.field)
 
@@ -154,34 +185,46 @@ class Field(Leaf):
             t+="\n"+genRepr(self.typ, label="type")+","
         if self.cloze:
             t+="\n"+genRepr(self.cloze, label="cloze")+","
+        if self.special:
+            t+="\n"+genRepr(self.special, label="special")+","
         t+=self.params()+")"
         return t
 
     def _assumeFieldEmpty(field):
         if field == self.field:
+            if self.special:
+                print(f"""Beware: you assert that special name {self.field} is empty, which makes no sens.""", file=sys.stderr)
             return emptyGen
         else:
             return self
     def _assumeFieldAbsent(field):
         if field == self.field:
+            if self.special:
+                print(f"""Beware: you assert that special name {self.field} is absent, which makes no sens.""", file=sys.stderr)
             return emptyGen
         else:
             return self
     @debugFun
     def _restrictToModel(self, fields):
         if self.field in fields:
+            if self.special:
+                print(f"""Beware: your model has a field {self.field} which is also the name of a special field.""", file=sys.stderr)
             ret = self
         else:
             #debug("""Field {self.field} not in fields""")
             ret =emptyGen
         return ret
             
-    def _applyTag(self, tag, *args, **kwargs):
+    def _applyTag(self, *args, **kwargs):
         typ = "type:" if self.typ else ""
         cloze = "cloze:" if self.typ else ""
-        t = NavigableString(f"""{{{{{typ}{cloze}{self.field}}}}}""")
-        tag.append(t)
+        return NavigableString(f"""{{{{{typ}{cloze}{self.field}}}}}""")
 
 addTypeToGenerator(set, Field)
+frontside = Field("FrontSide", special = True)
+tags = Field("Tags", special = True)
+typ = Field("Type", special = True)
+deck = Field("Deck", special = True)
+card = Field("Card", special = True)
 
 

@@ -14,12 +14,12 @@ def endDebug():
     print("Debug ended")
     
 indentation = 0
-def debug(text, indentToAdd=0):
-    if not shouldDebug:
+def debug(text, indentToAdd=0, force = False, level =1):
+    if not shouldDebug and not force:
         return
     global indentation
-    glob = stack()[1].frame.f_globals
-    loc = stack()[1].frame.f_locals
+    glob = stack()[level].frame.f_globals
+    loc = stack()[level].frame.f_locals
     text = eval(f"""f"{text}" """,glob,loc)
     indentToPrint = indentation
     t = " "*indentToPrint
@@ -34,13 +34,26 @@ def debug(text, indentToAdd=0):
         indentToPrint +=indentToAdd
         print((" "*indentToPrint)+">}")
 
+nbInsideThis = 0
+def debugInsideThisMethod(fun):
+    def aux_debugInsideThisMethod(*args, **kwargs):
+        global nbInsideThis
+        startDebug()
+        nbInsideThis+=1
+        ret = fun(*args, **kwargs)
+        nbInsideThis -=1
+        if nbInsideThis ==0:
+            endDebug()
+        return ret
+    return aux_debugInsideThisMethod
 
-
+def debugOnlyThisMethod(fun):
+    return debugFun(fun, (lambda text,indentToAdd = 0: debug(text, indentToAdd, force = True, level=2)))
 
 def assertEqual(left, right):
     if left == right:
         return True
-    print(f"""\n\nReceived\n{left}\nwhich is distinct from expected\n{right}\n.""")
+    print(f"""\n\nReceived\n«{left}»\nwhich is distinct from expected\n«{right}»\n""")
     return False
 
 # def assertEqualString(left, right):
@@ -67,10 +80,11 @@ def assertType(element,types):
     return False
 
 
-def debugFun(fun):
+def debugFun(fun, debug=debug):
     if not mayDebug:
         return fun
     def aux_debugFun(*args, **kwargs):
+        nonlocal debug
         t = f"{fun.__qualname__}("
         first = False
         def comma(text):

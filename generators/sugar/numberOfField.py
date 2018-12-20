@@ -17,11 +17,12 @@ class AtLeastNField(SingleChild, NotNormal):
     <table>.
     """
     @debugInit
-    def __init__(self, child, fields, n=1):
+    def __init__(self, child, fields, otherwise = None, n=1):
         self.child = child
         super().__init__(child)
+        self.otherwise = otherwise
         self.n = n
-        self.fields = fields
+        self.setOfRequiredFields = fields
         if n> len(fields):
             self.setState(EMPTY)
         
@@ -33,15 +34,17 @@ class AtLeastNField(SingleChild, NotNormal):
     def _getNormalForm(self):
         if self.n == 0:
             return self.child.getNormalForm()
-        if not self.fields:
-            return emptyGen
-        element = self.fields[-1]
-        remaining = self.fields[:-1]
+        if not self.setOfRequiredFields:
+            return self.otherwise
+        element = self.setOfRequiredFields[-1]
+        remaining = self.setOfRequiredFields[:-1]
         filledCase = AtLeastNField(child = self.child,
                                    fields = remaining,
+                                   otherwise = self.otherwise,
                                    n = self.n-1)
         emptyCase = AtLeastNField(child = self.child,
                                   fields = remaining,
+                                  otherwise = self.otherwise,
                                   n = self.n)
         dichotomy = FilledOrEmpty(element,
                                   filledCase = filledCase,

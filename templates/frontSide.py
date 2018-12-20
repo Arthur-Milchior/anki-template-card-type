@@ -9,6 +9,7 @@ from ..debug import debug
 def compile_(tag, soup = None, FrontSoup = None, FrontHtml = None,  **kwargs):
     assert FrontSoup is None or FrontHtml is None
     assert FrontSoup is not None or FrontHtml is not None
+    assert tag is not None
     if FrontHtml is not None:
         FrontSoup = soupFromTemplate(FrontHtml)
     #debug("""frontSide.compile_("{tag}","{FrontSoup}")""",1)
@@ -16,7 +17,7 @@ def compile_(tag, soup = None, FrontSoup = None, FrontHtml = None,  **kwargs):
     newFrontSoup = copy(FrontSoup)
     templateCompile(newFrontSoup, soup = FrontSoup, **kwargs)
     #debug("""newFrontSoup is "{newFrontSoup}" """)
-    tag.contents = newFrontSoup.enclose.contents
+    tag.contents = newFrontSoup.contents
     #debug("""tag becomes "{tag}" """)
     #newText = tagContent(tag.name, tag.attrs, text)
     #debug("",-1)

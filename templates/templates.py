@@ -54,7 +54,7 @@ def compile_(tag, soup, **kwargs):
     for tag_ in tagsToEdit(tag):
         #debug("found {tag_} to compile",+1)
         tag_.contents = []
-        getModule(tag_).compile_(tag_, soup, **kwargs)
+        getModule(tag_).compile_(tag = tag_, soup = soup, **kwargs)
         #debug("",-1)
     #debug("",-1)
 

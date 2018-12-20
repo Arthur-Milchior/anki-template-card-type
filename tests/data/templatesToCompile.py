@@ -53,147 +53,178 @@ htmlAnswerCompiled = """<span template="Front Side">
   :
   {{Question}}
   {{/Question}}
+  <br/>
  </span>
 </span>"""
 
 
-definition1TemplateList ="""<span asked="Definition1" name='ListElement([DecoratedField("Definition1"),DecoratedField("Definition2")])' template="eval"/>"""
-definition1QuestionList ="""<span asked="Definition1" name='ListElement([DecoratedField("Definition1"),DecoratedField("Definition2")])' template="eval">
- {{#Definition1}}
- Definition1
+definitionTemplateList ="""<span asked="Definition" name='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval"/>"""
+definitionQuestionList ="""<span asked="Definition" name='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval">
+ {{#Definition}}
+ Definition
  :
  ???
- {{/Definition1}}
+ {{/Definition}}
+  <br/>
  {{#Definition2}}
  Definition2
  :
  {{Definition2}}
  {{/Definition2}}
+  <br/>
 </span>"""
-definition1AnswerList ="""<span template="Front Side">
- <span asked="Definition1" name='ListElement([DecoratedField("Definition1"),DecoratedField("Definition2")])' template="eval">
-  {{#Definition1}}
-  Definition1
+definitionAnswerList ="""<span template="Front Side">
+ <span asked="Definition" name='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval">
+  {{#Definition}}
+  Definition
   :
-  {{Definition1}}
-  {{/Definition1}}
+  {{Definition}}
+  {{/Definition}}
+  <br/>
   {{#Definition2}}
   Definition2
   :
   {{Definition2}}
   {{/Definition2}}
+  <br/>
  </span>
 </span>"""
 
-definition1TemplateEasy ="""<span asked="Definition1" name="TwoDefsEasy" template="eval"/>"""
-definition1QuestionEasy ="""<span asked="Definition1" name="TwoDefsEasy" template="eval">
- {{#Definition1}}
- Definition1
+definitionTemplateEasy ="""<span asked="Definition" name="TwoDefsEasy" template="eval"/>"""
+definitionQuestionEasy ="""<span asked="Definition" name="TwoDefsEasy" template="eval">
+ {{#Definition}}
+ Definition
  :
  ???
- {{/Definition1}}
+ {{/Definition}}
+  <br/>
  {{#Definition2}}
  Definition2
  :
  {{Definition2}}
  {{/Definition2}}
+  <br/>
 </span>"""
-definition1AnswerEasy ="""<span template="Front Side">
- <span asked="Definition1" name="TwoDefsEasy" template="eval">
-  {{#Definition1}}
-  Definition1
+definitionAnswerEasy ="""<span template="Front Side">
+ <span asked="Definition" name="TwoDefsEasy" template="eval">
+  {{#Definition}}
+  Definition
   :
-  {{Definition1}}
-  {{/Definition1}}
+  {{Definition}}
+  {{/Definition}}
+  <br/>
   {{#Definition2}}
   Definition2
   :
   {{Definition2}}
   {{/Definition2}}
+  <br/>
  </span>
 </span>"""
 
-definition1TemplateTable ="""<span asked="Definition1" name="TableFields(['Definition1', 'Definition2'])" template="eval"/>"""
-definition1QuestionTable ="""<span asked="Definition1" name="TableFields(['Definition1', 'Definition2'])" template="eval">
- {{#Definition1}}
- Definition1
- :
- ???
- {{/Definition1}}
- {{#Definition2}}
- Definition2
- :
- {{Definition2}}
- {{/Definition2}}
-</span>"""
-definition1AnswerTable ="""<span template="Front Side">
- <span asked="Definition1" name="TableFields(['Definition1', 'Definition2'])" template="eval">
-  {{#Definition1}}
-  Definition1
-  :
-  {{Definition1}}
-  {{/Definition1}}
+definitionTemplateTable ="""<span asked="Definition" name="TableFields(['Definition', 'Definition2'])" template="eval"/>"""
+definitionQuestionTable ="""<span asked="Definition" name="TableFields(['Definition', 'Definition2'])" template="eval">
+ <table>
+  {{#Definition}}
+  <tr>
+   <td>
+    Definition
+   </td>   <td>
+    ???
+   </td>
+  </tr>  {{/Definition}}
   {{#Definition2}}
-  Definition2
-  :
-  {{Definition2}}
-  {{/Definition2}}
+  <tr>
+   <td>
+    Definition2
+   </td>   <td>
+    {{Definition2}}
+   </td>
+  </tr>  {{/Definition2}}
+ </table>
+</span>"""
+definitionAnswerTable ="""<span template="Front Side">
+ <span asked="Definition" name="TableFields(['Definition', 'Definition2'])" template="eval">
+  <table>
+   {{#Definition}}
+   <tr>
+    <td>
+     Definition
+    </td>    <td>
+     {{Definition}}
+    </td>
+   </tr>   {{/Definition}}
+   {{#Definition2}}
+   <tr>
+    <td>
+     Definition2
+    </td>    <td>
+     {{Definition2}}
+    </td>
+   </tr>   {{/Definition2}}
+  </table>
  </span>
 </span>"""
 
-definition1TemplateMiddle ="""<span asked="Definition1" name="TwoDefsMiddle" template="eval"/>"""
-definition1QuestionMiddle ="""<span asked="Definition1" name="TwoDefsMiddle" template="eval">
- {{#Definition1}}
- Definition1
- :
- ???
- {{/Definition1}}
- {{#Definition2}}
- Definition2
- :
- {{Definition2}}
- {{/Definition2}}
-</span>"""
-definition1AnswerMiddle ="""<span template="Front Side">
- <span asked="Definition1" name="TwoDefsMiddle" template="eval">
-  {{#Definition1}}
-  Definition1
-  :
-  {{Definition1}}
-  {{/Definition1}}
-  {{#Definition2}}
-  Definition2
-  :
-  {{Definition2}}
-  {{/Definition2}}
- </span>
-</span>"""
+# definitionTemplateMiddle ="""<span asked="Definition" name="TwoDefsMiddle" template="eval"/>"""
+# definitionQuestionMiddle ="""<span asked="Definition" name="TwoDefsMiddle" template="eval">
+#  {{#Definition}}
+#  Definition
+#  :
+#  ???
+#  {{/Definition}}
+#  {{#Definition2}}
+#  Definition2
+#  :
+#  {{Definition2}}
+#  {{/Definition2}}
+# </span>"""
+# definitionAnswerMiddle ="""<span template="Front Side">
+#  <span asked="Definition" name="TwoDefsMiddle" template="eval">
+#   {{#Definition}}
+#   Definition
+#   :
+#   {{Definition}}
+#   {{/Definition}}
+#   {{#Definition2}}
+#   Definition2
+#   :
+#   {{Definition2}}
+#   {{/Definition2}}
+#  </span>
+# </span>"""
 
-definition1TemplateHard ="""<span asked="Definition1" name="TwoDefsHard" template="eval"/>"""
-definition1QuestionHard ="""<span asked="Definition1" name="TwoDefsHard" template="eval">
- {{#Definition1}}
- Definition1
+definitionTemplateHard ="""<span asked="Definition" name="TwoDefsHard" template="eval"/>"""
+definitionQuestionHard ="""<span asked="Definition" name="TwoDefsHard" template="eval">
+ Definitions
  :
- ???
- {{/Definition1}}
- {{#Definition2}}
- Definition2
- :
- {{Definition2}}
- {{/Definition2}}
+ <ul>
+  <li>
+   {{#Definition}}
+   ???
+   {{/Definition}}
+  </li>  <li>
+   {{#Definition2}}
+   {{Definition2}}
+   {{/Definition2}}
+  </li>
+ </ul>
 </span>"""
-definition1AnswerHard ="""<span template="Front Side">
- <span asked="Definition1" name="TwoDefsHard" template="eval">
-  {{#Definition1}}
-  Definition1
+definitionAnswerHard ="""<span template="Front Side">
+ <span asked="Definition" name="TwoDefsHard" template="eval">
+  Definitions
   :
-  {{Definition1}}
-  {{/Definition1}}
-  {{#Definition2}}
-  Definition2
-  :
-  {{Definition2}}
-  {{/Definition2}}
+  <ul>
+   <li>
+    {{#Definition}}
+    {{Definition}}
+    {{/Definition}}
+   </li>   <li>
+    {{#Definition2}}
+    {{Definition2}}
+    {{/Definition2}}
+   </li>
+  </ul>
  </span>
 </span>"""
 

@@ -22,7 +22,7 @@ class Step:
             WITHOUT_REDUNDANCY: QUESTION_ANSWER,
             QUESTION_ANSWER: MODEL_APPLIED,
             MODEL_APPLIED: TEMPLATE_APPLIED,
-            TEMPLATE_APPLIED: SOUP,
+            TEMPLATE_APPLIED: TAG,
         }.get(self)
         if ret is None:
             raise ExceptionInverse(f"""Next step of {self} does not exists.""")
@@ -38,7 +38,7 @@ class Step:
             QUESTION_ANSWER: WITHOUT_REDUNDANCY,
             MODEL_APPLIED: QUESTION_ANSWER,
             TEMPLATE_APPLIED: MODEL_APPLIED,
-            SOUP: TEMPLATE_APPLIED,
+            TAG: TEMPLATE_APPLIED,
         }.get(step)
         if ret is None:
             raise ExceptionInverse(f"""Previous step of {step} does not exists.""")
@@ -58,5 +58,5 @@ WITHOUT_REDUNDANCY = Step(2, "WITHOUT_REDUNDANCY")
 QUESTION_ANSWER = Step(3, "QUESTION_ANSWER")
 MODEL_APPLIED = Step(4, "MODEL_APPLIED")
 TEMPLATE_APPLIED = Step(5, "TEMPLATE_APPLIED")
-SOUP = Step(6, "SOUP")#used for debugging
+TAG = Step(6, "TAG")#used for debugging
 EMPTY = Step(10, "EMPTY")

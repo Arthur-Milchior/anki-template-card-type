@@ -2,15 +2,33 @@
     "instructions":[
         ["definitions","NumberedFields(\"definition\", 16)"],
 
-        ["head","[DecoratedField('variables',suffix=br), DecoratedField('context', suffix = br)]"],
+        ["head","[contextOrDeck,('Variables', [{{'Variables'}}, hr] )]"],
+        ["namesNotationsDenotedBy", "[('Name',[PotentiallyNumberedFields('Name',4),br]),
+('Notation',[PotentiallyNumberedFields('Notation',4),br]),
+DecoratedField('Representation'),
+DecoratedField('Denoted by')
+]"]
 
-        ["front", "DecoratedField('Front')"],
-
-        ["extendedHead", "[\"head\", \"DecoratedField('assuming',suffix=br)\", \"namesNotationsDenotedBy\"]"],
-        ["test", "'test'"],
+        ["extendedHead", "[head, ('Assuming',[{{'Assuming'}},br]), namesNotationsDenotedBy]"],
         
+
+
+        
+        ["contextOrDeck", "[FilledOrEmpty('Context', Field('Context'),deck), hr]"],
         ["footer",
-         "[\"EmptyField('context','{{deck}}')\",\n\"Answer(ListFields(['chapter', 'section', 'kind', 'index', 'page'], globalPrefix ='<br/>', localSeparator = '', globalSeparator = ', '))\"]"
-        ]       
+         "[Filled('Extra', Field('Extra')), hr]"
+        ]
+
+
+
+        ["StructureName",
+         "FilledOrEmpty('sum',
+FilledOrEmpty('identity',
+,
+
+
+)"
+
+        ]
     ]
 }

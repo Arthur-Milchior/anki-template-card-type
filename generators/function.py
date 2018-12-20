@@ -35,8 +35,8 @@ class Function(Gen):
         return value.callOnChildren(*args, **kwargs)
 
     @debugFun
-    def _applyTag(self, tag, soup):
-        self.getValue().applyTag(tag, soup)
+    def _applyTag(self, soup):
+        return self.getValue().applyTag(soup)
         
     @debugFun
     def getState(self):

@@ -1,5 +1,6 @@
+import bs4
 from .data.models import *
-from ..debug import assertEqual
+from ..debug import assertEqual, debugOnlyThisMethod
 from ..generators.constants import *
 from ..generators.generators import modelToFields
 from ..templates.soupAndHtml import soupFromTemplate, templateFromSoup
@@ -22,7 +23,8 @@ class TestHTML:
             assert self.numberOfTagToEdit == len(tagsToEdit(soup))
         #debug("""TestHTML: kwargs is {self.kwargs}""")
         compile_(soup, soup = soup, model = model, **self.kwargs)
-        assert assertEqual(self.compiled, templateFromSoup(soup, prettify = True))
+        assert assertEqual(templateFromSoup(soup, prettify = True),self.compiled)
+
 
 def testEachStep(gen,
                  goal = None,
@@ -30,30 +32,37 @@ def testEachStep(gen,
                  isQuestion = True,
                  asked = frozenset({"Definition"}),
                  hide = frozenset(),
+                 mandatory = frozenset(),
                  toPrint = False,
                  html = ""):
+    """Main interest is changing the default value for ones useful for the test"""
     fields = modelToFields(model)
     soup = soupFromTemplate(html)
-    tag = soup.enclose
-    return gen.compile(tag = tag,
-                soup = soup,
-                goal = goal,
-                fields = fields,
-                isQuestion = isQuestion,
-                asked = asked,
-                hide = hide,
-                toPrint = toPrint
+    return gen.compile(
+        soup = soup,
+        goal = goal,
+        fields = fields,
+        isQuestion = isQuestion,
+        asked = asked,
+        mandatory = mandatory,
+        hide = hide,
+        toPrint = toPrint
     )
 
 def prettifyGen(*args, **kwargs):
     soup = genToSoup(*args, **kwargs)
-    prettified = templateFromSoup(soup)
-    return prettified
+    return templateFromSoup(soup)
  
 def compileGen(*args, goal = TEMPLATE_APPLIED, **kwargs):
     return testEachStep(*args, goal = goal, **kwargs)
  
+def genToTags(*args, **kwargs):
+    return genToSoup(goal = TAG, *args, **kwargs)
+
+
 def genToSoup(*args, **kwargs):
-    return testEachStep(goal = SOUP, *args, **kwargs)
+    bs = bs4.BeautifulSoup("", "html.parser")
+    bs.contents = testEachStep(goal = TAG, *args, **kwargs)
+    return bs
 
  
