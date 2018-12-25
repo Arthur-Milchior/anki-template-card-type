@@ -157,6 +157,23 @@ the three generators compiles as the empty string.
 
 ### MultipleRequirement
 This is a generator used to add multiple requirements simultaneously.
+The generator ```MultipleRequirement(child = gen, requirement1 =
+...)``` gen if each requirements are filled. Otherwise as empty
+string. The requirements may be isQuestion (true or false). And sets
+of fields/name which must satisfy some properties. Those names are
+given in arguments requireFilled, requireEmpty, requireInModel,
+requireAbsentOfModel, requireAsked, requireNotAsked.
+
+### Branch
+In my template, there is a recurring case. Some part of the code have
+most of the time a fixed value. But it also have a value for the
+question side when some name is asked, and also a value for the answer
+side when the name is asked. 
+
+A Branch allow to give a default value. A value for question/answer
+side, or for asked/not asked side, and to override this default value
+only when some conditions are met. 
+
 
 
 ## Syntax

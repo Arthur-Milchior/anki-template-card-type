@@ -1,15 +1,5 @@
-from ...debug import ExceptionInverse, debug, debugFun
-from ..leaf import emptyGen
-from ..constants import *
-from ..list import MultipleChildren, ListElement
-from ..singleChild import Question, Answer, SingleChild, Filled, Empty, Present, Absent, Asked, NotAsked
-from .sugar import NotNormal
 from ...utils import firstTruth
-import sys
-
-
-
-
+from .askedOrNot import AskedOrNot
 class Branch(AskedOrNot):
     """The class which expands differently in function of the question/hidden value.
 
@@ -19,6 +9,7 @@ class Branch(AskedOrNot):
 
     def __init__(self,
                  name = None,
+                 
                  default = None,
                  question = None,
                  answerAsked = None,
@@ -28,6 +19,7 @@ class Branch(AskedOrNot):
                  notAsked = None,
                  questionAsked = None,
                  questionNotAsked = None,
+                 
                  children = dict(),
                  **kwargs):
         """

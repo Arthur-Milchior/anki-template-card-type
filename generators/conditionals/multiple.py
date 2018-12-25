@@ -18,6 +18,7 @@ class MultipleRequirement(SingleChild, NotNormal):
                  requireAbsentOfModel = None,
                  requireAsked = None,
                  requireNotAsked = None,
+                 isQuestion = None,
                  
                  state = BASIC,
                  **kwargs):
@@ -27,7 +28,8 @@ class MultipleRequirement(SingleChild, NotNormal):
                              ("requireInModel", requireInModel),
                              ("requireAsked", requireAsked),
                              ("requireNotAsked", requireNotAsked),
-                             ("requireAbsentOfModel", requireAbsentOfModel)]:
+                             ("requireAbsentOfModel", requireAbsentOfModel),
+        ]:
             default = frozenset()
             fun = frozenset
             if param is not None:
@@ -36,6 +38,10 @@ class MultipleRequirement(SingleChild, NotNormal):
                 self.requirements[name] = fun(requirements.get(name,default))
             else:
                 self.requirements[name] = default
+        if  requirements is not None
+            self.requirements["isQuestion"]= requirements ["isQuestion"]
+        else:
+            self.requirements["isQuestion"] = isQuestion
         inconsistent = self.isInconsistent()
         if inconsistent:
             print("Inconsistent requirements.",file=sys.stderr)
@@ -59,7 +65,11 @@ class MultipleRequirement(SingleChild, NotNormal):
                 debug("    Considering field {field}")
                 current = gen(field = field, child = current)
                 debug("    current now is {current}")
-
+        if self.requirements["isQuestion"] is True:
+            current = Question(current)
+        if self.requirements["isQuestion"] is False:
+            current = answer(current)
+                
         return current.getNormalForm()
     
     def __eq__(self,other):
@@ -67,7 +77,7 @@ class MultipleRequirement(SingleChild, NotNormal):
     
     def isInconsistent(self):
         #debug("""isInconsistent("{self}")""",1)
-        for left, right in [("requireFilled", "requireEmpty"), ("requireFilled", "requireAbsentOfModel"), ("requireInModel", "requireAbsentOfModel")]:
+        for left, right in [("requireFilled", "requireEmpty"), ("requireFilled", "requireAbsentOfModel"), ("requireInModel", "requireAbsentOfModel"), ("requireAsked","requireNotAsked")]:
             intersection = self.requirements[left] & self.requirements[right]
             #debug("""Computing intersection of {left} and {right}, ie. "{self.requirements["requireFilled"]}" & "{self.requirements["requireEmpty"]}".""")
             if intersection:
