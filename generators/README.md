@@ -1,99 +1,174 @@
-# Generator 
+This document consider the use of generators in your code. To learn
+more about the creation of new generators, go read
+[https://github.com/Arthur-Milchior/anki-template-card-type/blob/master/generators/INTERNALS.md].
+
+# Generators
 A generator is a template for template. It is a «language» used to
 create anki's card type efficiently. This language is based on Python.
 
-## States
-An object of class Generator may have many states. 
-* Normalized: this means that the object is composed only of core
-  elements. Those elements will be described below. 
-* toKeep: if this object appear, alone, in a list, should the list be
-  kept ? For example, an HTML list may be encoded as a list with
-  "<ul>", the elements and "</ul>". If there are no elements, the <ul>
-  should not be kept.
-* unRedundated: whethere the generator contains redundant (or
-  contradictory) informations. For example
-  {{#foo}}{{#foo}}bar{{/foo}}plop{{/foo}} is redundant and
-  {{#foo}}{{^foo}}bar{{/foo}}plop{{/foo}} is contradictory. The
-  unredundated version would be {{#foo}}barplop{{/foo}} and
-  {{#foo}}plop{{/foo}} respectively. Only normal element may be
-  unredundated, it is not possible to test redundancy in non-core elements.
-* empty: whether this generator may actually show any content in some
-  case. Empty, an empty list, etc... are empty. Those generator should
-  be discarded when they are used to create other generators.
+## Leaves
+The leaves are generators which does not recursively contains other
+generators. 
 
-## Process
-The intended process to transform the input generator into anki's
-template is as follows:
-* normalize the generator. This translate syntactic sugar into the
-  core elements. This is done by self.getNormalForm().
-* remove redundancies and contradictions. This allow to obtain a
-  smaller generator, and win time in latter process. This is done
-  using self.getUnRedundate()
-* take the model into account. That is, remove everything which is
-  related to fields which does not exists in this particular
-  model. This is similar to removing redundancies. Those are two
-  separate steps because redundancies a generator may be used in
-  multiple model. Thus, the part of the job which is not specific to a
-  model may be done a single time. This is done using
-  self.restrictToModel(model,fields = None).
-* Computing question/answer side, using self.questionOrAnswer
-* taking into account whether it is
-  question or answer side, what is asked, and what should be
-  hidden. This can be done using self.template(asked,hide)
-* finally adding the content to some xml using ._udpateTag
+The  HTML generator is omitted. While it may have no child, it will
+still be considered in a section for itself alone.
+
+### Empty
+This  generator represents the absence of any information. 
+
+None can be used instead of Empty.
+
+### Literal
+The generator ```Literal(foo)```represents the string foo. It is
+always compiled as this string. 
+
+A standard Python string can be used instead of this generator.
+
+### Field
+The generator ```Field(foo)```represents the field {{foo}}. It is
+compiled as this field if it is present in the model, otherwise as the
+empty string. 
+
+The Python expression ```{{"foo"}}``` (i.e. a set containing a set
+containing the string "foo") can be used instead of this generator.
+
+### Function
+The generator ```Function(foo)``` contains a function foo. The
+compilation of this generator consists into evaluating the function,
+transforming the result into a generator, and compiling this
+generator. The function is evaluated only once, its result is saved
+for further evaluation.
+
+This as many purposes. It allow to delay the evaluation of a generator
+which could not be computed immediatly. If the computation is costly,
+it ensures that it is done only if the value is required. And
+furthermore, that it is done only once (this is called memoization).
+
+## HTML
+The generator ```HTML(tag, atom = False, attrs={}, child=None)``` is
+interpreted as ```<tag attr_1=value_1
+... attr_n=value_n>child</tag>```, with  ```attr_i=value_i``` being
+given according to the dictionnary attrs. 
+
+In the case where there is no child, such as the tags IMG, BR, etc...,
+atom should be set to True, to state that the tag should be kept even
+when its content is empty.
+
+A number of standard HTML tags are already created, and ready to use:
+* br and hr
+* Image(url)
+* Table(content, trAttrs= {}, tdAttrs = {}, attrs= {}), where content is a two
+  dimensional array, trAttrs are the attributes for tr lines, tdAttrs
+  are attribute for td cells, and attrs are attributes for the whole
+  table.
+* SPAN(child, attrs = {}) is similar to HTML("span", child,
+  attrs). And similarly for LI, DIV, P, TR and TD. That is, they are
+  constructors with the name of the tag fixed.
+* OL(elements, liAttrs = {}, attrs = {}) is an ordered list, where
+  each element of elements is a child, enclosed in a LI tag with
+  attributes liAttrs. Similarly
+  for UL(elements, attrs = {}).
   
-## Generators
-### Core
+## List
+The generator ```ListElement([gen_1,...,gen_n])``` represents a list of
+generators ```gen_1``` to ```gen_n```. This means that, the result of
+the compilation of this generator consists in appending the result of
+the concatenation of each of its generators. 
 
-Generators's core is based on a few basic construct. They are the only
-generator on which the above mentionned process can be applied. They
-are composed of:
+The Python expresion ```[gen_1,...,gen_n]``` can be used insted of the generator.
 
-* Empty : which is a generator representing the absence of any information. None can be used instead of Empty.
-* Literal(foo) : this represents the string foo. A string can be used instead of this generator.
-Field(foo) : this represents a field of a note type. Field(foo) is almost equivalent to the literal "{{foo}}", unless foo is not a field of the note's type or unless this generator appear in {{^foo}}...{{/foo}}.
-* ListElement(foo) : A list of generators, printed one after the other. Empty generators are rempoved from this list. Can be represented as a python list of generators.
-* Requirement(foo, ...) : this represents the fact that foo (a generator) should be seen only if some conditions are satisfied. Some fields may be required to be/not to be in the note type's list of field. Some fields may be required to have/not to have content. And the order to delete some generators below may also be given. There is no syntactic sugar for this.
-* Branch(name,...) : The printed content of this generator depends on whether it's the question side or answer side, and on whether name belong to the set of asked elements. It can also be deleted if a Requirement above it requests it.
-* HTML(tag, child, params={}): either "<tag param_1=value_1
-  ... param_n=value_n>child</tag>", with param_i=value_i being given
-  according to the dictionnary params. Or if child is None: then "<tag param_1=value_1
-  ... param_n=value_n/>". This is not exactly similar to Literal, because it generate a
-  beautiful soup tag. 
+If a generator is empty, it is removed from the list. If the list is
+empty, the generator itself is considered to be empty. Furthermore, if
+for each generator, gen.getToKeep() returns False, then the list is
+considered to be empty.
 
-### None core generators
 
-Those are syntactic sugar, which may be used for creating templates
-more easily. There are currently three kinds of syntactic sugar.
+## Conditionals
+In this section, we see generators used to print different
+informations depending on some conditions. Those condition may be
+whether its question or answer side. Whether a field is present or not
+in the model. Whether a field is filled or empty. Whether a name is
+asked or not.
 
-#### HTML
-it is not clear to me whether HTML will ever be usefull, as the HTML
-cases can be directly created as literal. In doubt, I created it.
+The basic conditional only assert that: "if condition COND is filled,
+print that". It also have a dicotomy version, of the kind "if
+condition COND is filled, print this, else, print that".
 
-Some praticular classes and values are created for the sake of
-simplicity, br, hr, Image(url), SPAN(child), DIV(child), P(child) and
-finally Table(content, trParams, tdParams), with contents being an
-array (list of list) with the content of the table.
-  
-Html's default's toKeep's holds if either there is no child, or the
-child should not be keep. The same rules applies in order to know
-whether it's empty.
-#### Conditionals
-Conditionals are generator to test some cases which may occur
-often. Those conditionals should be easier to use than Requirement
-and Branch.
+Finally, we'll introduce more complex conditionals.
 
-* AtLeastOne(child,fields): print the child if at least one of the
-  fields have some content. Note that the child is printed as many
-  time as there are fields, so this may lead to a long text.
-* FilledOrEmpty(field,filledCase, emptyCase): show filledCase if field
-  has some content, emptyCase otherwise. 
-* PresentOrAbsent(field, presentCase, absentCase): show presentCase if
-  field is present in the note type, absentCase otherwise. Thus, only
-  one of them is actually printed in a template.
-* Fielled(field,child), Empty(field,child), Present(field,child),
-  Absent(field,child): show child only if field satisfy the condition
-* QuestionOrAnswer(field,questionSide, answerSide)
+### Question or Answer
+The generators ```Question(gen)``` and ```Answer(gen)``` compile as
+gen on templates on the question (respectively, answer) side. On the
+other side, the compile as the empty string.
+
+The generator ```QuestionOrAnswer(gen1,gen2)``` compiles as gen1 on
+the question side and gen2 on the answer side.
+
+### Present or Absent
+The generators ```Present(field,gen)``` and ```Absent(field, gen)```
+compile as gen when the field ```field``` is present in the model,
+(respectively, absent from the model). Otherwise, it compiles as the
+empty string.
+
+The generator ```PresentOrAbsent(field, gen1,gen2)``` compiles as gen1
+if the field ```field``` is present in the model, otherwise as gen2.
+
+### Filled or Empty
+The generators ```Filled(field,gen)``` and ```Empty(field, gen)```
+show the result of compiling gen if the field ```field``` is filled,
+(respectively, empty). That is, they compile as ```{{#field}}result of
+compiling gen{{/field}}``` and as ```{{^field}}result of compiling
+gen{{/field}}``` respectively. Note that, in anki
+both 
+```
+{{#field}}{{#field}} ... {{/field}}{{/field}}
+``` 
+and 
+```
+{{#field}}{{^field}} ... {{/field}}{{/field}}
+``` 
+are invalid template. You don't have to take care about those
+redundancy/contradiction with generators. They take care of always
+writting correct template (assuming you never write conditionals {{#
+or {{^ yourself.
+
+
+The generator ```FilledOrEmpty(field, gen1,gen2)``` shows the result
+of the compilation of gen1 if the field ```field``` is filled and
+otherwise the result of the compilation of gen2. That is, it compiles
+as ```{{#field}}result of compiling gen1{{/field}}{{^field}}result of
+compiling gen2{{/field}}```.
+
+If the field ```field``` is absent from the model, then it is
+considered to be empty.
+
+### Asked or not
+The generator ```Asked("name",gen)``` (resp, ```NotAsked("name",gen)```)
+compiles as ```gen``` if "name" is marked as "asked" in the template
+(respectively, is not marked as asked). 
+
+AskedOrNot("name", gen1,gen2) is compiled similarly to gen1 if "name"
+is marked as asked in the template, otherwise as gen2. This is the
+only kind of conditionals which allow to make change between two cards
+using the same generators.
+
+Furthermore, if "name" is asked to be "hidden" in the template, then
+the three generators compiles as the empty string.
+
+### MultipleRequirement
+This is a generator used to add multiple requirements simultaneously.
+
+
+## Syntax
+This is a set generators used to allow to had syntax.
+
+The generator ```Parenthesis(gen)``` compiles as ```gen```, with
+parenthesis around them. Similarly, ```Parenthesis(gen, left = l,
+right = r)``` is an abbreviation for the list [l, gen, r].
+
+
+########################################
+
 
 #### Questions
 Hopefully, this should correspond to most standard way of asking
@@ -149,7 +224,6 @@ The arguments are:
   present. (Avoid, as it will generate a texte whose size is the
   product of the separator, and the square of the number of
   question. Use local prefix/suffix instead)
-        
 
 #### NumberedFields(field, number)
 This is a special case of ListFields, where each field name is of the

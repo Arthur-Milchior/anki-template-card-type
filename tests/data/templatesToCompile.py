@@ -8,22 +8,22 @@ noTemplateHtml = """<p>
  foo2
 </p>"""
 
-htmlTestObject = """<span name="test" template="conf">
+htmlTestObject = """<span generator="test" template="conf">
  foo4
 </span>"""
-htmlTestObjectCompiled = """<span name="test" template="conf">
+htmlTestObjectCompiled = """<span generator="test" template="conf">
  test
 </span>"""
 
-htmlBarObject = """<span name="bar" template="conf">
+htmlBarObject = """<span generator="bar" template="conf">
  foo5
 </span>"""
-htmlBarObjectCompiled = """<span name="bar" objectabsent="bar" template="conf">
+htmlBarObjectCompiled = """<span generator="bar" objectabsent="bar" template="conf">
 </span>"""
 
-htmlFooObject = """<span name="foo" template="conf">
+htmlFooObject = """<span generator="foo" template="conf">
 </span>"""
-htmlFooObjectCompiled = """<span name="foo" template="conf">
+htmlFooObjectCompiled = """<span generator="foo" template="conf">
  foo
  {{Question}}
 </span>"""
@@ -31,12 +31,12 @@ htmlFooObjectCompiled = """<span name="foo" template="conf">
 htmlFront = """<span template="Front Side">
 </span>"""
 htmlAnswerTestCompiled = """<span template="Front Side">
- <span name="test" template="conf">
+ <span generator="test" template="conf">
   test
  </span>
 </span>"""
-htmlQuestion = """<span asked="Question" name="Question" template="conf"/>"""
-htmlQuestionCompiled = """<span asked="Question" name="Question" template="conf">
+htmlQuestion = """<span asked="Question" generator="Question" template="conf"/>"""
+htmlQuestionCompiled = """<span asked="Question" generator="Question" template="conf">
  {{#Question}}
  Question
  :
@@ -47,7 +47,7 @@ htmlQuestionCompiled = """<span asked="Question" name="Question" template="conf"
 df =DecoratedField('Question')
 
 htmlAnswerCompiled = """<span template="Front Side">
- <span asked="Question" name="Question" template="conf">
+ <span asked="Question" generator="Question" template="conf">
   {{#Question}}
   Question
   :
@@ -58,8 +58,8 @@ htmlAnswerCompiled = """<span template="Front Side">
 </span>"""
 
 
-definitionTemplateList ="""<span asked="Definition" name='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval"/>"""
-definitionQuestionList ="""<span asked="Definition" name='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval">
+definitionTemplateList ="""<span asked="Definition" generator='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval"/>"""
+definitionQuestionList ="""<span asked="Definition" generator='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval">
  {{#Definition}}
  Definition
  :
@@ -74,7 +74,7 @@ definitionQuestionList ="""<span asked="Definition" name='ListElement([Decorated
   <br/>
 </span>"""
 definitionAnswerList ="""<span template="Front Side">
- <span asked="Definition" name='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval">
+ <span asked="Definition" generator='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval">
   {{#Definition}}
   Definition
   :
@@ -90,8 +90,8 @@ definitionAnswerList ="""<span template="Front Side">
  </span>
 </span>"""
 
-definitionTemplateEasy ="""<span asked="Definition" name="TwoDefsEasy" template="eval"/>"""
-definitionQuestionEasy ="""<span asked="Definition" name="TwoDefsEasy" template="eval">
+definitionTemplateEasy ="""<span asked="Definition" generator="TwoDefsEasy" template="eval"/>"""
+definitionQuestionEasy ="""<span asked="Definition" generator="TwoDefsEasy" template="eval">
  {{#Definition}}
  Definition
  :
@@ -106,7 +106,7 @@ definitionQuestionEasy ="""<span asked="Definition" name="TwoDefsEasy" template=
   <br/>
 </span>"""
 definitionAnswerEasy ="""<span template="Front Side">
- <span asked="Definition" name="TwoDefsEasy" template="eval">
+ <span asked="Definition" generator="TwoDefsEasy" template="eval">
   {{#Definition}}
   Definition
   :
@@ -122,8 +122,8 @@ definitionAnswerEasy ="""<span template="Front Side">
  </span>
 </span>"""
 
-definitionTemplateTable ="""<span asked="Definition" name="TableFields(['Definition', 'Definition2'])" template="eval"/>"""
-definitionQuestionTable ="""<span asked="Definition" name="TableFields(['Definition', 'Definition2'])" template="eval">
+definitionTemplateTable ="""<span asked="Definition" generator="TableFields(['Definition', 'Definition2'])" template="eval"/>"""
+definitionQuestionTable ="""<span asked="Definition" generator="TableFields(['Definition', 'Definition2'])" template="eval">
  <table>
   {{#Definition}}
   <tr>
@@ -144,7 +144,7 @@ definitionQuestionTable ="""<span asked="Definition" name="TableFields(['Definit
  </table>
 </span>"""
 definitionAnswerTable ="""<span template="Front Side">
- <span asked="Definition" name="TableFields(['Definition', 'Definition2'])" template="eval">
+ <span asked="Definition" generator="TableFields(['Definition', 'Definition2'])" template="eval">
   <table>
    {{#Definition}}
    <tr>
@@ -166,8 +166,8 @@ definitionAnswerTable ="""<span template="Front Side">
  </span>
 </span>"""
 
-# definitionTemplateMiddle ="""<span asked="Definition" name="TwoDefsMiddle" template="eval"/>"""
-# definitionQuestionMiddle ="""<span asked="Definition" name="TwoDefsMiddle" template="eval">
+# definitionTemplateMiddle ="""<span asked="Definition" generator="TwoDefsMiddle" template="eval"/>"""
+# definitionQuestionMiddle ="""<span asked="Definition" generator="TwoDefsMiddle" template="eval">
 #  {{#Definition}}
 #  Definition
 #  :
@@ -180,7 +180,7 @@ definitionAnswerTable ="""<span template="Front Side">
 #  {{/Definition2}}
 # </span>"""
 # definitionAnswerMiddle ="""<span template="Front Side">
-#  <span asked="Definition" name="TwoDefsMiddle" template="eval">
+#  <span asked="Definition" generator="TwoDefsMiddle" template="eval">
 #   {{#Definition}}
 #   Definition
 #   :
@@ -194,8 +194,8 @@ definitionAnswerTable ="""<span template="Front Side">
 #  </span>
 # </span>"""
 
-definitionTemplateHard ="""<span asked="Definition" name="TwoDefsHard" template="eval"/>"""
-definitionQuestionHard ="""<span asked="Definition" name="TwoDefsHard" template="eval">
+definitionTemplateHard ="""<span asked="Definition" generator="TwoDefsHard" template="eval"/>"""
+definitionQuestionHard ="""<span asked="Definition" generator="TwoDefsHard" template="eval">
  Definitions
  :
  <ul>
@@ -211,7 +211,7 @@ definitionQuestionHard ="""<span asked="Definition" name="TwoDefsHard" template=
  </ul>
 </span>"""
 definitionAnswerHard ="""<span template="Front Side">
- <span asked="Definition" name="TwoDefsHard" template="eval">
+ <span asked="Definition" generator="TwoDefsHard" template="eval">
   Definitions
   :
   <ul>

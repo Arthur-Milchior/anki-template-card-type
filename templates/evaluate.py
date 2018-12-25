@@ -18,11 +18,11 @@ def _tagGetParams(tag):
     """The information usefull to process an object template. """
     asked = split(tag.attrs.get("asked"))
     hide = split(tag.attrs.get("hide"))
-    objName = tag.attrs.get("name")
+    objGenerator = tag.attrs.get("generator")
     mandatory = split(tag.attrs.get("mandatory"))
-    if objName is None:
-        raise ExceptionInverse(f"""Name missing in {tag}.""")
-    ret = (objName, asked, hide, mandatory)
+    if objGenerator is None:
+        raise ExceptionInverse(f"""Generator missing in {tag}.""")
+    ret = (objGenerator, asked, hide, mandatory)
     return ret
 
 def tagGetParamsConfig(tag, objects):
@@ -30,16 +30,16 @@ def tagGetParamsConfig(tag, objects):
     Return everything required from the tag to add its object in it.
     The object is extracted from objects. None is returned otherwise. 
     
-    add objectabsent to tag if this name is absent from Objects.
-    Remove objectabsent if an object with this name is present
+    add objectabsent to tag if this generator is absent from Objects.
+    Remove objectabsent if an object with this generator is present
     """
-    (objName, asked, hide, mandatory) = _tagGetParams(tag)
+    (objGenerator, asked, hide, mandatory) = _tagGetParams(tag)
     assert asked is not None
     assert hide is not None
-    obj = objects.get(objName)
+    obj = objects.get(objGenerator)
     if obj is None:
-        #debug("""Adding "objectabsent ={objName}" to "{tag}".""",-1)
-        tag.attrs["objectabsent"] = objName
+        #debug("""Adding "objectabsent ={objGenerator}" to "{tag}".""",-1)
+        tag.attrs["objectabsent"] = objGenerator
         return None
     elif "objectAbsent" in tag.attrs:
         del tag.attrs["objectAbsent"]
@@ -51,11 +51,11 @@ def tagGetParamsEval(tag, objects):
     Return everything required from the tag to add its object in it.
     The object is evaluated, and python error may rise
     """
-    (objName, asked, hide, mandatory) = _tagGetParams(tag)
+    (objGenerator, asked, hide, mandatory) = _tagGetParams(tag)
     assert asked is not None
     assert hide is not None
-    #debug("objName is {objName}")
-    obj = ensureGen(evaluate(objName, objects = objects))
+    #debug("objGenerator is {objGenerator}")
+    obj = ensureGen(evaluate(objGenerator, objects = objects))
     ret = (obj, asked, hide, mandatory)
     return ret
 
@@ -72,7 +72,7 @@ def compile_(tag, soup, *, isQuestion = None, model = None, objects = None, inCo
     soup -- the soup containing the tag.
     isQuestion -- whether we want to generate question side or answer side.
     model -- the model in which it must be applied.
-    objects -- the dictionnary name->objects from the configuration file.
+    objects -- the dictionnary generator->objects from the configuration file.
     kwargs -- unused for this kind of template.
     inConfig -- whether object is in config. Otherwise this value must be evaluated.
     """
@@ -112,6 +112,6 @@ def clean(tag):
     if "objectAbsent" in templateTag.attrs:
         del templateTag.attrs["objectAbsent"]
 
-#mod = sys.modules[__name__]
+#mod = sys.modules[__generator__]
 Template(["eval", "evaluate"], compile_eval, clean)
 Template(["config","conf"], compile_config, clean)

@@ -112,19 +112,8 @@ class Gen:
     of self, with each child replaced by child.foo(). This method
     should be reimplemented in subclasses where this method should
     actually have an action.
-    
-    Each inheriting class must implement:
-    - clone(self, children), which create a copy of oneself, with new
-    children. 
-    - It must also implement _getChildren(self) returning the set of
-    children (not necessirily gen)
-    __hash__, __eq__, 
-    
-     - _repr: print the representation of this Gen, without indenting
-       it. Call child.repr to call children. You can use
-       genRepr(child, label = None) to print the parameter, prefixed
-       by «label =», if you want to print some parameters.
-    
+
+    To implement inheriting class, see INTERNALS.md, «new core» section
     """
     #@debugFun
     def __init__(self,
@@ -654,3 +643,24 @@ def genRepr(g, label = None):
     else:
         t+=repr(g)
     return t
+
+class MultipleChildren(Gen):
+    #@debugFun
+    def __init__(self, toKeep = None,  **kwargs):
+        super().__init__(**kwargs)
+        if toKeep is None:
+            allFalse = True
+            for element in self.getChildren():
+                shouldIt = shouldBeKept(element)
+                if shouldIt is True:
+                    toKeep = True
+                    allFalse = False
+                    break
+                if shouldIt is None:
+                    allFalse = None
+            if allFalse:
+                toKeep = False
+        if toKeep is True:
+            self.doKeep()
+        elif toKeep is False:
+            self.dontKeep()

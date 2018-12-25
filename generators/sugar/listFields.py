@@ -9,7 +9,7 @@ from ..html import HTML, LI
 from ..leaf import Field
 from .conditionals import FilledOrEmpty, AskedOrNot
 from .numberOfField import AtLeastOneField
-from ..multipleChildren import MultipleChildren
+from ..list import MultipleChildren
 from .conditionals import Branch
 
 @debugFun
@@ -53,9 +53,11 @@ class ListFields(NotNormal):
                  localFun = None,
                  globalSep = None,
                  globalFun = None,
+                 name = None,
                  toKeep = True,
                  **kwargs):
         self.originalFields = fields
+        self.name = name
         self.localFun = localFun or identity
         self.globalFun = globalFun or identity
         self.globalSep = globalSep or (lambda x:None)
@@ -79,8 +81,12 @@ class ListFields(NotNormal):
             if processedField is not None:
                 elements.append(processedField)
         elements.append(self.globalSep(seen))
-        globalApplied = self.globalFun(elements)
-        globalEnsured = ensureGen(globalApplied)
+        ret = self.globalFun(elements)
+        if self.name is not None:
+            ret = AskedOrNot("self.name",
+                             ret,
+                             QuestionOrAnswer(f"{self.name} ???", ret))
+        ret = self._ensureGen(ret)
         return globalEnsured.getNormalForm()
 
 class NamedListFields(AskedOrNot):
@@ -114,9 +120,11 @@ class NamedListFields(AskedOrNot):
     # def __repr__(self):
     #     return f"""ListFieldsTrigger({self.liestFields}, {self.listName}, {self.localFun}, {self.globalFun})"""
 
-class TableFields(ListFields):
+class TableFields(NotNormal):
     def __init__(self,
                  fields,
+                 *args,
+                 listName = None
                  **kwargs):
         self.tableFields = fields
         def localFun(field):
@@ -137,7 +145,12 @@ class TableFields(ListFields):
             ret=HTML(tag = "table", child = lines)
             debug("""TableFields.globalFun() returns {ret}""", -1)
             return ret
-        super().__init__(fields, localFun = localFun, globalFun = globalFun, **kwargs)
+
+    def getNormalForm(self):
+        if self.listName is None:
+            return ListFields(self.tableFields, localFun = localFun, globalFun = globalFun).getNormalForm()
+        else:
+            return NamedListFields(self.tableFields, listName = self.listName, localFun = localFun, globalFun = globalFun).getNormalForm()
         
     # def __repr__(self):
     #     return f"""TableFields on {super().__repr__()}"""

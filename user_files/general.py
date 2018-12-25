@@ -2,8 +2,7 @@ def name(nb):
     text = "name"+nb
     return Filled(text,
                   Asked(text,
-                        [AskedOrNot("name2", "Definition:","<li>"),
-                         QuestionnedField(field = text),
+                        [QuestionnedField(field = text),
                          AskedOrNot("name2", "<br/>:","</li>")
                          NotAsked(text,
                                   [
@@ -14,12 +13,13 @@ def name(nb):
                         )
                   )
     )
+
 names = ('name',[PotentiallyNumberedFields('Name',4),br])
 
 namesNotationsDenotedBy = [names,
                            ('Notation',[PotentiallyNumberedFields('Notation',4),br]),
                            DecoratedField('Representation'),
-                           DecoratedField('Denoted by')
+                           DecoratedField('Denoted by'),
 ]
 
 contextOrDeck = [FilledOrEmpty('Context', Field('Context'),deck), hr]

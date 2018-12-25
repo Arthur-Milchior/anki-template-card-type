@@ -1,31 +1,10 @@
 import copy
-from .generators import Gen, shouldBeKept, genRepr, thisClassIsClonable
+from .generators import Gen, shouldBeKept, genRepr, thisClassIsClonable, multipleChildren
 from .constants import *
 from .ensureGen import addTypeToGenerator
 from ..debug import debug, assertType, debugFun, ExceptionInverse
 from .leaf import emptyGen
 
-class MultipleChildren(Gen):
-    #@debugFun
-    def __init__(self, toKeep = None,  **kwargs):
-        super().__init__(**kwargs)
-        if toKeep is None:
-            allFalse = True
-            for element in self.getChildren():
-                shouldIt = shouldBeKept(element)
-                if shouldIt is True:
-                    toKeep = True
-                    allFalse = False
-                    break
-                if shouldIt is None:
-                    allFalse = None
-            if allFalse:
-                toKeep = False
-        if toKeep is True:
-            self.doKeep()
-        elif toKeep is False:
-            self.dontKeep()
-            
  
 @thisClassIsClonable
 class ListElement(MultipleChildren):

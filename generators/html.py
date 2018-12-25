@@ -1,9 +1,8 @@
+import bs4
 from .singleChild import SingleChild
-from .multipleChildren import ListElement
 from .leaf import emptyGen
 from ..debug import debugFun, debugInit, debug, assertType, assertEqual
-from .generators import thisClassIsClonable, Gen, genRepr
-import bs4
+from .generators import thisClassIsClonable, Gen, genRepr, ListElement
 
 @thisClassIsClonable
 class HTML(SingleChild):
@@ -126,8 +125,10 @@ class Table(HTML):
 def _fixedTag(tag_):
     assert tag_ is not None    
     class FIXED(HTML):
-        def __init__(self, tag = None, child = None, **kwargs):
-            assert assertEqual(tag, None)
+        def __init__(self,
+                     #tag = None,
+                     child, **kwargs):
+            #assert assertEqual(tag, None)
             super().__init__(tag = tag_, child = child, **kwargs)
     FIXED.__name__=tag_
     return FIXED
@@ -140,12 +141,12 @@ TR = _fixedTag("tr")
 TD = _fixedTag("td")
 
 class _LIST(HTML):
-    def __init__(self, elements, enclosing = None, **kwargs):
+    def __init__(self, elements, enclosing = None, liAttrs = {}, **kwargs):
         assert enclosing is not None
         self.elements = elements
         self.enclosing = enclosing
         
-        lis = [LI(child = element) for element in elements]
+        lis = [LI(child = element, attrs = liAttrs) for element in elements]
         super().__init__(enclosing, child = lis, **kwargs)
 class OL(_LIST):
     def __init__(self, *args, **kwargs):

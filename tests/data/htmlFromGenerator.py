@@ -20,7 +20,7 @@ listHtml ="""foo
 {{Question}}"""
 
 # tableFieldsTemplate = testTemplate(
-#             Requirement(
+#             MultipleRequirement(
 #                 child = HTML(tag = "tr",
 #                              child = ListElement(elements = [HTML(child = "Question", tag = "td"), HTML(child = Field(field = "Question", ), tag = "td")], )
 #                 ),

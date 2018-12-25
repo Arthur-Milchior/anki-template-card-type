@@ -97,14 +97,14 @@ atLeastTwoDefinition = AtLeastTwoFields(child = "At least two",
 ### Requirement
 requireQuestion =Filled(field = "Question",
                         child = (Literal("Question")))
-requirements3 = Requirement(child = "Foo",
+requirements3 = MultipleRequirement(child = "Foo",
                             requireFilled = frozenset({"Question"}),
                             requireEmpty = frozenset({"Definition3", "AbsentFromModel"}))
 
-contradictionRequirement = Requirement(child = (Literal("Foo")),
+contradictionRequirement = MultipleRequirement(child = (Literal("Foo")),
                                        requireFilled = frozenset({"Question"}),
                                        requireEmpty = frozenset({"Question"}))
-requiringInexistant = Requirement(child = (Literal("Foo")),
+requiringInexistant = MultipleRequirement(child = (Literal("Foo")),
                                   requireFilled = frozenset({"absentfrommodel"}))
 
 ## Conditionals

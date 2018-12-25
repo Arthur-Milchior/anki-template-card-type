@@ -105,10 +105,10 @@ assert assertEqual(compileGen(unorderedList),HTML(
 
 ### Conditional
 assert assertEqual(compileGen(filledField),filledField)
-                       # Requirement(requireFilled = {"Question"},
+                       # MultipleRequirement(requireFilled = {"Question"},
                        #             child = Literal("Question is filled")))
 assert assertEqual(compileGen(emptyField),emptyField)
-                       # Requirement(requireFilled = {"Question"},
+                       # MultipleRequirement(requireFilled = {"Question"},
                        #             child = Literal("Question is empty")))
 assert assertEqual(compileGen(questionField),
                    Literal("This is question side"))
@@ -261,7 +261,7 @@ ListElement([
 
 ## Conditionals
 
-### Requirement
+### MultipleRequirement
 assert assertEqual(compileGen(requireQuestion),Filled(
   field = 'Question',
   child = Literal(text = "Question", ),

@@ -3,3 +3,4 @@ from .fields import *
 from .listFields import *
 from .sugar import *
 from .numberOfField import *
+from .syntax import *
