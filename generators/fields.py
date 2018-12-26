@@ -4,9 +4,10 @@ from ..generators import Gen
 from ..leaf import Field
 from ...debug import debug, assertType
 from .sugar import NotNormal
+from .conditionals.askedOrNot import AskedOrNot
+from .html import CLASS
 
-
-class QuestionnedField(Branch):
+class QuestionnedField(AskedOrNot):
     """Show the content of the field. Unless the field is asked and its the question, then show ???
 
     This can be parametrized as any branch. To forbid the use of
@@ -17,8 +18,6 @@ class QuestionnedField(Branch):
     
     def __init__(self,
                  field,
-                 questionAsked = None,
-                 default = None,
                   **kwargs):
         if isinstance(field,str):
             self.fieldName = field
@@ -27,16 +26,11 @@ class QuestionnedField(Branch):
             assert assertType(field,Field)
             self.field = field
             self.fieldName = field.field
-        if questionAsked is None:
-            questionAsked = "???"
-        if default is None:
-            default = self.field
-        self.questionAsked = questionAsked
-        self.default = default
+        self.asked = QuestionOrAnswer(CLASS(f"Question_{self.fieldName}","???"), CLASS(f"Answer_{self.fieldName}",self.field))
         #todo emphasize answerAsked
-        super().__init__(name = self.fieldName,
-                         questionAsked = questionAsked,
-                         default = default,
+        super().__init__(self.fieldName,
+                         self.asked,
+                         self.field
                          **kwargs)
         
     # def __repr__(self):

@@ -108,7 +108,7 @@ requiringInexistant = MultipleRequirement(child = (Literal("Foo")),
                                   requireFilled = frozenset({"absentfrommodel"}))
 
 ## Conditionals
-branch = Branch(name="Question", questionAsked = "???", default = Field("Question"))
+#branch = Branch(name="Question", questionAsked = "???", default = Field("Question"))
 ## List Fields
 
 #twoQuestionsAsList = ListFields(fields = ['Definition', 'Definition2'])

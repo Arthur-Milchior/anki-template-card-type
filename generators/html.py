@@ -154,3 +154,8 @@ class OL(_LIST):
 class UL(_LIST):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, enclosing = "ul", **kwargs)
+
+class CLASS(HTML):
+    def __init__(self, cl, *args, attrs = {}, **kwargs):
+        new_attrs = {**attrs, "class":cl}
+        super().__init__("span", *args, attrs = new_attrs, **kwargs)

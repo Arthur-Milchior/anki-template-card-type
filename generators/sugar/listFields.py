@@ -10,7 +10,6 @@ from ..leaf import Field
 from .conditionals import FilledOrEmpty, AskedOrNot
 from .numberOfField import AtLeastOneField
 from ..list import MultipleChildren
-from .conditionals import Branch
 
 @debugFun
 def fieldToPair(field):

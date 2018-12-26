@@ -68,7 +68,9 @@ A number of standard HTML tags are already created, and ready to use:
   each element of elements is a child, enclosed in a LI tag with
   attributes liAttrs. Similarly
   for UL(elements, attrs = {}).
-  
+* CLASS(cl, child, attrs = {}) is used to enclose the child in a
+  span whose class is cl.
+
 ## List
 The generator ```ListElement([gen_1,...,gen_n])``` represents a list of
 generators ```gen_1``` to ```gen_n```. This means that, the result of
@@ -177,11 +179,23 @@ only when some conditions are met.
 
 
 ## Syntax
-This is a set generators used to allow to had syntax.
+In this section, we present more complex generators. They represents
+things the author of this add-on often want to do.
 
+### Parenthesis
 The generator ```Parenthesis(gen)``` compiles as ```gen```, with
 parenthesis around them. Similarly, ```Parenthesis(gen, left = l,
 right = r)``` is an abbreviation for the list [l, gen, r].
+
+### Questionned field
+The generator ```QuestionnedField(field)``` is a basic unit
+representing a question. The field is shown on every card, except on
+the question side where this field is asked, in this case, the content
+of the field is replaced by ```???```. 
+
+If this is asked, the text is encapsulated in the css class
+(```question_field``` or ```answer_field```).
+
 
 
 ########################################
