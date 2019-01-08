@@ -1,33 +1,54 @@
 import bs4
-from .singleChild import SingleChild
-from .leaf import emptyGen
+from .leaf import emptyGen, Leaf
 from ..debug import debugFun, debugInit, debug, assertType, assertEqual
-from .generators import thisClassIsClonable, Gen, genRepr, ListElement
+from .generators import thisClassIsClonable, Gen, genRepr, SingleChild
+from .list import ListElement
 
 @thisClassIsClonable
-class HTML(SingleChild):
-    """A html tag, and its content.
-
-    A tag directly closed, such as br or img, should have child emptyGen
-    (default value). Values are escaped.
-    If child is an Empty object, then toKeep is assumed to be
-    true."""
+class HTMLAtom(Leaf):
+    """A html tag, without content."""
 
     def __init__(self,
                  tag = None,
-                 atom = False,
                  attrs={},
                  **kwargs):
         assert assertType(tag,str)
         self.tag = tag
         self.attrs = attrs
-        toKeep = atom is True
-        self.atom = atom
-        super().__init__(toKeep = toKeep, **kwargs)
+        super().__init__(**kwargs)
+
+    def __hash__(self):
+        return hash((self.tag,self.attrs))
+    
+    def _repr(self):
+        space = "  "*Gen.indentation
+        t= f"""HTMLAtom("{self.tag}","""
+        if self.attrs:
+            t+= "\n"+genRepr(self.attrs, label ="attrs")+","
+        t+=self.params()+")"
+        return t
+
+    def __eq__(self,other):
+        return super().__eq__(other) and isinstance(other,HTMLAtom) and self.tag == other.tag and self.attrs == other.attrs
 
     @debugFun
-    def isEmpty(self):
-        return ((not self.atom) and self.getChild().isEmpty())
+    def _applyTag(self, soup):
+        newtag = soup.new_tag(self.tag, **self.attrs)
+        return newtag
+
+@thisClassIsClonable
+class HTML(SingleChild):
+    """A html tag, with content."""
+
+    def __init__(self,
+                 tag,
+                 child,
+                 attrs={},
+                 **kwargs):
+        assert assertType(tag,str)
+        self.tag = tag
+        self.attrs = attrs
+        super().__init__(child = child, **kwargs)
 
     def __hash__(self):
         return hash((self.tag,self.attrs,self.getChild()))
@@ -36,27 +57,12 @@ class HTML(SingleChild):
     def cloneSingle(self, child):
         if child == self.getChild():
             return self
-        if not child and not self.atom:
+        if not child:
             return emptyGen
         return HTML(tag = self.tag,
                     attrs = self.attrs,
                     child = child,
-                    atom = self.atom
         )
-    
-    # @debugFun
-    # def cloneSingle(self, elements):
-    #     assert len(elements)==1
-    #     element = elements[0]
-    #     if element == self.child:
-    #         return self
-    #     if not element and not self.atom:
-    #         return emptyGen
-    #     return HTML(tag = self.tag,
-    #                 attrs = self.attrs,
-    #                 child = element,
-    #                 atom = self.atom
-    #     )
     
     def _repr(self):
         space = "  "*Gen.indentation
@@ -65,8 +71,6 @@ class HTML(SingleChild):
             t+= "\n"+genRepr(self.attrs, label ="attrs")+","
         if self.child:
             t+= "\n"+genRepr(self.child, label ="child")+","
-        if self.atom:
-            t+= "\n"+genRepr(self.atom, label ="atom")+","
         t+=self.params()+")"
         return t
 
@@ -83,13 +87,13 @@ class HTML(SingleChild):
                 raise Exception(f"child {child} has type {type(child)}, which can't be in a tag.")
         newtag.contents = children
         return newtag
+    
+br = HTMLAtom("br")
+hr = HTMLAtom("hr")
 
-br = HTML("br", atom = True)
-hr = HTML("hr", atom = True)
-
-class Image(HTML):
+class Image(HTMLAtom):
     def __init__(self,url):
-        super().__init__("img", attrs = {"src":url}, atom = True)
+        super().__init__("img", attrs = {"src":url})
 
 class Table(HTML):
     @debugInit
@@ -157,5 +161,7 @@ class UL(_LIST):
 
 class CLASS(HTML):
     def __init__(self, cl, *args, attrs = {}, **kwargs):
+        if isinstance(cl,list):
+            cl= " ".join(cl)
         new_attrs = {**attrs, "class":cl}
         super().__init__("span", *args, attrs = new_attrs, **kwargs)

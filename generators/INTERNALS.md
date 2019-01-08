@@ -75,6 +75,7 @@ defined only on core generators.
 ## Current cores
 Here is the current list of Core generators. They are described in README.md
 * HTML
+* HTMLAtom
 * ListElement
 * Absent
 * Present

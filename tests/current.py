@@ -16,4 +16,6 @@ from ..templates.templates import tagsToEdit
 #print(prettifyGen(NumberedFields('Definition', 2),toPrint=True))
 startDebug()
 endDebug()
-
+# compileGen(
+#         decoratedField,
+#         asked = frozenset({"Question"}), toPrint = True)

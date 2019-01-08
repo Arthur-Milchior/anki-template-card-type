@@ -39,7 +39,7 @@ class Absent(FieldChild):
     @debugFun
     def _restrictToModel(self,fields):
         if self.field in fields:
-            return emptyGen
+            return None
         else:
             return self.getChild().restrictToModel(fields)
         
@@ -72,12 +72,12 @@ class Present(FieldChild):
         if self.field in fields:
             return self.getChild().restrictToModel(fields)
         else:
-            return emptyGen
+            return None
         
     def _applyTag(self, soup):
         assert False
 class PresentOrAbsent(ListElement):
-    def __init__(self,field,presentCase = emptyGen, absentCase = emptyGen,  **kwargs):
+    def __init__(self, field, presentCase = None, absentCase = None,  **kwargs):
         self.presentCase = presentCase
         self.absentCase = absentCase
         self.field = field

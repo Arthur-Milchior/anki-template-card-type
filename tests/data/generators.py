@@ -78,6 +78,15 @@ presentOrAbsentAbsent = PresentOrAbsent(
     absentCase = "Absent is absent from the model")
 askedOrNot = AskedOrNot(field = "askedOrNot", asked = "Asked", notAsked = "notAsked")
 
+## LabeledFields:
+labeledFieldFromString = LabeledField("foo")
+labeledFieldFromField = LabeledField(Field("foo"))
+labeledFieldFromStringLabel = LabeledField("foo","bar")
+labeledFieldFromFieldLabel = LabeledField(Field("foo"),"bar")
+
+##Label
+labelBarForFieldFoo = Label("bar",["foo"],"Question_foo")
+labelBarForFieldsFoos = Label("bar",["foos","foo","foo2"],"Question_foos")
 ## Fields
 questionnedField =QuestionnedField('Question')
 decoratedField = DecoratedField('Question')

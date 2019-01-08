@@ -168,6 +168,41 @@ assert assertEqual(compileGen(presentOrAbsentAbsent),Literal("Absent is absent f
 ### Asked or Not
 assert assertEqual(compileGen(askedOrNot, asked = frozenset({"askedOrNot"})),Literal("Asked"))
 assert assertEqual(compileGen(askedOrNot, asked = frozenset()),Literal(text = "notAsked", ))
+
+## LabeledFields:
+assert assertEqual(labeledFieldFromString,labeledFieldFromField)
+assert assertEqual(labeledFieldFromStringLabel,labeledFieldFromFieldLabel)
+
+## Label:
+assert assertEqual(compileGen(labelBarForFieldFoo,
+                              isQuestion=False),
+                   Literal("bar"))
+assert assertEqual(compileGen(labelBarForFieldFoo,
+                              asked = {"foo"},
+                              isQuestion=False),
+                   Literal("bar"))
+assert assertEqual(compileGen(labelBarForFieldFoo,
+                              asked = {"foo"},
+                              isQuestion=True),
+                   CLASS("Question_foo",Literal("bar")))
+assert assertEqual(compileGen(labelBarForFieldFoo,
+                              isQuestion = True),
+                   Literal("bar"))
+
+assert assertEqual(compileGen(labelBarForFieldsFoos),
+                   Literal("bar"))
+assert assertEqual(compileGen(labelBarForFieldsFoos,
+                              isQuestion=False),
+                   Literal("bar"))
+assert assertEqual(compileGen(labelBarForFieldsFoos,
+                              asked = {"foo"},
+                              isQuestion=False),
+                   Literal("bar"))
+assert assertEqual(compileGen(labelBarForFieldsFoos,
+                              asked = {"foo"},
+                              isQuestion=True),
+                   CLASS("Question_foos",Literal("bar")))
+
 ## Fields
 assert assertEqual(compileGen(questionnedField, asked = frozenset({"Question"})), 
                    Literal("???"))
@@ -181,7 +216,7 @@ assert assertEqual(
         asked = frozenset({"Question"})),
     Filled(field = "Question",
            child = ListElement([
-               Literal("Question"), Literal(": "), Literal("???")]
+               CLASS("Question_Question",Literal("Question")), Literal(": "), Literal("???"), br]
            )))
 assert assertEqual(compileGen(decoratedField, asked = frozenset()), 
                    Filled(field = "Question",

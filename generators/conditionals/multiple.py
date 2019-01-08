@@ -1,3 +1,8 @@
+from ..generators import SingleChild, NotNormal
+from ..constants import BASIC, EMPTY
+from ...debug import debugFun
+import sys
+
 class MultipleRequirement(SingleChild, NotNormal):
     """Conditional. Both about the content of the field. And the existence of the field in the model.  And request that this is a question side.
 
@@ -38,7 +43,7 @@ class MultipleRequirement(SingleChild, NotNormal):
                 self.requirements[name] = fun(requirements.get(name,default))
             else:
                 self.requirements[name] = default
-        if  requirements is not None
+        if requirements is not None:
             self.requirements["isQuestion"]= requirements ["isQuestion"]
         else:
             self.requirements["isQuestion"] = isQuestion

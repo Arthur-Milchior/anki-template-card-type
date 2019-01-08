@@ -220,20 +220,6 @@ class Gen:
         ret = not self.isEmpty()
         return ret
     
-
-    # @debugFun
-    # def shouldBeKept(self):
-    #     """In a list, does the presence of this element justify the fact that
-    #     this element is kept.
-
-    #     It memoize, so don't call when you intend to change children.
-    #     Implemented only for classes which can be normal.
-
-    #     """
-    #     if self.toKeep is None:
-    #         self.toKeep = bool(self._toKeep())
-    #     return self.toKeep
-
     #@debugFun
     def dontKeep(self):
         self.toKeep = False
@@ -242,17 +228,20 @@ class Gen:
     def doKeep(self):
         self.toKeep = True
 
+    """The list of children, as generators."""
     @memoize()
     @debugFun
     def getChildren(self):
         return self._getChildren()
 
-    # @debugFun
-    # def _toKeep(self):
-    #     for element in self.getChildren():
-    #         if element.getToKeep():
-    #             return True
-    #     return False
+    def getToKeep(self):
+        if self.toKeep is not None:
+            return self.toKeep
+        else:
+            for child in self.getChildren():
+                if child.getToKeep():
+                    return True
+            return None
 
     ##########################################
     ## Transform the gen                  #
@@ -378,6 +367,7 @@ class Gen:
         if mandatory:
             step = step.addMandatory(mandatory)
         return step._template(asked = asked, hide = hide)
+    
     @debugFun
     def _template(self, asked = frozenset(), hide = frozenset()):
         current = self
@@ -461,6 +451,7 @@ class Gen:
     foo. Remove Answer(foo)"""
         assert assertType(changeStep, bool)
         ret = self._assumeQuestion(changeStep = changeStep)
+        ret = self._ensureGen(ret)
         if changeStep:
             ret.setState(QUESTION_ANSWER)
         return ret
@@ -475,6 +466,7 @@ class Gen:
         """Assume this is answer side. Replace Answer(foo) by
         foo. Remove Question(foo)"""
         ret = self._assumeAnswer(changeStep = changeStep)
+        ret = self._ensureGen(ret)
         if changeStep:
             ret.setState(QUESTION_ANSWER)
         return ret
@@ -630,7 +622,7 @@ def shouldBeKept(gen):
     False if Gen which can be discarded
     None if it can't yet been known."""
     if isinstance(gen,Gen):
-        return gen.toKeep
+        return gen.getToKeep()
     else:
         return None
     
@@ -664,3 +656,87 @@ class MultipleChildren(Gen):
             self.doKeep()
         elif toKeep is False:
             self.dontKeep()
+            
+class NotNormal(Gen):
+    def _getWithoutRedundance(self):
+        raise ExceptionInverse("_getWithoutRedundance from not normal")
+    # def getWithoutRedundance(self):
+    #     raise ExceptionInverse("getWithoutRedundance from not normal")
+    # def assumeFieldInSet(self, *args, **kwargs):
+    #     raise ExceptionInverse("assumeFieldInSet from not normal")
+    def _assumeFieldFilled(self, field):
+        assert False
+    def _assumeFieldEmpty(self, field):
+        assert False
+    def _assumeFieldPresent(self, field):
+        assert False
+    def _assumeAnswer(self, changeStep = False):
+        assert False
+    def _assumeFieldAbsent(self, field):
+        assert False
+    # def _assumeFieldInSet(self, *args, **kwargs):
+    #     raise ExceptionInverse("_assumeFieldInSet from not normal")
+    def _assumeQuestion(self, *args, **kwargs):
+        raise ExceptionInverse("_assumeQuestion from not normal")
+    def _applyTag(self, *args, **kwargs):
+        raise ExceptionInverse("_applyTag from not normal")
+    def _restrictToModel(self, *args, **kwargs):
+        raise ExceptionInverse("_restrictToModel from not normal")
+    
+    def _questionOrAnswer(self, *args, **kwargs):
+        raise ExceptionInverse("_questionOrAnswer from not normal")
+    
+class SingleChild(MultipleChildren):
+    def __init__(self, child = None, toKeep = None, **kwargs):
+        self.child = child
+        super().__init__(toKeep = toKeep, **kwargs)
+
+    @debugFun
+    def clone(self, elements):
+        assert len(elements)==1
+        child = elements[0]
+        return self.cloneSingle(child)
+
+    @debugFun
+    def cloneSingle(self, child):
+        if not child:
+            return None
+        if child == self.getChild():
+            return self
+        return self.classToClone(child = child)
+    
+    @debugFun
+    def getChild(self):
+        self.child = self._ensureGen(self.child)
+        return self.child
+    
+    # @ensureReturnGen
+    # #@debugFun
+    # @memoize()
+    # def getChild(self):
+    #     return self.child
+        
+    @debugFun
+    def _getChildren(self):
+        return [self.getChild()]
+    def __hash__(self):
+        return hash((self.__class__,self.child))
+    
+    def _repr(self):
+        space = "  "*Gen.indentation
+        if hasattr(self, "classToClone"):
+            toClone = self.classToClone
+            if toClone==self.__class__:
+                className = self.__class__.__name__
+            else:
+                className = f"{self.__class__.__name__}/{toClone}"
+        else:
+            className = self.__class__.__name__
+        t= f"""{className}(
+{genRepr(self.child, label="child")},{self.params()})"""
+        return t
+    
+    def __eq__(self,other):
+        """It may require to actually compute the child"""
+        return isinstance(other,SingleChild) and self.getChild() == other.getChild()
+    

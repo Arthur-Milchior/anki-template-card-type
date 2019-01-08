@@ -1,5 +1,5 @@
 import copy
-from .generators import Gen, shouldBeKept, genRepr, thisClassIsClonable, multipleChildren
+from .generators import Gen, shouldBeKept, genRepr, thisClassIsClonable, MultipleChildren
 from .constants import *
 from .ensureGen import addTypeToGenerator
 from ..debug import debug, assertType, debugFun, ExceptionInverse

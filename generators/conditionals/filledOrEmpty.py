@@ -2,7 +2,7 @@ import bs4
 from ..generators import thisClassIsClonable
 from ...debug import debugFun, debug
 from .meta import FieldChild
-from .generators import addTypeToGenerator
+from ..generators import addTypeToGenerator
 from ..leaf import emptyGen
 from ..list import ListElement
 

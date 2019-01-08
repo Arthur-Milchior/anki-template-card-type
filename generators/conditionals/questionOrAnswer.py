@@ -1,14 +1,15 @@
 from .meta import FieldChild
-from ..generators import thisClassIsClonable
+from ..generators import thisClassIsClonable, SingleChild
 from ...debug import debugFun, debug
 from ..list import ListElement
+
 @thisClassIsClonable
 class Question(SingleChild):
     """The class which expands only on the question side"""
     def _assumeQuestion(self, changeStep = False):
         return self.getChild().assumeQuestion(changeStep = changeStep)
     def _assumeAnswer(self, changeStep = False):
-        return emptyGen
+        return None
     def _applyTag(self, *args, **kwargs):
         raise ExceptionInverse("At this stage, Question must be removed")
     def _getWithoutRedundance(self):
@@ -19,7 +20,7 @@ class Answer(SingleChild):
     """The class which  expands only on the answer side."""
     @debugFun
     def _assumeQuestion(self, changeStep = False):
-        return emptyGen
+        return None
     def _assumeAnswer(self, changeStep = False):
         return self.getChild().assumeAnswer(changeStep = changeStep)
     def _applyTag(self, *args, **kwargs):
