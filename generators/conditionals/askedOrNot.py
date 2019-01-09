@@ -1,7 +1,8 @@
 from .meta import FieldChild
-from ..generators import thisClassIsClonable
-from ...debug import debugFun, debug
+from ..generators import thisClassIsClonable, Gen, genRepr
+from ...debug import debugFun, debug, debugOnlyThisMethod, debugInit,debugOnlyThisInit
 from ..list import ListElement
+from ...utils import standardContainer
 
 @thisClassIsClonable
 class Asked(FieldChild):
@@ -58,27 +59,46 @@ class NotAsked(FieldChild):
 
     def _noMoreAsk(self):
         return self.getChild().noMoreAsk()
-                
+
     def _assumeAsked(self, field):
         if self.field == field:
             return None
         else:
-            return self.getChild().assumeAsked(field)
+            return self.cloneSingle(self.getChild().assumeAsked(field))
         
     def _applyTag(self, *args, **kwargs):
         raise ExceptionInverse("NotAsked._applyTag should not exists")
 
 @thisClassIsClonable
 class Cascade(FieldChild):
-    def __init__(self, *args, cascade = frozenset(), **kwargs):
-        super().__init__(*args, **kwargs)
+    @debugInit
+    #@debugOnlyThisInit
+    def __init__(self, field, child, cascade, **kwargs):
         self.cascade = cascade
+        assert isinstance(field,str)
+        assert standardContainer(cascade)
+        assert cascade
+        super().__init__(field, child, **kwargs)
+        
+    def _repr(self):
+        space  = "  "*Gen.indentation
+        return f"""{self.__class__.__name__}(
+{genRepr(self.field, label = "field")},
+{genRepr(self.cascade, label = "cascade")},
+{genRepr(self.child, label = "child")},{self.params()})"""
 
+    @debugFun
     def _getNormalForm(self):
         if not self.cascade:
             return self.child.getNormalForm()
         else:
             return super()._getNormalForm()
+        
+    def _cloneSingle(self, child):
+        return self.classToClone(
+            field = self.field,
+            child = child,
+            cascade = self.cascade)
         
     def _removeName(self, field):
         if self.field == field:
@@ -89,22 +109,24 @@ class Cascade(FieldChild):
     def _applyTag(self, *args, **kwargs):
         raise ExceptionInverse("NotAsked._applyTag should not exists")
 
+    #@debugOnlyThisMethod
     def _assumeAsked(self,field):
         if self.field == field:
             child = self.getChild().assumeAsked(field)
             for cascaded in self.cascade:
                 child = child.assumeAsked(cascaded)
             return child
-        return self
+        else:
+            return self.cloneSingle(self.getChild().assumeAsked(field))
 
     def _assumeNotAsked(self,field):
         if self.field == field:
             return None
         else:
-            return self
+            return self.cloneSingle(self.getChild().assumeNotAsked(field))
 
     def _noMoreAsk(self):
-        return self.getChild()
+        return self.getChild().noMoreAsk()
 
         
     
@@ -118,7 +140,7 @@ class AskedOrNot(ListElement):
                  **kwargs):
         self.asked = asked
         self.notAsked = notAsked
-        askedGen = Cascade(field = field, child = asked, cascade = cascade)
+        askedGen = Cascade(field = field, child = asked, cascade = cascade) if cascade else asked
         askedGen = Asked(field = field, child = askedGen)
         notAskedGen = NotAsked(field = field,child = notAsked)
         super().__init__([askedGen, notAskedGen ], **kwargs)

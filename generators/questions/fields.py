@@ -24,18 +24,22 @@ class LabeledField:
             if isinstance(field,tuple):
                 assert (label is None)
                 self.field, self.label = field
+                if isinstance(self.field,str):
+                    self.field = Field(self.field)
             elif isinstance(field,LabeledField):
                 self.field = field.field
                 self.label = field.label
             else:
-                # label is a copy of label
+                # label is the copy of field
                 if isinstance(field, Field):
-                    self.field = field.field
-                elif isinstance(field,str):
                     self.field = field
+                elif isinstance(field,str):
+                    self.field = Field(field)
                 else:
                     raise Exception
-                self.label = self.field
+                self.label = self.field.field
+        assert assertType(self.field, Field)
+        assert assertType(self.label, str)
 
     def __eq__(self,other):
         return self.label == other.label and self.field == other.field
@@ -52,6 +56,7 @@ class QuestionnedField(AskedOrNot):
     
     def __init__(self,
                  field,
+                 classes = None,
                   **kwargs):
         if isinstance(field,str):
             self.fieldName = field
@@ -60,7 +65,10 @@ class QuestionnedField(AskedOrNot):
             assert assertType(field,Field)
             self.field = field
             self.fieldName = field.field
-        self.asked = QuestionOrAnswer("???", CLASS(["Answer", f"Answer_{self.fieldName}"],self.field))
+        if classes is None:
+            classes = ["Answer", f"Answer_{self.fieldName}"]
+        self.classes = classes
+        self.asked = QuestionOrAnswer("???", CLASS(classes,self.field))
         #todo emphasize answerAsked
         super().__init__(self.fieldName,
                          self.asked,
@@ -98,7 +106,7 @@ class DecoratedField(Filled):
         self.infix = infix
         labelGen = Label(label = self.labeledField.label,
                          fields = [self.labeledField.field],
-                         classes = ["Question","Question_{self.labeledField.field}"])
+                         classes = ["Question",f"Question_{self.labeledField.field.field}"])
         super().__init__(field = self.labeledField.field,
                          child = [
                              labelGen,

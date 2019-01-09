@@ -29,7 +29,7 @@ class HTMLAtom(Leaf):
         return t
 
     def __eq__(self,other):
-        return super().__eq__(other) and isinstance(other,HTMLAtom) and self.tag == other.tag and self.attrs == other.attrs
+        return isinstance(other,HTMLAtom) and self.tag == other.tag and self.attrs == other.attrs
 
     @debugFun
     def _applyTag(self, soup):
@@ -54,11 +54,7 @@ class HTML(SingleChild):
         return hash((self.tag,self.attrs,self.getChild()))
 
     @debugFun
-    def cloneSingle(self, child):
-        if child == self.getChild():
-            return self
-        if not child:
-            return emptyGen
+    def _cloneSingle(self, child):
         return HTML(tag = self.tag,
                     attrs = self.attrs,
                     child = child,
@@ -74,8 +70,8 @@ class HTML(SingleChild):
         t+=self.params()+")"
         return t
 
-    def __eq__(self,other):
-        return super().__eq__(other) and isinstance(other,HTML) and self.tag == other.tag and self.attrs == other.attrs
+    def _outerEq(self,other):
+        return isinstance(other,HTML) and self.tag == other.tag and self.attrs == other.attrs
 
     @debugFun
     def _applyTag(self, soup):

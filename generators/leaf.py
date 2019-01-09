@@ -23,6 +23,11 @@ class Leaf(Gen):
     def clone(self, elements = []):
         assert elements == []
         return self
+    def _outerEq(self,other):
+        return self==other
+    def _firstDifference(self,other):
+        return None
+    
 
 emptyGen = None
 @thisClassIsClonable
@@ -67,6 +72,7 @@ class Empty(Leaf):
         #debug("",-1)
         return l
 
+
 emptyGen = Empty(init = True)
 def constEmpty(x):
     return emptyGen
@@ -94,18 +100,9 @@ class Literal(Leaf):
             return f"""Literal(text = "{self.text}",{self.params()})"""
     
     def __eq__(self,other):
-        #debug("""{self!r} == {other!r}, self being Literal""",1)
         if not isinstance(other,Literal):
-            #debug("other is not a Literal")
-            ret= False
-        elif self.text != other.text:
-            #debug("{self.text} is distinct from {other.text}")
-            ret= False
-        else:
-            #debug("they are equal")
-            ret = True
-        #debug("",-1)
-        return ret
+            return False
+        return self.text == other.text
     
     def _applyTag(self, soup):
         #debug("appending text {self.text} to {tag}")

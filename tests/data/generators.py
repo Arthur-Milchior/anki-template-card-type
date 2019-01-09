@@ -48,6 +48,12 @@ absentAbsent = Absent(
     field = "Absent",
     child = "Absent is absent in the model")
 
+## LabeledFields:
+labeledFieldFromString = LabeledField("foo")
+labeledFieldFromField = LabeledField(Field("foo"))
+labeledFieldFromStringLabel = LabeledField("foo","bar")
+labeledFieldFromFieldLabel = LabeledField(Field("foo"),"bar")
+
 ## MultipleChildren
 ### List
 listEmptyInexistingField = ListElement([literalFoo, emptyGen, fieldFoo]) #foofo
@@ -58,6 +64,8 @@ twoQuestionsListed = ListElement([DecoratedField('Definition1'),DecoratedField('
 ### Asked or Not
 asked = Asked(field = "asked", child = "is asked")
 notAsked = NotAsked(field = "asked", child = "is not asked")
+cascadeUseless = Cascade(field ="asked", cascade = ["cascaded"], child = AskedOrNot("asked", "Asked is asked","Asked is not asked"))
+cascade = Cascade(field ="asked", cascade = ["cascaded"], child = AskedOrNot("cascaded", "Cascaded is asked","Cascaded is not asked"))
 
 ### QuestionOrAnswer
 qoa = QuestionOrAnswer(question = "question side", answer = "answer side")
@@ -78,11 +86,6 @@ presentOrAbsentAbsent = PresentOrAbsent(
     absentCase = "Absent is absent from the model")
 askedOrNot = AskedOrNot(field = "askedOrNot", asked = "Asked", notAsked = "notAsked")
 
-## LabeledFields:
-labeledFieldFromString = LabeledField("foo")
-labeledFieldFromField = LabeledField(Field("foo"))
-labeledFieldFromStringLabel = LabeledField("foo","bar")
-labeledFieldFromFieldLabel = LabeledField(Field("foo"),"bar")
 
 ##Label
 labelBarForFieldFoo = Label("bar",["foo"],"Question_foo")
@@ -122,112 +125,193 @@ requiringInexistant = MultipleRequirement(child = (Literal("Foo")),
 
 #twoQuestionsAsList = ListFields(fields = ['Definition', 'Definition2'])
 #twoQuestionsAsNamedList = ListFields(['Definition', 'Definition2'], "ListName")
-twoQuestionsAsTable = TableFields(['Definition', 'Definition2'])
+twoQuestionsAsTable = TableFields(['Definition', 'Definition2'], name="Definitions")
+tableTwoLine1 = Filled(
+    field = 'Definition',
+    child = HTML(
+        child = ListElement([
+            HTML(
+                child = Literal(text = "Definition",),
+                tag = 'td'),
+            HTML(
+                child = Field(field = "Definition"),
+                tag = 'td')],),
+        tag = 'tr'),)
+tableTwoLine1Answered = Filled(
+    field = 'Definition',
+    child = HTML(
+        child = ListElement([
+            HTML(
+                child = Literal(text = "Definition",),
+                tag = 'td'),
+            HTML(
+                child = CLASS(["Answer", "Answer_Definition"],Field(field = "Definition")),
+                tag = 'td')],),
+        tag = 'tr'),)
+tableTwoLine2Answered = Filled(
+    field = 'Definition2',
+    child = HTML(
+        child = ListElement([
+            HTML(
+                child = Literal(text = "Definition2",),
+                tag = 'td'),
+            HTML(
+                child = CLASS(["Answer", "Answer_Definition2"],Field(field = "Definition2")),
+                tag = 'td')],),
+        tag = 'tr'),)
+tableTwoLine1Question = Filled(
+    field = 'Definition',
+    child = HTML(
+        child = ListElement([
+            HTML(
+                child = CLASS(["Question", "Question_Definition"],Literal(text = "Definition",)),
+                tag = 'td'),
+            HTML(
+                child = Literal("???"),
+                tag = 'td')],),
+        tag = 'tr'),)
+tableTwoLine2Question = Filled(
+    field = 'Definition2',
+    child = HTML(
+        child = ListElement([
+            HTML(
+                child = CLASS(["Question", "Question_Definition2"],Literal(text = "Definition2",)),
+                tag = 'td'),
+            HTML(
+                child = Literal("???"),
+                tag = 'td')],),
+        tag = 'tr'),)
+tableTwoLine2 = Filled(
+    field = 'Definition2',
+    child = HTML(
+        child = ListElement([
+            HTML(
+                child = Literal(text = "Definition2",),
+                tag = 'td'),
+            HTML(
+                child = Field(field = "Definition2"),
+                tag = 'td')],),
+        tag = 'tr'),)
+
 tableTwoShown= HTML(
         child = ListElement([
-            Filled(
-                field = 'Definition',
-                child = HTML(
-                    child = ListElement([
-                        HTML(
-                            child = Literal(text = "Definition",),
-                            tag = 'td'),
-                        HTML(
-                            child = Field(field = "Definition"),
-                            tag = 'td')],),
-                    tag = 'tr'),),
-            Filled(
-                field = 'Definition2',
-                child = HTML(
-                    child = ListElement([
-                        HTML(
-                            child = Literal(text = "Definition2",),
-                            tag = 'td'),
-                        HTML(
-                            child = Field(field = "Definition2"),
-                            tag = 'td')],),
-                    tag = 'tr'),)],),
-        tag = 'table')
-tableTwoQuestionned= HTML(
-        child = ListElement([
-            Filled(
-                field = 'Definition',
-                child = HTML(
-                    child = ListElement([
-                        HTML(
-                            child = Literal(text = "Definition",),
-                            tag = 'td'),
-                        HTML(
-                            child = Literal(text = "???",),
-                            tag = 'td')],),
-                    tag = 'tr'),),
-            Filled(
-                field = 'Definition2',
-                child = HTML(
-                    child = ListElement([
-                        HTML(
-                            child = Literal(text = "Definition2",),
-                            tag = 'td'),
-                        HTML(
-                            child = Field(field = "Definition2"),
-                            tag = 'td')],),
-                    tag = 'tr'),)],),
-        tag = 'table')
+            tableTwoLine1,
+            tableTwoLine2
+        ]),
+    tag = 'table')
 
+tableTwoShownQuestion1= HTML(
+        child = ListElement([
+            tableTwoLine1Question,
+            tableTwoLine2
+        ]),
+    tag = 'table')
+tableTwoShownQuestionAll= HTML(
+        child = ListElement([
+            tableTwoLine1Question,
+            tableTwoLine2Question
+        ]),
+    tag = 'table')
+tableTwoShownAnswer1= HTML(
+        child = ListElement([
+            tableTwoLine1Answered,
+            tableTwoLine2
+        ]),
+    tag = 'table')
+tableTwoShownAnswerAll= HTML(
+        child = ListElement([
+            tableTwoLine1Answered,
+            tableTwoLine2Answered
+        ]),
+    tag = 'table')
+
+### Numbered
 twoQuestionsNumbered = NumberedFields('Definition', 2)
+twoQuestionsNumberedLine1 = Filled(
+    field = 'Definition',
+    child = HTML("li",
+                 child =Field(field = "Definition",),),)
+twoQuestionsNumberedLine1Question = Filled(
+    field = 'Definition',
+    child = HTML("li",
+                 child =Literal("???",),),)
+twoQuestionsNumberedLine2Question = Filled(
+    field = 'Definition2',
+    child = HTML("li",
+                 child =Literal("???",),),)
+twoQuestionsNumberedLine1Answer = Filled(
+    field = 'Definition',
+    child = HTML("li",
+                 child =CLASS(["Answer","Answer_Definition"],Field(field = "Definition",),),))
+twoQuestionsNumberedLine2Answer = Filled(
+    field = 'Definition2',
+    child = HTML("li",
+                 child =CLASS(["Answer","Answer_Definition"],Field(field = "Definition2",),),))
+twoQuestionsNumberedLine2 = Filled(
+    field = 'Definition2',
+    child = HTML("li",
+                 child =Field(field = "Definition2",),),)
+
 twoQuestionsNumberedShown = ListElement([
   Literal(text = "Definitions",),
   Literal(text = ": ",),
-  HTML("ul",
-    child = ListElement([
-      HTML("li",
-        child = Filled(
-          field = 'Definition',
-          child = Field(field = "Definition",),),),
-      HTML("li",
-        child = Filled(
-          field = 'Definition2',
-          child = Field(field = "Definition2",),),)],),)],)
-twoQuestionsNumberedAskDefinition = ListElement([
-  Literal(text = "Definitions",),
+    HTML("ol",
+         child = ListElement([
+             twoQuestionsNumberedLine1,
+             twoQuestionsNumberedLine2
+         ],),)],)
+labelQuestion=CLASS(["Question", "Question_Definitions"],
+                    Literal(text = "Definitions",)
+                    )
+labelNormal= Literal(text = "Definitions",)
+twoQuestionsNumberedShown1Question = ListElement([
+  labelQuestion,
   Literal(text = ": ",),
-  HTML("ul",
-    child = ListElement([
-      HTML("li",
-        child = Filled(
-          field = 'Definition',
-          child = Literal("???"),),),
-      HTML("li",
-        child = Filled(
-          field = 'Definition2',
-          child = Field(field = "Definition2",),),)],),)],)
+    HTML("ol",
+         child = ListElement([
+             twoQuestionsNumberedLine1Question,
+             twoQuestionsNumberedLine2
+         ],),)],)
+twoQuestionsNumberedShown1Answer = ListElement([
+  labelNormal,
+  Literal(text = ": ",),
+    HTML("ol",
+         child = ListElement([
+             twoQuestionsNumberedLine1Answer,
+             twoQuestionsNumberedLine2
+         ],),)],)
 
 twoQuestionsNumberedAskDefinitionMandatory = Filled(
-    field = 'Definition',
-    child = ListElement([
-        Literal(text = "Definitions",),
-        Literal(text = ": ",),
-        HTML("ul",
-             child = ListElement([
-                 HTML("li",
-                      child = Literal("???"),),
-                 HTML("li",
-                      child = Filled(
-                          field = 'Definition2',
-                          child = Field(field = "Definition2",),),)],),)],))
-    
-twoQuestionsNumberedAllAsked = ListElement([
-  Literal(text = "Definitions",),
-  Literal(text = ": ",),
-  HTML("ul",
-    child = ListElement([
-      HTML("li",
-        child = Filled(
-          field = 'Definition',
-          child = Literal("???"),),),
-      HTML("li",
-        child = Filled(
+  field = 'Definition',
+  child = ListElement([
+    HTML("span",
+      attrs = {'class': 'Question Question_Definitions'},
+      child = Literal(text = "Definitions",),),
+    Literal(text = ": ",),
+    HTML("ol",
+      child = ListElement([
+        HTML("li",
+          child = Literal(text = "???",),),
+        Filled(
           field = 'Definition2',
-          child = Literal("???"),),)],),)],)
+          child = HTML("li",
+            child = Field(field = "Definition2",),),)],),)],),)
+
+twoQuestionsNumberedAllAsked = ListElement([
+  labelQuestion,
+  Literal(text = ": ",),
+  HTML("ol",
+    child = ListElement([
+      twoQuestionsNumberedLine1Question,
+      twoQuestionsNumberedLine2Question,
+    ],),)],)
+twoQuestionsNumberedAllAnswer = ListElement([
+  labelNormal,
+  Literal(text = ": ",),
+  HTML("ol",
+    child = ListElement([
+      twoQuestionsNumberedLine1Answer,
+      twoQuestionsNumberedLine2Answer,
+    ],),)],)
 
 

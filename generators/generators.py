@@ -1,6 +1,6 @@
 import sys
 from ..debug import debug, assertType, debugFun, ExceptionInverse, optimize, debugOnlyThisMethod
-from ..utils import identity
+from ..utils import identity, standardContainer
 from .ensureGen import ensureGen, addTypeToGenerator
 from .constants import *
 import bs4
@@ -370,6 +370,8 @@ class Gen:
     
     @debugFun
     def _template(self, asked = frozenset(), hide = frozenset()):
+        assert standardContainer(asked)
+        assert standardContainer(hide)
         current = self
         for name in hide:
             current = current.removeName(name)
@@ -590,6 +592,8 @@ class Gen:
             asked = frozenset()
         if hide is None:
             hide = frozenset()
+        assert standardContainer(asked)
+        assert standardContainer(hide)
         if mandatory is None:
             mandatory = frozenset()
         templateRestriction = modelRestriction.template(asked = asked,
@@ -606,6 +610,12 @@ class Gen:
         
         assert False
         
+    def firstDifference(self,other):
+        """A pair of generators, in the same position in the tree of self/other, which are distinct"""
+        if not self._outerEq(other):
+            return (self,other)
+        else:
+            return self._firstDifference(other)
 
 # class Normal(Gen):
 #     def __init__(self, *args, **kwargs):
@@ -703,6 +713,11 @@ class SingleChild(MultipleChildren):
             return None
         if child == self.getChild():
             return self
+        return self._cloneSingle(child)
+
+    @debugFun
+    def _cloneSingle(self, child):
+        """Assuming child is distinct from self.child and is not truthy"""
         return self.classToClone(child = child)
     
     @debugFun
@@ -735,8 +750,12 @@ class SingleChild(MultipleChildren):
         t= f"""{className}(
 {genRepr(self.child, label="child")},{self.params()})"""
         return t
-    
+
     def __eq__(self,other):
         """It may require to actually compute the child"""
-        return isinstance(other,SingleChild) and self.getChild() == other.getChild()
+        return self._outerEq(other) and self.getChild() == other.getChild()
     
+    def _outerEq(self,other):
+        return isinstance(other,SingleChild)
+    def _firstDifference(self,other):
+        return self.getChild().firstDifference(other.getChild())

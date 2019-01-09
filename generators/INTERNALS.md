@@ -112,17 +112,28 @@ descendant).
 a copy, similar to self, where the children are elements.
 * the class must implement ```_getChildren``` returning the set of
 children (not necessirily gen). 
-* the class must implement ```_repr```. Print the representation of
-this Gen, without indenting it. Call child.repr to call
-children. You can use genRepr(child, label = None) to print the
-parameter, prefixed by «label =», if you want to print some
-parameters.
-* If some step/metho foo of the computation mentionned in section
+* If some step/method foo of the computation mentionned in section
   Process does not simply consist into applying the same method
   recursively to all children, and cloning itself with those new
   children, then the method ```_foo``` must be reimplemented. It does
   not have to return a generator. A generator will be computed from it
   using self._ensureGen() if the returned value is not a geneartor.
+
+Furthermore, for debugging purposes, the classes must implement the
+following method:
+* the class must implement ```_repr```. Print the representation of
+  this Gen, without indenting it. Call child.repr to call
+  children. You can use genRepr(child, label = None) to print the
+  parameter, prefixed by «label =», if you want to print some
+  parameters.
+* the method ```outerEq``` is similar to __eq__ but does not consider
+  the children. For example, it should return true for two lists of
+  the same length, two html tags with the same tag and attributes.
+* the method _firstDifference(self,other) must return a pair of
+  generators. Those are in the same position in the tree self/other,
+  but which are distinct on surface. I.e. outerEq return false on
+  them. It is assumed that self and other are distinct. Return None
+  ifself and other are equal.
 
 ### Transforming a value of some type into a generator
 The code ```"foo"``` is interpreted as ```Literal("foo")```. Similarly, , the code ```("foo",gen)``` is

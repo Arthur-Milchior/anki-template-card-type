@@ -22,8 +22,8 @@ model = {
              
     ],
     'tmpls': [
-        {'name': 'Card 1', 'ord': 0, 'qfmt': '\n <span name="test" template="conf"/>\n', 'afmt': '<span template="Front Side"/>', 'did': None, 'bqfmt': '\n', 'bafmt': '\n'},
-        {'name': 'Card 2', 'ord': 1, 'qfmt': '\n <span name="Question" asked="Question" template="conf"/>\n', 'afmt': '<span template="Front Side"/>', 'did': None, 'bqfmt': '\n', 'bafmt': '\n'}],
+        {'name': 'Card 1', 'ord': 0, 'qfmt': '\n <span generator="test" template="conf"/>\n', 'afmt': '<span template="Front Side"/>', 'did': None, 'bqfmt': '\n', 'bafmt': '\n'},
+        {'name': 'Card 2', 'ord': 1, 'qfmt': '\n <span generator="Question" asked="Question" template="conf"/>\n', 'afmt': '<span template="Front Side"/>', 'did': None, 'bqfmt': '\n', 'bafmt': '\n'}],
     'tags': [],
     'id': '1542656718186',
     'req': [[0, 'none', []]]

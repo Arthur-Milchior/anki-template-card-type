@@ -50,7 +50,15 @@ class ListElement(MultipleChildren):
         return t
 
     def __eq__(self,other):
-        return isinstance(other,ListElement) and self.elements == other.elements
+        return self._outerEq(other) and self.elements == other.elements
+    def _outerEq(self,other):
+        return isinstance(other,ListElement) and len(self.elements) == len(other.elements)
+    def _firstDifference(self,other):
+        for i in range(len(self.elements)):
+            ret = self.elements[i].firstDifference(other.elements[i])
+            if ret is not None:
+                return ret
+        return None
     
     @debugFun
     def _getChildren(self):

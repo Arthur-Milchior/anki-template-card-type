@@ -132,6 +132,17 @@ assert assertEqual(compileGen(notAsked, asked = frozenset({}), hide = frozenset(
 assert assertEqual(compileGen(notAsked,hide = frozenset({"asked"})),emptyGen)
 assert assertEqual(compileGen(asked,hide = frozenset({"asked"})),emptyGen)
 
+assert assertEqual(compileGen(cascadeUseless, asked=frozenset()), Literal("Asked is not asked"))
+assert assertEqual(compileGen(cascadeUseless, asked=frozenset(["cascaded"])), Literal("Asked is not asked"))
+assert assertEqual(compileGen(cascadeUseless, asked=frozenset(["asked"])), Literal( "Asked is asked"))
+assert assertEqual(compileGen(cascadeUseless, hide=frozenset(["cascaded"])), Literal("Asked is not asked"))
+assert assertEqual(compileGen(cascadeUseless, hide=frozenset(["asked"])), emptyGen)
+assert assertEqual(compileGen(cascade, asked=frozenset()), Literal("Cascaded is not asked"))
+assert assertEqual(compileGen(cascade, asked=frozenset(["cascaded"])), Literal("Cascaded is asked"))
+assert assertEqual(compileGen(cascade, asked=frozenset(["asked"])), Literal( "Cascaded is asked"))
+assert assertEqual(compileGen(cascade, hide=frozenset(["cascaded"])), emptyGen)
+assert assertEqual(compileGen(cascade, hide=frozenset(["asked"])), emptyGen)
+
 
 ## MultipleChildren
 ### List
@@ -216,21 +227,23 @@ assert assertEqual(
         asked = frozenset({"Question"})),
     Filled(field = "Question",
            child = ListElement([
-               CLASS("Question_Question",Literal("Question")), Literal(": "), Literal("???"), br]
+               CLASS(["Question", "Question_Question"],Literal("Question")), Literal(": "), Literal("???"), br]
            )))
 assert assertEqual(compileGen(decoratedField, asked = frozenset()), 
                    Filled(field = "Question",
                           child = ListElement([
                               Literal("Question"),
                               Literal(": "),
-                              Field("Question")]
+                              Field("Question"),
+                              br]
                           )))
 assert assertEqual(compileGen(decoratedField, isQuestion = False),
                    Filled(field = "Question",
                           child = ListElement([
                               Literal("Question"),
                               Literal(": "),
-                              Field("Question")]
+                              Field("Question"),
+                              br]
                           )))
 
 ## Numbers
@@ -344,21 +357,27 @@ assert assertEqual(
         asked =frozenset({"Definition"}),
         isQuestion = False
     ),
-    tableTwoShown
+    tableTwoShownAnswer1
 )
                    
 assert assertEqual(compileGen(twoQuestionsAsTable, asked =frozenset({"Definition"})),
-                   tableTwoQuestionned)
+                   tableTwoShownQuestion1)
+assert assertEqual(compileGen(twoQuestionsAsTable, asked =frozenset({"Definitions"})),
+                   tableTwoShownQuestionAll)
+assert assertEqual(compileGen(twoQuestionsAsTable, asked =frozenset({"Definitions"}), isQuestion = False),
+                   tableTwoShownAnswerAll)
 
-
+### Numbered
 assert assertEqual(compileGen(twoQuestionsNumbered, asked =frozenset()),
                    twoQuestionsNumberedShown)
 assert assertEqual(compileGen(twoQuestionsNumbered, asked =frozenset({"Definition"}), isQuestion = False),
-                   twoQuestionsNumberedShown)
+                   twoQuestionsNumberedShown1Answer)
 assert assertEqual(compileGen(twoQuestionsNumbered, asked =frozenset({"Definition"})),
-                   twoQuestionsNumberedAskDefinition)
+                   twoQuestionsNumberedShown1Question)
 assert assertEqual(compileGen(twoQuestionsNumbered, asked =frozenset({"Definitions"})),
                    twoQuestionsNumberedAllAsked)
+assert assertEqual(compileGen(twoQuestionsNumbered, asked =frozenset({"Definitions"}), isQuestion = False),
+                   twoQuestionsNumberedAllAnswer)
 
 assert assertEqual(compileGen(twoQuestionsNumbered,
                               asked =frozenset({"Definition"}),

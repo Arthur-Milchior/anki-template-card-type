@@ -54,6 +54,20 @@ def assertEqual(left, right):
     if left == right:
         return True
     print(f"""\n\nReceived\n«{left}»\nwhich is distinct from expected\n«{right}»\n""")
+    if hasattr(left,"firstDifference"):
+        if hasattr(right,"firstDifference"):
+            pair = left.firstDifference(right)
+            if isinstance(pair,tuple):
+                left_dif,right_dif=pair
+                print(f"""\n\nThe first difference is\n«{left_dif}»\nand\n«{right_dif}»\n""")
+            elif isinstance(pair,None):
+                print("Strangely, firstDifference find no difference")
+            else:
+                assert False
+        else:
+            print("Only the first is a Gen")
+    elif hasattr(right,"firstDifference"):
+        print("Only the second is a Gen")
     return False
 
 # def assertEqualString(left, right):
@@ -108,7 +122,7 @@ def debugFun(fun, debug=debug):
     return aux_debugFun
 
 
-def debugInit(fun):
+def debugInit(fun, debug=debug):
     if not mayDebug:
         return fun
     def aux_debugInit(self, *args, **kwargs):
@@ -136,6 +150,9 @@ def debugInit(fun):
     aux_debugInit.__name__ = f"debug_{fun.__name__}"
     aux_debugInit.__qualname__ = f"debug_{fun.__qualname__}"
     return aux_debugInit
+
+def debugOnlyThisInit(fun):
+    return debugInit(fun, (lambda text,indentToAdd = 0: debug(text, indentToAdd, force = True, level=2)))
 
 
 class ExceptionInverse(Exception):

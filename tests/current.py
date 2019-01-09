@@ -14,8 +14,8 @@ from ..templates.templates import tagsToEdit
 # print (f"tags are {tags}")
 
 #print(prettifyGen(NumberedFields('Definition', 2),toPrint=True))
+#cascadeBeforeTemplate=compileGen(cascadeUseless, asked={"asked"})
 startDebug()
+#print(cascadeBeforeTemplate.template(asked={"cascaded"}))
 endDebug()
-# compileGen(
-#         decoratedField,
-#         asked = frozenset({"Question"}), toPrint = True)
+#compileGen(    twoQuestionsAsTable,    asked =frozenset(),   toPrint=True)

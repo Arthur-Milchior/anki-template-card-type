@@ -1,6 +1,10 @@
 from ..generators import SingleChild, NotNormal
 from ..constants import BASIC, EMPTY
 from ...debug import debugFun
+from .filledOrEmpty import Filled, Empty
+from .askedOrNot import Asked, NotAsked
+from .presentOrAbsent import Present, Absent
+from ...debug import debugFun, debug
 import sys
 
 class MultipleRequirement(SingleChild, NotNormal):
@@ -77,8 +81,8 @@ class MultipleRequirement(SingleChild, NotNormal):
                 
         return current.getNormalForm()
     
-    def __eq__(self,other):
-        return super().__eq__(other) and isinstance(other,Requirement) and self.requirements == other.requirements
+    def _outerEq(self,other):
+        return isinstance(other,Requirement) and self.requirements == other.requirements
     
     def isInconsistent(self):
         #debug("""isInconsistent("{self}")""",1)

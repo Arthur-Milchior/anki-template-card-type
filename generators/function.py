@@ -28,6 +28,11 @@ class Function(Gen):
 
     def __eq__(self, other):
         return isinstance(other, Function) and self.fun == other.fun
+    def _outerEq(self,other):
+        return isinstance(other,Function)
+    def _firstDifference(self,other):
+        return None
+    
 
     @debugFun
     def _callOnChildren(self, *args, **kwargs):
