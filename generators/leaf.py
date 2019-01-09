@@ -1,7 +1,7 @@
 import copy
 import types
 from .constants import *
-from .generators import Gen, modelToFields, modelToFields, genRepr, thisClassIsClonable
+from .generators import Gen, genRepr, thisClassIsClonable
 from .ensureGen import addTypeToGenerator
 from ..debug import debug, assertType, debugFun, ExceptionInverse
 from bs4 import NavigableString
@@ -128,16 +128,14 @@ class Field(Leaf):
         self.typ = typ
         self.cloze = cloze
         if isinstance(field,Field):
-            field = field.field
+            self.field = field.field
         elif isinstance(field,set):#required so that {{foo}} becomes Field(foo)
             assert len(field)==1
-            elt = s.pop()
-            s.add(elt)
-            assert len(elt) == 1
-            field = elt.pop
-            elt.add(field)
-        self.field = field
-        assert assertType(field, str)
+            self.field = field.pop()
+            field.add(self.field)
+        else:
+            self.field = field
+        assert assertType(self.field, str)
         self.dealWithClozeAndType()
         self.dealWithSpecial()
         super().__init__(state = state,
@@ -187,7 +185,7 @@ class Field(Leaf):
         t+=self.params()+")"
         return t
 
-    def _assumeFieldEmpty(field):
+    def _assumeFieldEmpty(self,field):
         if field == self.field:
             if self.special:
                 print(f"""Beware: you assert that special name {self.field} is empty, which makes no sens.""", file=sys.stderr)
@@ -206,11 +204,12 @@ class Field(Leaf):
         if self.field in fields:
             if self.special:
                 print(f"""Beware: your model has a field {self.field} which is also the name of a special field.""", file=sys.stderr)
-            ret = self
+            return self
         else:
-            #debug("""Field {self.field} not in fields""")
-            ret =emptyGen
-        return ret
+            if self.special:
+                return self
+            else:
+                return emptyGen
             
     def _applyTag(self, *args, **kwargs):
         typ = "type:" if self.typ else ""

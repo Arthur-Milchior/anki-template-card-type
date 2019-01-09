@@ -8,7 +8,7 @@ from ..generators import NotNormal, Gen, genRepr
 from ..html import TR, TD, br, HTML, LI
 from ..leaf import Field
 from ..list import MultipleChildren, ListElement
-from .fields import QuestionnedField, LabeledField, Label
+from .fields import QuestionnedField, LabeledField, Label, DecoratedField
 
 @debugFun
 def fieldToPair(field):
@@ -162,12 +162,13 @@ class NumberedFields(ListFields):
     question called fieldPrefixs (note the s)
 
     """
-    def __init__(self,fieldPrefix, greater, attrs= dict(), liAttrs=dict(), unordered= False,  **kwargs):
+    def __init__(self,fieldPrefix, greater,label = None, attrs= dict(), liAttrs=dict(), unordered= False,  **kwargs):
         self.fieldPrefix = fieldPrefix
         self.greater = greater
         self.attrs =attrs
         self.liAttrs= liAttrs
         self.unordered=unordered
+        self.label = label
         self.name = self.fieldPrefix+"s"
         assert(isinstance(fieldPrefix, str))
         assert(isinstance(greater, int))
@@ -179,10 +180,13 @@ class NumberedFields(ListFields):
             return (li, {field})
             
         def globalFun(lines):
-            labelGen = Label(label = f"{fieldPrefix}s",
-                             fields =self.numberedFields,
-                             classes = ["Question",f"Question_{fieldPrefix}s"]
-            )
+            if self.label is None:
+                labelGen = Label(label = f"{fieldPrefix}s",
+                                 fields =self.numberedFields,
+                                 classes = ["Question",f"Question_{fieldPrefix}s"]
+                )
+            else:
+                labelGen=self.label
             return [labelGen, ": ", HTML(tag = "ul" if unordered else "ol",child = lines, attrs = attrs)]
         
         super().__init__(fields = self.numberedFields,
@@ -204,9 +208,12 @@ no other elements are present, and show only the first element."""
                  suffix = br,
                  prefix = None,
                  infix = ": "):
-        nf = NumberedFields(fieldPrefix,greater, label = label, attrs = attrs, liAttrs = liAttrs)
-        qu = DecoratedField(field = fieldPrefix,
+        nf = NumberedFields(fieldPrefix,
+                            greater,
                             label = label,
+                            attrs = attrs,
+                            liAttrs = liAttrs)
+        qu = DecoratedField(labeledField = (fieldPrefix,label),
                             infix = infix,
                             prefix = prefix,
                             suffix = suffix)

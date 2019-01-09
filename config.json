@@ -7,7 +7,7 @@
 ('Notation',[PotentiallyNumberedFields('Notation',4),br]),
 DecoratedField('Representation'),
 DecoratedField('Denoted by')
-]"]
+]"],
 
         ["extendedHead", "[head, ('Assuming',[{{'Assuming'}},br]), namesNotationsDenotedBy]"],
         
@@ -17,7 +17,7 @@ DecoratedField('Denoted by')
         ["contextOrDeck", "[FilledOrEmpty('Context', Field('Context'),deck), hr]"],
         ["footer",
          "[Filled('Extra', Field('Extra')), hr]"
-        ]
+        ],
 
 
 

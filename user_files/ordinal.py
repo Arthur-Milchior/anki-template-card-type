@@ -1,4 +1,6 @@
-from general import header, footer
+from ..generators.imports import *
+from .general import header, footer
+
 
 definition_foo = TableFields(
     fields = ["Definition", "Axiom"]

@@ -43,9 +43,7 @@ def memoize(computeKey = (lambda:None)):
 
 def modelToFields(model):
     """The set of fields of the model given in argument"""
-    if "set of fields" not in model:
-        model["set of fields"] = frozenset({fld["name"] for fld in model["flds"]})
-    return model["set of fields"]
+    return frozenset({fld["name"] for fld in model["flds"]})
 
 def modelToHash(model):
     """Given the model, return the hash of its set of fields."""

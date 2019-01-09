@@ -12,32 +12,18 @@ from ..conditionals.numberOfField import AtLeastOneField
 class LabeledField:
     """A pair, with a label and a field."""
     def __init__(self,field, label=None):
+        self.label = None
         if label is not None:
             self.label = label
-            if isinstance(field,str):
-                self.field = Field(field)
-            elif isinstance(field,Field):
-                self.field = field
-            else:
-                raise Exception
-        else:# label is not given
-            if isinstance(field,tuple):
-                assert (label is None)
-                self.field, self.label = field
-                if isinstance(self.field,str):
-                    self.field = Field(self.field)
-            elif isinstance(field,LabeledField):
-                self.field = field.field
-                self.label = field.label
-            else:
-                # label is the copy of field
-                if isinstance(field, Field):
-                    self.field = field
-                elif isinstance(field,str):
-                    self.field = Field(field)
-                else:
-                    raise Exception
-                self.label = self.field.field
+        if isinstance(field,tuple):
+            assert (label is None)
+            self.field, self.label = field
+        else:
+            self.field = field
+        if isinstance(self.field,str):
+            self.field = Field(self.field)
+        if self.label is None:
+            self.label = self.field.field
         assert assertType(self.field, Field)
         assert assertType(self.label, str)
 

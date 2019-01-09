@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from aqt import mw
 
 from .config import objects
-from .debug import debug
+from .debug import debug, assertType
 from .tag import tagContent
 from .templates.soupAndHtml import templateFromSoup, soupFromTemplate
 from .templates.templates import clean, compile_
@@ -83,6 +83,7 @@ def compileModel(model, objects = objects, toClean = False, recompile = True, pr
             if answerText: 
  #debug("from {templateObject[answerKey]} to {answerText}. Soup is {str(answerSoup)}.")
                 #assert prettify or "\n" not in answerText
+                assert assertType(answerText,str)
                 templateObject[answerKey] = answerText
             
     #debug("", -1)
@@ -91,5 +92,10 @@ def compileModel(model, objects = objects, toClean = False, recompile = True, pr
 def compileAndSaveModel(*args,**kwargs):
     model = compileModel(*args,**kwargs)
     mw.col.models.save(model, templates = True)
-    mw.col.models.flush()
-    #debug("", -1)
+    try:
+        mw.col.models.flush()
+    except TypeError:
+        print(f"model is {model}")
+        raise
+        
+        #debug("", -1)

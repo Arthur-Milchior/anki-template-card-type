@@ -1,4 +1,6 @@
-from general import header, footer
+from ..generators.imports import *
+from .general import header, footer
+
 
 definition_knot = TableFields(["Definition",
                                "Conway",

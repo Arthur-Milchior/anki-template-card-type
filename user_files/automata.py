@@ -1,9 +1,11 @@
-from general import header, footer
+from ..generators.imports import *
+from .general import header, footer
+
 
 automata = [
     header,
     TableFields(
-        listName = "automata",
+        name = "automata",
         fields = ["States",
                   "Locations",
                   "Alphabet",

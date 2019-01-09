@@ -1,1 +1,1 @@
-from algebraic import * 
+from .algebra import * 

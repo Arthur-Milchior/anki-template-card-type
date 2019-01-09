@@ -1,4 +1,5 @@
 from ..generators.imports import *
+from .general import header, footer
 FOE= FilledOrEmpty
 
 ringCom1 = FOE('/',
@@ -32,7 +33,7 @@ ringCom1 = FOE('/',
 )
 
 ring1 = FOE('commutative',
-            RingCom1
+            'RingCom1',
             FOE('/',
                 "Division ring",
                 "Unit ring",
@@ -90,7 +91,7 @@ times_only = FOE('Not associative',
                   Filled('0',
                          ' with zero')],
                  FOE('/',
-                     Foe('\\',
+                     FOE('\\',
                          FOE('0',
                              'Loop',
                              'Quasigroup'),
@@ -111,7 +112,7 @@ plus_only = Empty('Not associative',
                               'Commutative monoid',
                               'Monoid',
                           )
-                      )
+                      ),
                       FOE('Commutative',
                           'Commutative semigroup',
                           'Semigroup'
@@ -128,7 +129,7 @@ outer = FOE('*',
                         'unital '
                     )
              ),
-             filled('Not associative',
+             Filled('Not associative',
                     'non'),
              'associative algebra',
              Filled('Commutative',
@@ -141,7 +142,7 @@ outer = FOE('*',
                     FOE('Graduation',
                         'Graduated module',
                         'Module'
-                        p),
+                    ),
                     'Vector space'
                 )
             )
@@ -199,7 +200,7 @@ algebra_name = FOE('+',
                        outer,
                        FOE('*',
                            ring_like,
-                           plus_only))
+                           plus_only)),
                    FOE('*',
                        times_only,
                        FOE('◁',

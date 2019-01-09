@@ -1,7 +1,9 @@
-from general import header, footer
+from ..generators.imports import *
+from .general import header, footer
+
 
 definition_topology = TableFields(
-    listName = "topology",
+    name = "topology",
     fields = ["Set", "Definition", "Definition2", "Opens", "Compactification of", "Completion of", "Base", "Base2", "Order", "Metric", "Prebase", "Prebase2"]
 )
 compactness= TableFields(tableName="Compactness",
@@ -24,27 +26,27 @@ compactness= TableFields(tableName="Compactness",
                                    'freebly compact']
 )
 
-TableFields(tableName="Bounded",
+bounded =TableFields(tableName="Bounded",
             fields=[
                 'bounded',
                 'totally bounded'
             ]
 )
 
-TableFields(tableName="Points",
+points = TableFields(tableName="Points",
  fields=[
 'limit points',
 'isolated points',
 ])
 
-TableFields(tableName="Sets",
+sets =TableFields(tableName="Sets",
             fields=[
                 'clopen',
                 'dense',
             ]
 )
 
-TableFields(
+separation= TableFields(
     tableName="Separation",
     fields=[
         'T0 Kolmogorov',
@@ -60,8 +62,7 @@ TableFields(
         'coMpletely regular',
         'T3 1/2 TycHonoff',
         'normal',
-        'T4 
-normal Hausdorff',
+        'T4 normal Hausdorff',
         'coMpletely normal',
         'T5 completEly normal Hausdorff',
         'perfectly norMal',
@@ -76,29 +77,30 @@ normal Hausdorff',
         'Pseudonormal',
     ])
 
-Tablefields(tableName="Connexion",
-            'Connected',
-'arc connected',
-            'Path connected',
-            'locally connecteD',
-'locally simply connected',
-            'Extremmaly disconnected',
-'hyperconnected',
-            'N connected',
-            'semi-locally Simply connected',
-'simply connected',
-            'Simply-connected at infinity',
-'totally disconnected',
-'ultraconnected',
-])
+connexion = TableFields(name="Connexion",
+            fields = [
+                'Connected',
+                'arc connected',
+                'Path connected',
+                'locally connecteD',
+                'locally simply connected',
+                'Extremmaly disconnected',
+                'hyperconnected',
+                'N connected',
+                'semi-locally Simply connected',
+                'simply connected',
+                'Simply-connected at infinity',
+                'totally disconnected',
+                'ultraconnected'
+            ])
 
-TableFields(tableName="Group",
+group = TableFields(name="Group",
             fields=[
                 'connected',
                 'fundamental group',
             ])
 
-TableFields(tableName="Cardinal",
+cardinal = TableFields(name="Cardinal",
             fields=[
                 'cardinality',
                 'locally finite',
@@ -109,7 +111,7 @@ TableFields(tableName="Cardinal",
                 'Lindelof',
             ])
 
-TableFields(tableName="Other",
+others = TableFields(name="Other",
             fields=[
                 'interior',
                 'closure',
@@ -149,6 +151,6 @@ TableFields(tableName="Other",
                 'dimension',
             ])
                              
-properties = TableFields([]])
-
+properties = [compactness,bounded,points, sets, separation,connexion,
+              group, cardinal,others]
 topology = [header, definition_topology, properties, footer]

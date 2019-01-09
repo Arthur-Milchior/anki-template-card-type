@@ -134,6 +134,8 @@ def _fixedTag(tag_):
     return FIXED
 
 SPAN = _fixedTag("span")
+HEADER = _fixedTag("header")
+FOOTER = _fixedTag("footer")
 LI = _fixedTag("li")
 DIV = _fixedTag("div")
 P = _fixedTag("p")

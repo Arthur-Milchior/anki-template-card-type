@@ -9,3 +9,4 @@ from .generators.imports import *
 from .templates.templates import compile_, clean, tagsToEdit
 from .templates.soupAndHtml import soupFromTemplate, templateFromSoup
 
+from .user_files.imports import *

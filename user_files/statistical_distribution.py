@@ -1,4 +1,6 @@
-from general import header, footer
+from ..generators.imports import *
+from .general import header, footer
+
 
 definition_foo = TableFields(
     fields = ["Density funciton", "Cumulative function", "Moment generating function", "Characteristic function"]

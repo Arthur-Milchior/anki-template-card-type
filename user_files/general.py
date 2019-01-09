@@ -1,30 +1,29 @@
-def name(nb):
-    text = "name"+nb
-    return Filled(text,
-                  Asked(text,
-                        [QuestionnedField(field = text),
-                         AskedOrNot("name2", "<br/>:","</li>")
-                         NotAsked(text,
-                                  [
-                                      DecoratedField(field = kind+nb, label = kind, prefix = "(", suffix = ")")
-                                      for kind in ["french", "etymology", "abbreviation"]
-                                  ]
-                         )
-                        )
-                  )
-    )
+from ..generators.imports import *
 
-names = ('name',[PotentiallyNumberedFields('Name',4),br])
+def _name(i):
+    name = QuestionnedField(f"Name{i}",classes=["Answer", "Answer_Name"])
+    return ListFields(fields = [f"Abbreviation", f"French", f"Etymology"],
+                      localFun = (lambda f: Parenthesis(DecoratedField((f"f{i}","f"),suffix=""))),
+                      globalSep = (lambda f: ", "),
+                      globalFun = (lambda l: (f"Name{i}",[name,l])))
+
+_names= ListFields(fields = ["","2","3","4"],
+                  localFun = (lambda f: (f"Name{i}",LI(_name(f)))),
+                  globalFun = (lambda l: UL(l)))
+
+names= FilledOrEmpty("Name2",
+                     _names,
+                     _name(""))
 
 namesNotationsDenotedBy = [names,
-                           ('Notation',[PotentiallyNumberedFields('Notation',4),br]),
+                           ('Notation',PotentiallyNumberedFields('Notation',4)),
                            DecoratedField('Representation'),
                            DecoratedField('Denoted by'),
 ]
 
-contextOrDeck = [FilledOrEmpty('Context', Field('Context'),deck), hr]
-head = [contextOrDeck,('Variables', [{{'Variables'}}, hr] )]
-extendedHead = [head, ('Assuming',[{{'Assuming'}},br]), namesNotationsDenotedBy]
+contextOrDeck = [FilledOrEmpty('Context', DecoratedField('Context'),["Deck: ",deck]), hr]
+header = HEADER([contextOrDeck,('Variables', [DecoratedField('Variables'), hr] )])
+extendedHead = [header, ('Assuming',[{'Assuming'},br]), namesNotationsDenotedBy]
 
-footer = [Filled('Extra', Field('Extra')), hr]
+footer = FOOTER(Filled('Extra', [hr,Field('Extra')]))
 

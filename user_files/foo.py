@@ -1,7 +1,7 @@
 from general import header, footer
 
 definition_foo = TableFields(
-    listName = "foo",
+    name = "foo",
     fields = []
 )
 properties = TableFields([])

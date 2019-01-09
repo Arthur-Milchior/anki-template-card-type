@@ -31,8 +31,10 @@ The generator ```Field(foo)```represents the field {{foo}}. It is
 compiled as this field if it is present in the model, otherwise as the
 empty string. 
 
-The Python expression ```{{"foo"}}``` (i.e. a set containing a set
-containing the string "foo") can be used instead of this generator.
+The Python expression ```{"foo"}``` (i.e. a set containing the string
+"foo") can be used instead of this generator. This is supposed to
+recall the Mustache form {{. However {{"foo"}} would be invalid
+Python, since {"foo"} is a set, and not Hashable.
 
 ### Function
 The generator ```Function(foo)``` contains a function foo. The
@@ -60,8 +62,8 @@ A number of generators are created for standard HTML, and ready to use:
   attributes for the whole table.
 * ```SPAN(child, attrs = {})``` is similar to ```HTML("span", child,
   attrs)```. And similarly for ```LI```, ```DIV```, ```P```, ```TR```
-  and ```TD```. That is, they are constructors with the name of the
-  tag fixed.
+  and ```TD```, and the HTML5 ```HEADER``` and ```FOOTER```. That is,
+  they are constructors with the name of the tag fixed.
 * ```OL(elements, liAttrs = {}, attrs = {})``` is an ordered list,
   where each element of elements is a child, enclosed in a ```LI```
   tag with attributes ```liAttrs```. Similarly for ```UL(elements, attrs = {})```.
