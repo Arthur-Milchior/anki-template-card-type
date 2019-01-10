@@ -3,6 +3,7 @@ import copy
 import re
 import sys
 from bs4 import BeautifulSoup
+import traceback
 
 from aqt import mw
 
@@ -35,6 +36,7 @@ def _templateTagAddText(templateTag,soup,
     
 
 def shouldProcess(template,key):
+    """Whether key is in template and is non-empty"""
     if key not in template:
         #debug("key not in template", -1)
         return False
@@ -47,55 +49,58 @@ def shouldProcess(template,key):
         return False
     return True
 
-def process(template, key, toClean, prettify = True, **kwargs):
+def process(template, key, action, prettify = True, **kwargs):
     originalText = template[key]
     soup = soupFromTemplate(originalText)
-    if toClean:
+    if action=="Clean":
         clean(soup)
-    else:
+    elif action=="Template":
         compile_(soup, soup, **kwargs)
+    elif action=="ReTemplate":
+        compile_(soup, soup, recompile=True, **kwargs)
     text =templateFromSoup(soup, prettify = prettify)
     #assert prettify or "\n" not in text
     return soup, text
 
 def processIfRequired(template, key, *args, **kwargs):
-    #debug("""processIfRequired({template.get(key)})""",1)
     if shouldProcess(template, key):
-        #debug("Process is required")
         ret= process(template, key, *args, **kwargs)
     else:
-        #debug("Process is not required")
         ret= None, ""
     soup,text = ret
-    #assert prettify or "\n" not in text
-    #debug("",-1)
     return ret
 
-def compileModel(model, objects = objects, toClean = False, recompile = True, prettify = True):
-    #debug("""compileModel({model["name"]}, {objects.keys()}, {toClean}, {recompile})""", 1)
+def compileModel(model, objects = objects, action = "Template",  prettify = True):
+    """Compile the model. If a compilation raised an exception, it is captured. List of exceptions are returned with the model"""
     for templateObject in model['tmpls']:
         for questionKey, answerKey in [(f"qfmt","afmt"),(f"bqfmt","bafmt")]:
-            questionSoup, questionText = processIfRequired(templateObject, questionKey, toClean = toClean, isQuestion = True, model = model, objects = objects, prettify = prettify)
-            if questionText:
- #debug("from {templateObject[questionKey]} to {questionText}. Soup is {str(questionSoup)}.")
-                templateObject[questionKey] = questionText
-            answerSoup, answerText = processIfRequired(templateObject, answerKey, toClean = toClean, isQuestion = False, model = model, objects = objects, FrontSoup = questionSoup, prettify = prettify)
-            if answerText: 
- #debug("from {templateObject[answerKey]} to {answerText}. Soup is {str(answerSoup)}.")
-                #assert prettify or "\n" not in answerText
-                assert assertType(answerText,str)
-                templateObject[answerKey] = answerText
-            
-    #debug("", -1)
+            if action=="Back to front":
+                templateObject[answerKey]="""<span template="Front Side"/>"""
+            else:
+                frontHtml=templateObject[questionKey]
+                try:
+                    questionSoup, questionText = processIfRequired(templateObject, questionKey, action = action, isQuestion = True, model = model, objects = objects, prettify = prettify)
+                    if questionText:
+                        templateObject[questionKey] = questionText
+                except Exception as e:
+                    print("\n\n\n")
+                    print((templateObject["name"],questionKey,e),file=sys.stderr)
+                    traceback.print_exc(file=sys.stderr)
+                    print("\n\n\n")
+                try:
+                    answerSoup, answerText = processIfRequired(templateObject, answerKey, action = action, isQuestion = False, model = model, objects = objects, FrontHtml = frontHtml, prettify = prettify)
+                    if answerText: 
+                        assert assertType(answerText,str)
+                        templateObject[answerKey] = answerText
+                except Exception as e:
+                    print("\n\n\n")
+                    print((templateObject["name"],answerKey,e),file=sys.stderr)
+                    traceback.print_exc(file=sys.stderr)
+                    print("\n\n\n")
     return model
 
 def compileAndSaveModel(*args,**kwargs):
     model = compileModel(*args,**kwargs)
     mw.col.models.save(model, templates = True)
-    try:
-        mw.col.models.flush()
-    except TypeError:
-        print(f"model is {model}")
-        raise
-        
-        #debug("", -1)
+    mw.col.models.flush()
+

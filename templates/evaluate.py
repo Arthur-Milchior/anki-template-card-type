@@ -20,6 +20,9 @@ def _tagGetParams(tag):
     hide = split(tag.attrs.get("hide"))
     objGenerator = tag.attrs.get("generator")
     mandatory = split(tag.attrs.get("mandatory"))
+    askedMandatory = split(tag.attrs.get("askedmandatory"))
+    mandatory |= askedMandatory
+    asked |= askedMandatory
     if objGenerator is None:
         raise ExceptionInverse(f"""Generator missing in {tag}.""")
     ret = (objGenerator, asked, hide, mandatory)

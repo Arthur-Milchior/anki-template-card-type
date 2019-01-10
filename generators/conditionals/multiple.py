@@ -7,6 +7,9 @@ from .presentOrAbsent import Present, Absent
 from ...debug import debugFun, debug
 import sys
 
+class Inconsistent(Exception):
+    pass
+
 class MultipleRequirement(SingleChild, NotNormal):
     """Conditional. Both about the content of the field. And the existence of the field in the model.  And request that this is a question side.
 
@@ -53,7 +56,7 @@ class MultipleRequirement(SingleChild, NotNormal):
             self.requirements["isQuestion"] = isQuestion
         inconsistent = self.isInconsistent()
         if inconsistent:
-            print("Inconsistent requirements.",file=sys.stderr)
+            raise Inconsistent()
             state = EMPTY
         super().__init__(state = state,
                          **kwargs)
@@ -82,7 +85,7 @@ class MultipleRequirement(SingleChild, NotNormal):
         return current.getNormalForm()
     
     def _outerEq(self,other):
-        return isinstance(other,Requirement) and self.requirements == other.requirements
+        return isinstance(other,MultipleRequirement) and self.requirements == other.requirements
     
     def isInconsistent(self):
         #debug("""isInconsistent("{self}")""",1)

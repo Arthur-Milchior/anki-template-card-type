@@ -61,9 +61,10 @@ A number of generators are created for standard HTML, and ready to use:
   tr lines, tdAttrs are attribute for td cells, and attrs are
   attributes for the whole table.
 * ```SPAN(child, attrs = {})``` is similar to ```HTML("span", child,
-  attrs)```. And similarly for ```LI```, ```DIV```, ```P```, ```TR```
-  and ```TD```, and the HTML5 ```HEADER``` and ```FOOTER```. That is,
-  they are constructors with the name of the tag fixed.
+    attrs)```. And similarly for ```LI```, ```DIV```, ```P```,
+    ```TR```, ```SUB```, ```SUP``` and ```TD```, and the HTML5
+    ```HEADER``` and ```FOOTER```. That is, they are constructors with
+    the name of the tag fixed.
 * ```OL(elements, liAttrs = {}, attrs = {})``` is an ordered list,
   where each element of elements is a child, enclosed in a ```LI```
   tag with attributes ```liAttrs```. Similarly for ```UL(elements, attrs = {})```.
@@ -270,6 +271,28 @@ below. The different kinds of input are:
   Field object or a string, and is used for the field. The label is a
   string, used for label.
 
+#### FromAndTo
+This generator is used for simple questions which, which has a few
+properties:
+* it begins by the content of a field
+* it ends by its answer, the content of another field
+* between them, there is the link between both informations, which can
+  be emphasized.
+* The generator is used only for this property. Hence it is already
+assumed that this "answer" is asked.
+
+For example
+«Carré in ENGLISH is Square»
+or more generally
+```
+{{French}} in ENGLISH is {{English}}
+```
+is obtained by 
+```
+FromAndTo("French"," in ","English"," is ","English")
+```
+Note that neither "in" nor "is" is emphasized.
+
 
 
 #### ListFields
@@ -357,10 +380,6 @@ generators, called ListFields.
 
 ListFields takes the following parameters:
 * fields: a list of field or of labeled fields, depending on what is required.
-* localFun: a function, applied to each element of fields which return
-  the following pair: (a generator, a set of question to ask). If the
-  set is empty, it may returns the generator alone. By default it is
-  the identity function.
 * globalSep: a function taking the list of fields seen and creating a
   generator which separate each successive pair of fields. By default,
   it returns None. 
@@ -370,3 +389,9 @@ ListFields takes the following parameters:
 * name: this parameter is optional. If it is given, then, when this
   name is asked, the union of the set returned by localFun's calls are
   assumed to be asked.
+* localFun: a function, applied to each element of fields which return
+  the following tuple: (a generator, a set of fields which must be set
+  for this field to be displayed, a set of question).  If the last or
+  the two lasts are empty set, they don't have to be returned. By
+  default it is the identity function. Note that a tuple is also a
+  valid generator, pay attention not to return tuple generator from localFun.

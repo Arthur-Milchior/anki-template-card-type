@@ -2,38 +2,49 @@ import copy
 from .generators import Gen, shouldBeKept, genRepr, thisClassIsClonable, MultipleChildren
 from .constants import *
 from .ensureGen import addTypeToGenerator
-from ..debug import debug, assertType, debugFun, ExceptionInverse
+from ..debug import debug, assertType, debugFun, ExceptionInverse, debugInit, debugOnlyThisMethod
 from .leaf import emptyGen
 
  
 @thisClassIsClonable
 class ListElement(MultipleChildren):
-    #@debugFun
+    @debugInit
     def __init__(self,
                  elements = None,
-                 toKeep = None,
                  **kwargs):
         """ 
         Keyword arguments:
         elements -- list of elements
         """
-        self.childEnsured = False
-        debug("ListElement({elements})",1)
-        self.elements = [element for element in elements if element]
-        super().__init__(toKeep = toKeep, **kwargs)
-        debug("",-1)
+        # self.childEnsured = False
+        self.elements = elements
+        super().__init__(**kwargs)
+        self.changeElements()
+
         
-    def clone(self, elements):
+    def changeElements(self):
         truthyElements = []
-        for element in elements:
+        someToKeep = False
+        for element in self.elements:
             if element:
+                element = self._ensureGen(element)
                 truthyElements.append(element)
-        if len(truthyElements)==0:
-            return emptyGen
-        elif len(truthyElements)==1:
-            return truthyElements[0]
+                if element.getToKeep() is not False:
+                    someToKeep = True
+        if len(truthyElements)==0 or not someToKeep:
+            self.elements = []
+            self.setState(EMPTY)
         else:
-            return ListElement(truthyElements)
+            self.elements= truthyElements
+
+    def clone(self, elements):
+        l= ListElement(elements)
+        if not l.elements:
+            return emptyGen
+        elif len(l.elements) is 1:
+            return l.elements[0]
+        else:
+            return l
         
     def _repr(self):
         space  = "  "*Gen.indentation
@@ -62,10 +73,10 @@ class ListElement(MultipleChildren):
     
     @debugFun
     def _getChildren(self):
-        if self.childEnsured == False:
-            for i in range(len(self.elements)):
-                self.elements[i] = self._ensureGen(self.elements[i])
-            self.childEnsured = True
+        # if self.childEnsured == False:
+        #     for i in range(len(self.elements)):
+        #         self.elements[i] = self._ensureGen(self.elements[i])
+        #     self.childEnsured = True
         return self.elements
 
     @debugFun

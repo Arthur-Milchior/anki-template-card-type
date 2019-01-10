@@ -2,7 +2,7 @@ from ..generators.imports import *
 from .general import header, footer
 
 definition_ordinal = TableFields(
-    name = "ordinal",
+    name = "Ordinal",
     fields = ["Objects", "Arrows", "Composition"]
 )
 properties = TableFields(["Abelian",

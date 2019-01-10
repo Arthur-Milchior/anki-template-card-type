@@ -56,8 +56,11 @@ def ensureGenAndSetState(state):
             self.ensureSingleStep(state)
             ret = f(self, *args, **kwargs)
             ret = self._ensureGen(ret)
-            ret.setState(state)
-            return ret
+            if not ret:
+                return self._ensureGen(None)
+            else:
+                ret.setState(state)
+                return ret
         return aux_ensureGenAndSetState
         aux_ensureGenAndSetState.__name__=f"SetState({State})__{f.__name__}"
         aux_ensureGenAndSetState.__qualname__=f"SetState({State})__{f.__qualname__}"

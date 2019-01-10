@@ -141,6 +141,8 @@ DIV = _fixedTag("div")
 P = _fixedTag("p")
 TR = _fixedTag("tr")
 TD = _fixedTag("td")
+SUP = _fixedTag("sup")
+SUB = _fixedTag("sub")
 
 class _LIST(HTML):
     def __init__(self, elements, enclosing = None, liAttrs = {}, **kwargs):

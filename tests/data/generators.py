@@ -72,6 +72,8 @@ qoa = QuestionOrAnswer(question = "question side", answer = "answer side")
 questionsRecursive = QuestionOrAnswer(question = QuestionOrAnswer(question = "question side", answer = "deleted side"), answer = "answer side")
 
 # Sugar
+parenthisedFoo = Parenthesis("foo")
+emptyParenthesis = Parenthesis(None)
 ### Dichotomy
 filledOrEmpty = FilledOrEmpty(field = "Question",
                                    filledCase = "Question is filled",
@@ -93,6 +95,8 @@ labelBarForFieldsFoos = Label("bar",["foos","foo","foo2"],"Question_foos")
 ## Fields
 questionnedField =QuestionnedField('Question')
 decoratedField = DecoratedField('Question')
+## FromAndTo
+EnglishToFrench = FromAndTo("English"," in ","French"," is ","Français")
 
 ## Numbers
 atLeastOneQuestion = AtLeastOneField(child = "At least one",
@@ -113,9 +117,13 @@ requirements3 = MultipleRequirement(child = "Foo",
                             requireFilled = frozenset({"Question"}),
                             requireEmpty = frozenset({"Definition3", "AbsentFromModel"}))
 
-contradictionRequirement = MultipleRequirement(child = (Literal("Foo")),
-                                       requireFilled = frozenset({"Question"}),
-                                       requireEmpty = frozenset({"Question"}))
+try:
+    contradictionRequirement = MultipleRequirement(child = (Literal("Foo")),
+                                                   requireFilled = frozenset({"Question"}),
+                                                   requireEmpty = frozenset({"Question"}))
+    assert False
+except Inconsistent:
+    pass
 requiringInexistant = MultipleRequirement(child = (Literal("Foo")),
                                   requireFilled = frozenset({"absentfrommodel"}))
 
@@ -123,8 +131,6 @@ requiringInexistant = MultipleRequirement(child = (Literal("Foo")),
 #branch = Branch(name="Question", questionAsked = "???", default = Field("Question"))
 ## List Fields
 
-#twoQuestionsAsList = ListFields(fields = ['Definition', 'Definition2'])
-#twoQuestionsAsNamedList = ListFields(['Definition', 'Definition2'], "ListName")
 twoQuestionsAsTable = TableFields(['Definition', 'Definition2'], name="Definitions")
 tableTwoLine1 = Filled(
     field = 'Definition',

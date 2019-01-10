@@ -5,7 +5,7 @@ from .general import header, footer
 automata = [
     header,
     TableFields(
-        name = "automata",
+        name = "Automata",
         fields = ["States",
                   "Locations",
                   "Alphabet",

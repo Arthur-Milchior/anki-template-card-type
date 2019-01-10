@@ -30,20 +30,22 @@ def _set(s,value):
     objects[s] = value
 
 def jsonStringToDic(jsonString, dic = dict()):
-    json = json.loads(jsonTest)
+    json = json.loads(jsonString)
     return jsonToDic(instructions, dic)
+
 def jsonToDic(json, dic = dict()):
     dic.clear()
-    instructions = json.get("instructions", [])
-    for instruction in instructions:
-        if isinstance(instruction,list):
-            (name,value) = instruction
-            #debug("""Evaluating "{name}" as "{value}" of type {type(value)}.""")
-            dic[name] =  ensureGen(eval(value,globals(), dic))
-        elif isinstance(instruction,str):
-            exec(instruction,globals(), dic)
-        else:
-            assert False
+    if json is not None:
+        instructions = json.get("instructions", [])
+        for instruction in instructions:
+            if isinstance(instruction,list):
+                (name,value) = instruction
+                #debug("""Evaluating "{name}" as "{value}" of type {type(value)}.""")
+                dic[name] =  ensureGen(eval(value,globals(), dic))
+            elif isinstance(instruction,str):
+                exec(instruction,globals(), dic)
+            else:
+                assert False
     return dic
     
 read = False

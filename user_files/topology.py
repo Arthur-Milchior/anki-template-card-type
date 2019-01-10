@@ -3,7 +3,7 @@ from .general import header, footer
 
 
 definition_topology = TableFields(
-    name = "topology",
+    name = "Topology",
     fields = ["Set", "Definition", "Definition2", "Opens", "Compactification of", "Completion of", "Base", "Base2", "Order", "Metric", "Prebase", "Prebase2"]
 )
 compactness= TableFields(tableName="Compactness",

@@ -1,8 +1,11 @@
 import re
 from inspect import stack
 optimize = False
-mayDebug = True
 
+#whether debug may be turned on eventually. Less efficient
+mayDebug = False
+
+#Whether right debuging is on
 shouldDebug = False
 def startDebug():
     global shouldDebug
@@ -36,6 +39,8 @@ def debug(text, indentToAdd=0, force = False, level =1):
 
 nbInsideThis = 0
 def debugInsideThisMethod(fun):
+    if not mayDebug:
+        return fun
     def aux_debugInsideThisMethod(*args, **kwargs):
         global nbInsideThis
         startDebug()

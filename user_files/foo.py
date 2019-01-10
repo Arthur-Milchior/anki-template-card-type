@@ -1,4 +1,5 @@
-from general import header, footer
+from .general import header, footer
+from ..generators.imports import *
 
 definition_foo = TableFields(
     name = "foo",

@@ -9,7 +9,7 @@ assert assertEqual(prettifyGen(literalFoo),literalHtml)
 assert assertEqual(prettifyGen(fieldQuestion),fieldHtml)
 assert assertEqual(prettifyGen(requireQuestion),requirementHtml)
 assert assertEqual(prettifyGen(requirements3),requirement2Html)
-assert assertEqual(prettifyGen(contradictionRequirement),emptyHtml)
+# assert assertEqual(prettifyGen(contradictionRequirement),emptyHtml)
 assert assertEqual(prettifyGen(requiringInexistant),emptyHtml)
 assert assertEqual(prettifyGen(listEmptyExistingField),listHtml)
 

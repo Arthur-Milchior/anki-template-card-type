@@ -1,10 +1,14 @@
-from ..generators import Gen
-from ..list import ListElement
+from .generators import SingleChild
+from .list import ListElement
 
-class Parenthesis(ListElement):
+class Parenthesis(SingleChild):
     """A generator, with parenthesis around them."""
-    def __init__(child, left = "(", right = ")", *args, **kwargs):
-        self.child = child
-        left = self._ensureGen(left).dontKeep()
-        right = self._ensureGen(right).dontKeep()
-        debug.__init__([left,child,right], *args, **kwargs)
+    def __init__(self,child, left = "(", right = ")", *args, **kwargs):
+        super().__init__(child = child,*args, **kwargs)
+        self.left = self._ensureGen(left)
+        self.right = self._ensureGen(right)
+        self.left.dontKeep()
+        self.right.dontKeep()
+
+    def _getNormalForm(self):
+        return self._ensureGen([self.left,self.child,self.right]).getNormalForm()

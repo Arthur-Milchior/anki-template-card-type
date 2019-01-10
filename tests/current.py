@@ -4,7 +4,7 @@ from html import escape
 from copy import deepcopy
 from ..generators.imports import *
 from ..debug import startDebug, endDebug, debug, assertEqual
-from .data.imports import *
+#from .data.imports import *
 from ..templates.soupAndHtml import templateFromSoup, soupFromTemplate
 from ..templates.templates import tagsToEdit
 
@@ -18,4 +18,6 @@ from ..templates.templates import tagsToEdit
 startDebug()
 #print(cascadeBeforeTemplate.template(asked={"cascaded"}))
 endDebug()
-#compileGen(    twoQuestionsAsTable,    asked =frozenset(),   toPrint=True)
+# compileGen(DecoratedField("Question"), asked =frozenset("Question"),   toPrint=True)
+
+# raise Exception

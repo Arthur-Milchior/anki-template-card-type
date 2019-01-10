@@ -16,7 +16,7 @@ try:
     
     from .editTemplate import compileAndSaveModel
     
-    def runBrowser(browser, toClean):
+    def runBrowser(browser, action):
         mw.checkpoint("Change template")
         mw.progress.start()
         
@@ -30,20 +30,28 @@ try:
             model = mw.col.models.get(mid)
             #debug("""dealing with model ""\"{model}""\".""")
             readIfRequired()
-            compileAndSaveModel(model, toClean = toClean, objects = objects)
+            compileAndSaveModel(model, action = action, objects = objects)
         mw.progress.finish()
-        tooltip("Ending "+("cleaning " if toClean else "")+"Template")
+        tooltip(f"Ending {action}")
     
     
     def setupMenu(browser):
         a = QAction("Template", browser)
         a.setShortcut(QKeySequence("Ctrl+Alt+T"))
-        a.triggered.connect(lambda : runBrowser(browser,False))
+        a.triggered.connect(lambda : runBrowser(browser,"Template"))
+        browser.form.menuEdit.addAction(a)
+        
+        a = QAction("ReTemplate", browser)
+        a.triggered.connect(lambda : runBrowser(browser,"ReTemplate"))
+        browser.form.menuEdit.addAction(a)
+    
+        a = QAction("frontSide to each back", browser)
+        a.triggered.connect(lambda : runBrowser(browser,"Back to front"))
         browser.form.menuEdit.addAction(a)
     
         a = QAction("Clean Template", browser)
         a.setShortcut(QKeySequence("Ctrl+Alt+Shift+T"))
-        a.triggered.connect(lambda : runBrowser(browser,True))
+        a.triggered.connect(lambda : runBrowser(browser,"Clean"))
         browser.form.menuEdit.addAction(a)
     addHook("browser.setupMenus", setupMenu)
 except:

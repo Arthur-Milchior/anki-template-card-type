@@ -1,4 +1,4 @@
-from ..debug import debug, assertType, ExceptionInverse
+from ..debug import debug, assertType, ExceptionInverse, debugOnlyThisMethod
 import bs4
 
 class Template:
@@ -42,21 +42,21 @@ def getModule(tag):
     """The module object according to the template name from this tag.""" 
     return getFunctionFromKind(getKind(tag))
 
-def compile_(tag, soup, **kwargs):
+
+def compile_(tag, soup, recompile=False, **kwargs):
     """For each tag having a template non-empty attribute, apply the
     generator according to this value.
 
     """
-    #debug("compile_({tag})",+1)
     assert soup is not None
     assert assertType(tag, [bs4.element.Tag, bs4.BeautifulSoup])
-    #debug("""templates.compile_: kwargs is {kwargs}""")
     for tag_ in tagsToEdit(tag):
-        #debug("found {tag_} to compile",+1)
-        tag_.contents = []
-        getModule(tag_).compile_(tag = tag_, soup = soup, **kwargs)
-        #debug("",-1)
-    #debug("",-1)
+        if tag_.contents and not recompile:
+            continue
+        else:
+            tag_.contents = []
+            getModule(tag_).compile_(tag = tag_, soup = soup,  **kwargs)
+
 
 def clean(tag):
     for tag_ in tagsToEdit(tag):

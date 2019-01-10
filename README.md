@@ -111,25 +111,25 @@ to send me your generators so that I can include them in this add-on.
 The most basic template's value is a generator. This generator is
 compiled and the result of the compilation is put between the tags.
 ```
-<span template='eval' generator='foo' asked='bar'/>
+    <span template="eval" generator="foo" asked="bar"/>
 ```
 This compile as 
 ```
-<span template='eval' generator='foo' asked='bar'>
+<span template="eval" generator="foo" asked="bar">
   Result of the compilation of foo, where the name bar is asked.
 </span>
 ```
 
-More precisely, if ```foo``` is the generator ```DecoratedField('bar')```,
+More precisely, if ```foo``` is the generator ```DecoratedField("bar")```,
 then this templates compiles, on the question side, as:
 ```
-<span template='eval' generator='foo' asked='bar'>
+<span template="eval" generator="foo" asked="bar">
   {{#bar}}bar: ???{{/bar}}
 </span>
 ```
 and on the answer side as:
 ```
-<span template='eval' generator='foo' asked='bar'>
+<span template="eval" generator="foo" asked="bar">
   {{#bar}}bar: {{bar}}{{/bar}}
 </span>
 ```

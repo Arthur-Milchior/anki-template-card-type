@@ -22,7 +22,7 @@ class TestHTML:
         if self.numberOfTagToEdit is not None:
             assert self.numberOfTagToEdit == len(tagsToEdit(soup))
         #debug("""TestHTML: kwargs is {self.kwargs}""")
-        compile_(soup, soup = soup, model = model, **self.kwargs)
+        compile_(soup, soup = soup, model = model,recompile=True, **self.kwargs)
         assert assertEqual(templateFromSoup(soup, prettify = True),self.compiled)
 
 
@@ -34,9 +34,11 @@ def testEachStep(gen,
                  hide = frozenset(),
                  mandatory = frozenset(),
                  toPrint = False,
+                 fields = None,
                  html = ""):
     """Main interest is changing the default value for ones useful for the test"""
-    fields = modelToFields(model)
+    if fields is None:
+        fields = modelToFields(model)
     soup = soupFromTemplate(html)
     return gen.compile(
         soup = soup,

@@ -7,20 +7,17 @@ from ..tag import tagContent
 from ..debug import debug
 
 def compile_(tag, soup = None, FrontSoup = None, FrontHtml = None,  **kwargs):
+    """We should receive the front either as HTML string or as a soup. Soup will be generated if we get html. If both are None, the front is empty"""
     assert FrontSoup is None or FrontHtml is None
-    assert FrontSoup is not None or FrontHtml is not None
     assert tag is not None
     if FrontHtml is not None:
         FrontSoup = soupFromTemplate(FrontHtml)
-    #debug("""frontSide.compile_("{tag}","{FrontSoup}")""",1)
-    #(text, newTag) =
+    if FrontSoup is None:
+        return
     newFrontSoup = copy(FrontSoup)
-    templateCompile(newFrontSoup, soup = FrontSoup, **kwargs)
-    #debug("""newFrontSoup is "{newFrontSoup}" """)
+    templateCompile(newFrontSoup, soup = FrontSoup, recompile=True, **kwargs)
     tag.contents = newFrontSoup.contents
-    #debug("""tag becomes "{tag}" """)
-    #newText = tagContent(tag.name, tag.attrs, text)
-    #debug("",-1)
+
 
 def clean(tag):
     tag.clean()

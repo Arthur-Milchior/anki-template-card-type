@@ -169,6 +169,10 @@ assert assertEqual(compileGen(questionsRecursive),Literal("question side"))
 assert assertEqual(compileGen(questionsRecursive, isQuestion = False),Literal("answer side"))
 
 # Sugar
+assert assertEqual(compileGen(parenthisedFoo),
+                   ListElement(["(","foo",")"]))
+assert assertEqual(compileGen(emptyParenthesis),
+                   emptyGen)
 ## Dichotomy
 assert assertEqual(compileGen(filledOrEmpty),
                    ListElement([Filled(field = "Question", child = Literal(text = "Question is filled", ), ), Empty(field = "Question", child = Literal(text = "Question is empty", ), )], ))
@@ -245,7 +249,49 @@ assert assertEqual(compileGen(decoratedField, isQuestion = False),
                               Field("Question"),
                               br]
                           )))
-
+## FromAndTo
+# assert assertEqual(compileGen(frenchToEnglish, fields={"Français","English"}),
+#                    Filled("English",
+#                           Filled("Français",
+#                                  ListElement([ListElement([Field("English"),
+#                                                            Literal(" in ")]),
+#                                               Literal("French"),
+#                                               Literal(" is "),
+#                                               Field("Français"),
+#                                               br]
+#                                  )
+#                           )
+#                    )
+# )
+assert assertEqual(compileGen(EnglishToFrench, fields={"Français","English"}),
+                   Filled("English",
+                          Filled("Français",
+                                 ListElement([ListElement([Field("English"),
+                                                           Literal(" in ")]),
+                                              CLASS(["Question","Question_Français"],
+                                                    Literal("French")),
+                                              Literal(" is "),
+                                              Literal("???"),
+                                              br]
+                                 )
+                          )
+                   )
+)
+assert assertEqual(compileGen(EnglishToFrench, fields={"Français","English"},isQuestion = False),
+                   Filled("English",
+                          Filled("Français",
+                                 ListElement([ListElement([Field("English"),
+                                                           Literal(" in ")]),
+                                              Literal("French"),
+                                              Literal(" is "),
+                                              CLASS(["Answer","Answer_Français"],
+                                                    Field("Français")
+                                              ),
+                                              br]
+                                 )
+                          )
+                   )
+)
 ## Numbers
 assert assertEqual(compileGen(atLeastOneQuestion),
                    Filled(field = "Question", child = Literal(text = "At least one", ), ))
@@ -320,12 +366,9 @@ assert assertEqual(compileGen(requirements3),
   child = Filled(
     field = 'Question',
     child = Literal(text = "Foo",))))
-assert assertEqual(compileGen(contradictionRequirement), emptyGen)
+# assert assertEqual(compileGen(contradictionRequirement), emptyGen)
 assert assertEqual(compileGen(requiringInexistant),emptyGen)
 ## List Fields
-assert assertEqual(fieldToPair("field"), ("field",Field("field")))
-assert assertEqual(fieldToPair(("label","field")), ("label",Field("field")))
-assert assertEqual(fieldToPair(Field("field")), ("field",Field("field")))
 
 # assert assertEqual(compileGen(twoQuestionsAsList, asked =frozenset()),
 #                    compileGen([["Definition", ": ", Field("Definition")],["Definition2", ": ", Field("Definition2")]]))

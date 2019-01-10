@@ -1,8 +1,9 @@
-from ...debug import debug, ExceptionInverse, debugFun, assertType, debugInit
+from ...debug import debug, ExceptionInverse, debugFun, assertType, debugInit, debugOnlyThisMethod
 from ...utils import identity
 from ..conditionals.askedOrNot import  AskedOrNot, Cascade
 from ..conditionals.numberOfField import AtLeastOneField
 from ..conditionals.filledOrEmpty import Filled, FilledOrEmpty
+from ..conditionals.multiple import MultipleRequirement
 from ..ensureGen import ensureGen
 from ..generators import NotNormal, Gen, genRepr
 from ..html import TR, TD, br, HTML, LI
@@ -10,41 +11,15 @@ from ..leaf import Field
 from ..list import MultipleChildren, ListElement
 from .fields import QuestionnedField, LabeledField, Label, DecoratedField
 
-@debugFun
-def fieldToPair(field):
-    """Given a representation of a field, returns the label to use, and the Field object"""
-    if isinstance(field, str):
-        debug("string case")
-        ret = (field,Field(field))
-    elif isinstance(field,tuple) and len(field) == 2:
-        debug("pair case")
-        (label,field) = field
-        assert isinstance(field[0],str)
-        if isinstance(field[1],str):
-            field = Field(field)
-        else:
-            assert isinstance(field[1],Field)
-        ret = (label,field)
-    elif isinstance(field,Field) :
-        debug("Field case")
-        ret = (field.field, field)
-    else:
-        raise ExceptionInverse(field)
-    # (label,field) =ret
-    # assert assertType(label, str)
-    # assert assertType(field, Field)
-    # assert assertType(field.field, str)
-    return ret
-    
-
 class ListFields(NotNormal):
     """
     Apply functions to each field, add separators between them, apply a function to the result
 
     fields -- a list of fields.
-    localFun -- the function to apply to each field. Takes as argument the field, as passed in fields. return the object t add.
+    localFun -- the function to apply to each field. Takes as argument the field, as passed in fields. return a generator to add. May return a list of fields which should be present for this line to occurs. May also return as third element of the tuple a set of questions to ask if name is asked
     globalSep -- the function to apply generate field separator. Takes as argument all the previous fields. By default, return None.
     globalFun -- the function to apply to generate the final object. Takes as argument the list of fields and separator passed as argument. By default, apply ListElement.
+    name -- a name for this generator. When this name is asked, the questions returned as 3rd element by localFun are also considered to be asked
     """
     def __init__(self,
                  fields,
@@ -53,9 +28,13 @@ class ListFields(NotNormal):
                  globalFun = None,
                  name = None,
                  toKeep = True,
+                 prefix=None,
+                 suffix=None,
                  **kwargs):
         self.originalFields = fields
         self.name = name
+        self.prefix=prefix
+        self.suffix=suffix
         self.localFun = localFun or identity
         self.globalFun = globalFun or identity
         self.globalSep = globalSep or (lambda x:None)
@@ -77,15 +56,27 @@ class ListFields(NotNormal):
             seen.append(field)
             processedField = self.localFun(field)
             if isinstance(processedField,tuple):
-                processedField,toCascadeLocal = processedField
+                if len(processedField) is 2:
+                    processedField,filledField = processedField
+                    toCascadeLocal=set()
+                elif len(processedField) is 3:
+                    processedField,filledField, toCascadeLocal = processedField
+                else:
+                    assert False
             else:
                 toCascadeLocal= set()
+                filledField = set()
             if processedField is not None:
+                if filledField:
+                    processedField = MultipleRequirement(
+                        requireFilled=filledField,
+                        child = processedField)
                 elements.append(processedField)
             toCascade |= toCascadeLocal
             #print(f"Adding {toCascadeLocal} to toCascade, it's now {toCascade}")
         #print(f"toCascade is finally {toCascade}")
         ret = self.globalFun(elements)
+        ret = [self.prefix,ret,self.suffix]
         if self.name is not None and toCascade:
             #print("Adding toCascade to ret")
             ret = Cascade(field = self.name,
@@ -124,15 +115,12 @@ class TableFields(ListFields):
             debug("""pair is "{labeledField.label}", "{fieldName}".""")
             labelGen = Label(label = label,
                              fields = [fieldName],
-                             classes = ["Question",f"Question_{fieldName}"]
+                             classes = ["Question",fieldName]
             )
             tdLabel = TD(child = labelGen, attrs=tdLabelAttrs)
             tdField = TD(child = questionnedField, attrs = tdFieldAttrs)
             tr = TR(child = [tdLabel, tdField], attrs = trAttrs)
-            ret = Filled(
-                field = fieldName,
-                child = tr)
-            return (ret, {fieldName})
+            return (tr,{fieldName}, {fieldName})
         @debugFun
         def globalFun(lines):
             ret=HTML(tag = "table", child = lines, attrs = attrs)
@@ -162,40 +150,39 @@ class NumberedFields(ListFields):
     question called fieldPrefixs (note the s)
 
     """
-    def __init__(self,fieldPrefix, greater,label = None, attrs= dict(), liAttrs=dict(), unordered= False,  **kwargs):
+    def __init__(self,fieldPrefix, greater,label = None, attrs= dict(), liAttrs=dict(), unordered= False,localFun=None,globalFun=None,  **kwargs):
         self.fieldPrefix = fieldPrefix
         self.greater = greater
         self.attrs =attrs
         self.liAttrs= liAttrs
         self.unordered=unordered
-        self.label = label
+        self.label = label if label is not None else f"{fieldPrefix}"
         self.name = self.fieldPrefix+"s"
         assert(isinstance(fieldPrefix, str))
         assert(isinstance(greater, int))
-        self.numberedFields = [fieldPrefix]+[f"""{fieldPrefix}{i}""" for i in range(2,greater+1)]
+        self.suffixes = [""]+[str(i) for i in range(2,greater+1)]
+        self.numberedFields=[f"{fieldPrefix}{i}" for i in self.suffixes]
+        self.groupName=f"{fieldPrefix}s"
+        if localFun is None:
+            def localFun(i):
+                field=f"""{fieldPrefix}{i}"""
+                li = LI(child = QuestionnedField(field,classes=[fieldPrefix]), attrs = liAttrs)
+                return (li, {field}, {field})
 
+        if globalFun is None:
+            def globalFun(lines):
+                labelGen = Label(label = self.groupName,
+                                 fields =self.numberedFields+[self.groupName],
+                                 classes = [self.groupName])
+                return [labelGen, ": ", HTML(tag = "ul" if unordered else "ol",child = lines, attrs = attrs)]
         
-        def localFun(field):
-            li = Filled(field = field,child=LI(child = QuestionnedField(field,classes=["Answer", f"Answer_{fieldPrefix}"]), attrs = liAttrs))
-            return (li, {field})
-            
-        def globalFun(lines):
-            if self.label is None:
-                labelGen = Label(label = f"{fieldPrefix}s",
-                                 fields =self.numberedFields,
-                                 classes = ["Question",f"Question_{fieldPrefix}s"]
-                )
-            else:
-                labelGen=self.label
-            return [labelGen, ": ", HTML(tag = "ul" if unordered else "ol",child = lines, attrs = attrs)]
-        
-        super().__init__(fields = self.numberedFields,
+        super().__init__(fields = self.suffixes,
                          name = self.name,
                          localFun = localFun,
                          globalFun = globalFun,
                          **kwargs)
 
-class PotentiallyNumberedFields(FilledOrEmpty):
+class PotentiallyNumberedFields(Cascade):
     """If the second element is present, a list is used. Otherwise, assume
 no other elements are present, and show only the first element."""
     def __init__(self,
@@ -213,14 +200,17 @@ no other elements are present, and show only the first element."""
                             label = label,
                             attrs = attrs,
                             liAttrs = liAttrs)
-        qu = DecoratedField(labeledField = (fieldPrefix,label),
+        qu = DecoratedField(field = fieldPrefix,
+                            label = label,
                             infix = infix,
                             prefix = prefix,
                             suffix = suffix)
-        
-        super().__init__(field = f"""{fieldPrefix}2""",
+        foe=FilledOrEmpty(field = f"""{fieldPrefix}2""",
                          filledCase = nf,
                          emptyCase = qu)
+        super().__init__(child=foe,
+                         cascade=[fieldPrefix],
+                         field=fieldPrefix+"s")
 
     # def __repr__(self):
     #     return f"""PotentiallyNumberedFields() on {super().__repr__()}"""
