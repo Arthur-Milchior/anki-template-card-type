@@ -67,11 +67,11 @@ at conference XXX».
 Here is the example of the first card I obtain:
 * ![A card asking for the first name of some guy who's face is shown](https://raw.githubusercontent.com/Arthur-Milchior/anki-template-card-type/master/examples/exampleQuestion.png "First name question")
 And here are the templates of the five card types:
-* !(https://raw.githubusercontent.com/Arthur-Milchior/anki-template-card-type/master/examples/templateFirst.png "First name template")
-* !(https://raw.githubusercontent.com/Arthur-Milchior/anki-template-card-type/master/examples/Last.png "Last name template")
-* !(https://raw.githubusercontent.com/Arthur-Milchior/anki-template-card-type/master/examples/Name.png "Full name template")
-* !(https://raw.githubusercontent.com/Arthur-Milchior/anki-template-card-type/master/examples/Known.png "Known for template")
-* !(https://raw.githubusercontent.com/Arthur-Milchior/anki-template-card-type/master/examples/KnownName.png "Full name give known template")
+* ![Template of the card asking for first name](https://raw.githubusercontent.com/Arthur-Milchior/anki-template-card-type/master/examples/templateFirst.png "First name template")
+* ![Template of the card asking for last name](https://raw.githubusercontent.com/Arthur-Milchior/anki-template-card-type/master/examples/Last.png "Last name template")
+* ![Template of the card asking for full name](https://raw.githubusercontent.com/Arthur-Milchior/anki-template-card-type/master/examples/Name.png "Full name template")
+* ![Template of the card asking why do you know this person](https://raw.githubusercontent.com/Arthur-Milchior/anki-template-card-type/master/examples/Known.png "Known for template")
+* ![Template of the card asking for which is the person you know for this reason](https://raw.githubusercontent.com/Arthur-Milchior/anki-template-card-type/master/examples/KnownName.png "Full name give known template")
 
 
 This has four fields:
