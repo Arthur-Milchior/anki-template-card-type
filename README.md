@@ -65,14 +65,13 @@ them. Such a reason may be «Boss of the company», or «Spoke with him
 at conference XXX».
 
 Here is the example of the first card I obtain:
-* ![A card asking for the first name of some guy who's face is shown](https://raw.githubusercontent.com/Arthur-Milchior/anki-template-card-type/master/examples/exampleQuestion.png) 
-  
+* ![A card asking for the first name of some guy who's face is shown](https://raw.github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/exampleQuestion.png "First name question")
 And here are the templates of the five card types:
-* !(https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/templateFirst.png "First name template")
-* !(https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/Last.png "Last name template")
-* !(https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/Name.png "Full name template")
-* !(https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/Known.png "Known for template")
-* !(https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/KnownName.png "Full name give known template")
+* !(https://raw.github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/templateFirst.png "First name template")
+* !(https://raw.github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/Last.png "Last name template")
+* !(https://raw.github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/Name.png "Full name template")
+* !(https://raw.github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/Known.png "Known for template")
+* !(https://raw.github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/KnownName.png "Full name give known template")
 
 
 This has four fields:
