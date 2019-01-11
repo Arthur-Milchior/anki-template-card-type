@@ -38,7 +38,7 @@ htmlAnswerTestCompiled = """<span template="Front Side">
 htmlQuestion = """<span asked="Question" generator="Question" template="conf"/>"""
 htmlQuestionCompiled = """<span asked="Question" generator="Question" template="conf">
  {{#Question}}
- <span class="Question Question_Question">
+ <span class="Question Question">
   Question
  </span> :
  ???
@@ -53,7 +53,7 @@ htmlAnswerCompiled = """<span template="Front Side">
   {{#Question}}
   Question
   :
-  <span class="Answer Answer_Question">
+  <span class="Answer Question">
    {{Question}}
   </span>  <br/>
   {{/Question}}
@@ -64,7 +64,7 @@ htmlAnswerCompiled = """<span template="Front Side">
 definitionTemplateList ="""<span asked="Definition" generator='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval"/>"""
 definitionQuestionList ="""<span asked="Definition" generator='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval">
  {{#Definition}}
- <span class="Question Question_Definition">
+ <span class="Question Definition">
   Definition
  </span> :
  ???
@@ -82,7 +82,7 @@ definitionAnswerList ="""<span template="Front Side">
   {{#Definition}}
   Definition
   :
-  <span class="Answer Answer_Definition">
+  <span class="Answer Definition">
    {{Definition}}
   </span>  <br/>
   {{/Definition}}
@@ -98,7 +98,7 @@ definitionAnswerList ="""<span template="Front Side">
 definitionTemplateEasy ="""<span asked="Definition" generator="TwoDefsEasy" template="eval"/>"""
 definitionQuestionEasy ="""<span asked="Definition" generator="TwoDefsEasy" template="eval">
  {{#Definition}}
- <span class="Question Question_Definition">
+ <span class="Question Definition">
   Definition
  </span> :
  ???
@@ -116,7 +116,7 @@ definitionAnswerEasy ="""<span template="Front Side">
   {{#Definition}}
   Definition
   :
-  <span class="Answer Answer_Definition">
+  <span class="Answer Definition">
    {{Definition}}
   </span>  <br/>
   {{/Definition}}
@@ -135,7 +135,7 @@ definitionQuestionTable ="""<span asked="Definition" generator="TableFields(['De
   {{#Definition}}
   <tr>
    <td>
-    <span class="Question Question_Definition">
+    <span class="Question Definition">
      Definition
     </span>
    </td>   <td>
@@ -160,7 +160,7 @@ definitionAnswerTable ="""<span template="Front Side">
     <td>
      Definition
     </td>    <td>
-     <span class="Answer Answer_Definition">
+     <span class="Answer Definition">
       {{Definition}}
      </span>
     </td>
@@ -207,7 +207,7 @@ definitionAnswerTable ="""<span template="Front Side">
 
 definitionTemplateHard ="""<span asked="Definition" generator="TwoDefsHard" template="eval"/>"""
 definitionQuestionHard ="""<span asked="Definition" generator="TwoDefsHard" template="eval">
- <span class="Question Question_Definitions">
+ <span class="Question Definitions">
   Definitions
  </span> :
  <ol>
@@ -228,7 +228,7 @@ definitionAnswerHard ="""<span template="Front Side">
   <ol>
    {{#Definition}}
    <li>
-    <span class="Answer Answer_Definition">
+    <span class="Answer Definition">
      {{Definition}}
     </span>
    </li>   {{/Definition}}

@@ -20,7 +20,7 @@ def compile_(tag, soup = None, FrontSoup = None, FrontHtml = None,  **kwargs):
 
 
 def clean(tag):
-    tag.clean()
+    tag.clear()
     pass
     
 Template(["Front Side"], compile_, clean)

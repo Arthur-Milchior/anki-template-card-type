@@ -53,7 +53,9 @@ class QuestionnedField(AskedOrNot):
             self.fieldName = field.field
         if classes is None:
             classes = [self.fieldName]
-        classes += ["Answer"]
+        if isinstance(classes,str):
+            classes=[classes]
+        classes = ["Answer"]+classes
         self.classes = classes
         self.asked = QuestionOrAnswer("???", CLASS(classes,self.field))
         #todo emphasize answerAsked
@@ -72,10 +74,10 @@ class Label(QuestionOrAnswer):
     """
     def __init__(self, label, fields, classes=None):
         self.classes = classes
-        if self.classes = None:
+        if self.classes is None:
             self.classes = [label]
-        self.classes+=["Question"]
-        questionSide = AtLeastOneField(child = CLASS(classes,label),
+        self.classes=["Question"]+self.classes
+        questionSide = AtLeastOneField(child = CLASS(self.classes,label),
                                        fields = fields,
                                        otherwise = label,
                                        asked = True

@@ -597,6 +597,9 @@ class Gen:
         assert standardContainer(hide)
         if mandatory is None:
             mandatory = frozenset()
+        missingFields=mandatory-fields
+        if missingFields:
+            raise Exception(f"{missingFields} are mandatory but not in the model.")
         templateRestriction = modelRestriction.template(asked = asked,
                                                         hide = hide,
                                                         mandatory = mandatory)
@@ -670,11 +673,11 @@ class MultipleChildren(Gen):
             
 class NotNormal(Gen):
     def _getWithoutRedundance(self):
-        raise ExceptionInverse("_getWithoutRedundance from not normal")
+        raise ExceptionInverse(f"_getWithoutRedundance from not normal")
     # def getWithoutRedundance(self):
-    #     raise ExceptionInverse("getWithoutRedundance from not normal")
+    #     raise ExceptionInverse(f"getWithoutRedundance from not normal")
     # def assumeFieldInSet(self, *args, **kwargs):
-    #     raise ExceptionInverse("assumeFieldInSet from not normal")
+    #     raise ExceptionInverse(f"assumeFieldInSet from not normal")
     def _assumeFieldFilled(self, field):
         assert False
     def _assumeFieldEmpty(self, field):
@@ -686,16 +689,16 @@ class NotNormal(Gen):
     def _assumeFieldAbsent(self, field):
         assert False
     # def _assumeFieldInSet(self, *args, **kwargs):
-    #     raise ExceptionInverse("_assumeFieldInSet from not normal")
+    #     raise ExceptionInverse(f"_assumeFieldInSet from not normal")
     def _assumeQuestion(self, *args, **kwargs):
-        raise ExceptionInverse("_assumeQuestion from not normal")
+        raise ExceptionInverse(f"_assumeQuestion from not normal:{self}")
     def _applyTag(self, *args, **kwargs):
-        raise ExceptionInverse("_applyTag from not normal")
+        raise ExceptionInverse(f"_applyTag from not normal:{self}")
     def _restrictToModel(self, *args, **kwargs):
-        raise ExceptionInverse("_restrictToModel from not normal")
+        raise ExceptionInverse(f"_restrictToModel from not normal:{self}")
     
     def _questionOrAnswer(self, *args, **kwargs):
-        raise ExceptionInverse("_questionOrAnswer from not normal")
+        raise ExceptionInverse(f"_questionOrAnswer from not normal:{self}")
     
 class SingleChild(MultipleChildren):
     def __init__(self, child = None, toKeep = None, **kwargs):

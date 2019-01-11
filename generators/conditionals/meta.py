@@ -3,6 +3,12 @@ from ..leaf import emptyGen, Field
 from ...debug import assertType
 
 class FieldChild(SingleChild):
+    def _removeName(self, field):
+        if self.field == field:
+            return None
+        else:
+            return self.cloneSingle(self.getChild().removeName(field))
+        
     def __init__(self,
                  field,
                  child,

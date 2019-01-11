@@ -199,7 +199,7 @@ assert assertEqual(compileGen(labelBarForFieldFoo,
 assert assertEqual(compileGen(labelBarForFieldFoo,
                               asked = {"foo"},
                               isQuestion=True),
-                   CLASS("Question_foo",Literal("bar")))
+                   CLASS("Question foo",Literal("bar")))
 assert assertEqual(compileGen(labelBarForFieldFoo,
                               isQuestion = True),
                    Literal("bar"))
@@ -216,7 +216,7 @@ assert assertEqual(compileGen(labelBarForFieldsFoos,
 assert assertEqual(compileGen(labelBarForFieldsFoos,
                               asked = {"foo"},
                               isQuestion=True),
-                   CLASS("Question_foos",Literal("bar")))
+                   CLASS("Question foos",Literal("bar")))
 
 ## Fields
 assert assertEqual(compileGen(questionnedField, asked = frozenset({"Question"})), 
@@ -231,7 +231,7 @@ assert assertEqual(
         asked = frozenset({"Question"})),
     Filled(field = "Question",
            child = ListElement([
-               CLASS(["Question", "Question_Question"],Literal("Question")), Literal(": "), Literal("???"), br]
+               CLASS(["Question", "Question"],Literal("Question")), Literal(": "), Literal("???"), br]
            )))
 assert assertEqual(compileGen(decoratedField, asked = frozenset()), 
                    Filled(field = "Question",
@@ -264,11 +264,11 @@ assert assertEqual(compileGen(decoratedField, isQuestion = False),
 #                    )
 # )
 assert assertEqual(compileGen(EnglishToFrench, fields={"Français","English"}),
-                   Filled("English",
-                          Filled("Français",
+                   Filled("Français",
+                          Filled("English",
                                  ListElement([ListElement([Field("English"),
                                                            Literal(" in ")]),
-                                              CLASS(["Question","Question_Français"],
+                                              CLASS(["Question","Français"],
                                                     Literal("French")),
                                               Literal(" is "),
                                               Literal("???"),
@@ -278,13 +278,13 @@ assert assertEqual(compileGen(EnglishToFrench, fields={"Français","English"}),
                    )
 )
 assert assertEqual(compileGen(EnglishToFrench, fields={"Français","English"},isQuestion = False),
-                   Filled("English",
-                          Filled("Français",
+                   Filled("Français",
+                          Filled("English",
                                  ListElement([ListElement([Field("English"),
                                                            Literal(" in ")]),
                                               Literal("French"),
                                               Literal(" is "),
-                                              CLASS(["Answer","Answer_Français"],
+                                              CLASS(["Answer","Français"],
                                                     Field("Français")
                                               ),
                                               br]

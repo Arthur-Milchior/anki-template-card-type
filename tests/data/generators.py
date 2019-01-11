@@ -90,8 +90,8 @@ askedOrNot = AskedOrNot(field = "askedOrNot", asked = "Asked", notAsked = "notAs
 
 
 ##Label
-labelBarForFieldFoo = Label("bar",["foo"],"Question_foo")
-labelBarForFieldsFoos = Label("bar",["foos","foo","foo2"],"Question_foos")
+labelBarForFieldFoo = Label("bar",["foo"],["foo"])
+labelBarForFieldsFoos = Label("bar",["foos","foo","foo2"],["foos"])
 ## Fields
 questionnedField =QuestionnedField('Question')
 decoratedField = DecoratedField('Question')
@@ -151,7 +151,7 @@ tableTwoLine1Answered = Filled(
                 child = Literal(text = "Definition",),
                 tag = 'td'),
             HTML(
-                child = CLASS(["Answer", "Answer_Definition"],Field(field = "Definition")),
+                child = CLASS(["Answer", "Definition"],Field(field = "Definition")),
                 tag = 'td')],),
         tag = 'tr'),)
 tableTwoLine2Answered = Filled(
@@ -162,7 +162,7 @@ tableTwoLine2Answered = Filled(
                 child = Literal(text = "Definition2",),
                 tag = 'td'),
             HTML(
-                child = CLASS(["Answer", "Answer_Definition2"],Field(field = "Definition2")),
+                child = CLASS(["Answer", "Definition2"],Field(field = "Definition2")),
                 tag = 'td')],),
         tag = 'tr'),)
 tableTwoLine1Question = Filled(
@@ -170,7 +170,7 @@ tableTwoLine1Question = Filled(
     child = HTML(
         child = ListElement([
             HTML(
-                child = CLASS(["Question", "Question_Definition"],Literal(text = "Definition",)),
+                child = CLASS(["Question", "Definition"],Literal(text = "Definition",)),
                 tag = 'td'),
             HTML(
                 child = Literal("???"),
@@ -181,7 +181,7 @@ tableTwoLine2Question = Filled(
     child = HTML(
         child = ListElement([
             HTML(
-                child = CLASS(["Question", "Question_Definition2"],Literal(text = "Definition2",)),
+                child = CLASS(["Question", "Definition2"],Literal(text = "Definition2",)),
                 tag = 'td'),
             HTML(
                 child = Literal("???"),
@@ -248,11 +248,11 @@ twoQuestionsNumberedLine2Question = Filled(
 twoQuestionsNumberedLine1Answer = Filled(
     field = 'Definition',
     child = HTML("li",
-                 child =CLASS(["Answer","Answer_Definition"],Field(field = "Definition",),),))
+                 child =CLASS(["Answer","Definition"],Field(field = "Definition",),),))
 twoQuestionsNumberedLine2Answer = Filled(
     field = 'Definition2',
     child = HTML("li",
-                 child =CLASS(["Answer","Answer_Definition"],Field(field = "Definition2",),),))
+                 child =CLASS(["Answer","Definition"],Field(field = "Definition2",),),))
 twoQuestionsNumberedLine2 = Filled(
     field = 'Definition2',
     child = HTML("li",
@@ -266,7 +266,7 @@ twoQuestionsNumberedShown = ListElement([
              twoQuestionsNumberedLine1,
              twoQuestionsNumberedLine2
          ],),)],)
-labelQuestion=CLASS(["Question", "Question_Definitions"],
+labelQuestion=CLASS(["Question", "Definitions"],
                     Literal(text = "Definitions",)
                     )
 labelNormal= Literal(text = "Definitions",)
@@ -291,7 +291,7 @@ twoQuestionsNumberedAskDefinitionMandatory = Filled(
   field = 'Definition',
   child = ListElement([
     HTML("span",
-      attrs = {'class': 'Question Question_Definitions'},
+      attrs = {'class': 'Question Definitions'},
       child = Literal(text = "Definitions",),),
     Literal(text = ": ",),
     HTML("ol",

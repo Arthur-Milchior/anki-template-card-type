@@ -145,13 +145,14 @@ SUP = _fixedTag("sup")
 SUB = _fixedTag("sub")
 
 class _LIST(HTML):
-    def __init__(self, elements, enclosing = None, liAttrs = {}, **kwargs):
+    def __init__(self, elements, enclosing = None, liAttrs = {}, addLi=True, **kwargs):
         assert enclosing is not None
         self.elements = elements
         self.enclosing = enclosing
         
-        lis = [LI(child = element, attrs = liAttrs) for element in elements]
-        super().__init__(enclosing, child = lis, **kwargs)
+        if addLi:
+            elements = [LI(child = element, attrs = liAttrs) for element in elements]
+        super().__init__(enclosing, child = elements, **kwargs)
 class OL(_LIST):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, enclosing = "ol", **kwargs)

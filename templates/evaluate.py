@@ -112,8 +112,8 @@ def compile_config(*args, **kwargs):
 def clean(tag):
     """Remove objectAbsent"""
     tag.clear()
-    if "objectAbsent" in templateTag.attrs:
-        del templateTag.attrs["objectAbsent"]
+    if "objectAbsent" in tag.attrs:
+        del tag.attrs["objectAbsent"]
 
 #mod = sys.modules[__generator__]
 Template(["eval", "evaluate"], compile_eval, clean)

@@ -9,12 +9,14 @@ class FromAndTo(NotNormal):
     ```{{Abbreviation}} is the CLASS(ABBREVIATION) of {{Name}}```
     From one data, ask another data, emphasize the transformation. Show only if both sides exists.
     """
-    def __init__(self,questionField, fieldToQuestion, actualQuestion, questionToAnswer, answer):
+    def __init__(self,questionField, fieldToQuestion, actualQuestion, questionToAnswer, answer,prefix=None,suffix=None):
         self.questionField = questionField
         self.fieldToQuestion=fieldToQuestion
         self.actualQuestion=actualQuestion
         self.questionToAnswer=questionToAnswer
         self.answer=answer
+        self.prefix =prefix
+        self.suffix=suffix
         super().__init__()
     def getNormalForm(self):
         prefix=[Field(self.questionField), self.fieldToQuestion]
@@ -23,6 +25,8 @@ class FromAndTo(NotNormal):
                            infix= self.questionToAnswer,
                            field = self.answer
         )
-        f=Filled(field=self.questionField,
-                 child = df)
-        return f.getNormalForm().assumeAsked(self.answer)
+        l=[self.prefix,df,self.suffix]
+        f=Filled(self.answer,
+                 Filled(self.questionField,
+                        l))
+        return f.getNormalForm().assumeAsked(self.answer).getNormalForm()

@@ -58,9 +58,12 @@ def compile_(tag, soup, recompile=False, **kwargs):
             getModule(tag_).compile_(tag = tag_, soup = soup,  **kwargs)
 
 
-def clean(tag):
-    for tag_ in tagsToEdit(tag):
-        getModule(tag_).clean(tag_)
+def clean(soup):
+    for tag_ in tagsToEdit(soup):
+        assert tag_ is not None
+        module=getModule(tag_)
+        assert tag_ is not None
+        module.clean(tag_)
 
 
     

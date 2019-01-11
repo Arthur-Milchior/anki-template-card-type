@@ -40,6 +40,7 @@ def testEachStep(gen,
     if fields is None:
         fields = modelToFields(model)
     soup = soupFromTemplate(html)
+    gen = ensureGen(gen)
     return gen.compile(
         soup = soup,
         goal = goal,

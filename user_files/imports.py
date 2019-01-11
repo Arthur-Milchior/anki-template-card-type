@@ -7,8 +7,10 @@ from .statistical_distribution import statistical_distribution
 from .theory import theory
 from .topology import topology
 from .shortQuestions import french,french2, english,english2, abbreviation,abbreviation2,abbreviation3,etymology,etymology2
-from .general import namesNotationsDenotedBy, notations, names
+from .general import namesNotationsDenotedBy, notations, names, header, footer
 from .hacker import hacker
 from .mnemo import mnemo
 from .constant import constant
 from .definition import definition
+from .question import question
+from .example import nameExample

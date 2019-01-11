@@ -33,12 +33,12 @@ class AtLeastNField(SingleChild, NotNormal):
     """
     #@debugInit
     def __init__(self, child, fields, otherwise = None, asked = False, n=1):
-        self.otherwise = otherwise
+        super().__init__(child)
+        self.otherwise = self._ensureGen(otherwise)
         self.n = n
         self.asked = asked
         self.fields = fields
         self.setOfRequiredFields = fields
-        super().__init__(child)
         
     def _repr(self):
         t="""AtLeastNField(\n"""
@@ -58,7 +58,7 @@ class AtLeastNField(SingleChild, NotNormal):
         if self.n == 0:
             return self.child.getNormalForm()
         if self.n> len(self.setOfRequiredFields):
-            return self.otherwise
+            return self.otherwise.getNormalForm()
         element = self.setOfRequiredFields[-1]
         remaining = self.setOfRequiredFields[:-1]
         positiveCase = AtLeastNField(child = self.child,

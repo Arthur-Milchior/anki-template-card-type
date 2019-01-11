@@ -115,7 +115,7 @@ class TableFields(ListFields):
             debug("""pair is "{labeledField.label}", "{fieldName}".""")
             labelGen = Label(label = label,
                              fields = [fieldName],
-                             classes = ["Question",fieldName]
+                             classes = [fieldName]
             )
             tdLabel = TD(child = labelGen, attrs=tdLabelAttrs)
             tdField = TD(child = questionnedField, attrs = tdFieldAttrs)
@@ -156,7 +156,7 @@ class NumberedFields(ListFields):
         self.attrs =attrs
         self.liAttrs= liAttrs
         self.unordered=unordered
-        self.label = label if label is not None else f"{fieldPrefix}"
+        self.label = label if label is not None else f"{fieldPrefix}s"
         self.name = self.fieldPrefix+"s"
         assert(isinstance(fieldPrefix, str))
         assert(isinstance(greater, int))
@@ -171,7 +171,7 @@ class NumberedFields(ListFields):
 
         if globalFun is None:
             def globalFun(lines):
-                labelGen = Label(label = self.groupName,
+                labelGen = Label(label = self.label,
                                  fields =self.numberedFields+[self.groupName],
                                  classes = [self.groupName])
                 return [labelGen, ": ", HTML(tag = "ul" if unordered else "ol",child = lines, attrs = attrs)]

@@ -28,12 +28,6 @@ class Asked(FieldChild):
     def _noMoreAsk(self):
         return None
         
-    def _removeName(self, field):
-        if self.field == field:
-            return None
-        else:
-            return self.cloneSingle(self.getChild().removeName(field))
-        
     def _applyTag(self, *args, **kwargs):
         raise ExceptionInverse("Asked._applyTag should not exists")
 
@@ -49,13 +43,6 @@ class NotAsked(FieldChild):
             return self.getChild().assumeAsked(field)
         else:
             return self.cloneSingle(self.getChild().assumeAsked(field))
-
-    @debugFun
-    def _removeName(self, field):
-        if self.field == field:
-            return None
-        else:
-            return self.cloneSingle(self.getChild().removeName(field))
 
     def _noMoreAsk(self):
         return self.getChild().noMoreAsk()
@@ -100,12 +87,6 @@ class Cascade(FieldChild):
             child = child,
             cascade = self.cascade)
         
-    def _removeName(self, field):
-        if self.field == field:
-            return None
-        else:
-            return self.cloneSingle(self.getChild().removeName(field))
-
     def _applyTag(self, *args, **kwargs):
         raise ExceptionInverse("NotAsked._applyTag should not exists")
 

@@ -37,11 +37,11 @@ try:
     
     def setupMenu(browser):
         a = QAction("Template", browser)
-        a.setShortcut(QKeySequence("Ctrl+Alt+T"))
         a.triggered.connect(lambda : runBrowser(browser,"Template"))
         browser.form.menuEdit.addAction(a)
         
         a = QAction("ReTemplate", browser)
+        a.setShortcut(QKeySequence("Ctrl+Alt+T"))
         a.triggered.connect(lambda : runBrowser(browser,"ReTemplate"))
         browser.form.menuEdit.addAction(a)
     

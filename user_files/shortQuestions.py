@@ -10,7 +10,7 @@ def _question(questionFieldPrefix, fieldToQuestion, actualQuestion, questionToAn
     def fun(i=""):
         questionField = f"{questionFieldPrefix}{i}"
         answer = f"{answerPrefix}{i}"
-        return FromAndTo(questionField, fieldToQuestion, actualQuestion, questionToAnswer, answer)
+        return FromAndTo(questionField, fieldToQuestion, actualQuestion, questionToAnswer, answer,prefix=contextOrDeck)
     return fun
 
 _abbreviation = _question("Abbreviation", " is the ", "abbreviation", " of ", "Name")
