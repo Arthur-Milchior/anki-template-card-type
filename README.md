@@ -50,7 +50,7 @@ printed instead.
 
 ## Usage
 Please, refer to
-[https://github.com/Arthur-Milchior/anki-template-card-type/blob/master/generators/DOCUMENTATION.md]
+[https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/generators/DOCUMENTATION.md]
 to learn how to use this add-on. I'll just give a few examples here.
 
 ## Examples
@@ -61,13 +61,13 @@ them. Such a reason may be «Boss of the company», or «Spoke with him
 at conference XXX».
 
 Here is the example of the first card I obtain:
-* ![A card asking for the first name of some guy who's face is shown](https://github.com/Arthur-Milchior/anki-template-card-type/blob/master/example/exampleQuestion.png "First name question")
+* ![A card asking for the first name of some guy who's face is shown](https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/exampleQuestion.png "First name question")
 And here are the templates of the five card types:
-* !(https://github.com/Arthur-Milchior/anki-template-card-type/blob/master/example/templateFirst.png "First name template")
-* !(https://github.com/Arthur-Milchior/anki-template-card-type/blob/master/example/Last.png "Last name template")
-* !(https://github.com/Arthur-Milchior/anki-template-card-type/blob/master/example/Name.png "Full name template")
-* !(https://github.com/Arthur-Milchior/anki-template-card-type/blob/master/example/Known.png "Known for template")
-* !(https://github.com/Arthur-Milchior/anki-template-card-type/blob/master/example/KnownName.png "Full name give known template")
+* !(https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/templateFirst.png "First name template")
+* !(https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/Last.png "Last name template")
+* !(https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/Name.png "Full name template")
+* !(https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/Known.png "Known for template")
+* !(https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/examples/KnownName.png "Full name give known template")
 
 
 This has four fields:
@@ -162,7 +162,7 @@ template.
 We use ```template="eval"``` to state that this template
 will have a generator field - which is an arbitrary python expression
 which must be evaluated as a generator (see
-[https://github.com/Arthur-Milchior/anki-template-card-type/blob/master/generators/DOCUMENTATION.md]
+[https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/generators/DOCUMENTATION.md]
 to learn more about generators).
 
 We use ```generator="nameExample"``` to state that we'll use the
@@ -208,4 +208,4 @@ Copyright   | Arthur Milchior <arthur@milchior.fr>
 Based on    | Anki code by Damien Elmes <anki@ichi2.net>
 License     | GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 Source in   | https://github.com/Arthur-Milchior/anki-
-Addon number| [NNNNNNNNNNNN](https://ankiweb.net/shared/info/NNNNNNNNNNNN)
+Addon number| [1159566613](https://ankiweb.net/shared/info/1159566613)
