@@ -1,10 +1,10 @@
 from .general import header, footer
 from ..generators.imports import *
 
-definition_foo = TableFields(
-    name = "foo",
+definition_bar = TableFields(
+    name = "Bar",
     fields = []
 )
 properties = TableFields([])
 
-foo = [header, definition_foo, properties, footer]
+bar = [header, definition_bar, properties, footer]

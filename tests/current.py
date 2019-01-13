@@ -1,12 +1,12 @@
-from .functions import testEachStep, compileGen, genToSoup, genToTags, prettifyGen
+from .functions import testEachStep, compileGen, genToSoup, genToTags, prettifyGen,TestHTML
 from bs4 import BeautifulSoup
 from html import escape
 from copy import deepcopy
 from ..generators.imports import *
 from ..debug import startDebug, endDebug, debug, assertEqual
-#from .data.imports import *
+from .data.imports import *
 from ..templates.soupAndHtml import templateFromSoup, soupFromTemplate
-from ..templates.templates import tagsToEdit
+from ..templates.templates import tagsToEdit, compile_
 from ..user_files.imports import *
 
 # tmp = '\n <span name="test" template="conf"/>\n'
@@ -44,10 +44,12 @@ ex=('Example',
                                                                   QuestionnedField(f"Example{i}",classes="Example"))),
                                                  {f"Example{i}"},{f"Example{i}"}))))
 
-#compileGen(ex, toPrint=True, fields ={"Applied to","Example","Applied to2","Example2","Applied to3","Example3","Applied to4","Example4"})
+
+
 
 startDebug()
 #print(cascadeBeforeTemplate.template(asked={"cascaded"}))
+
 endDebug()
 # compileGen(DecoratedField("Question"), asked =frozenset("Question"),   toPrint=True)
 

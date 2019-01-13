@@ -28,7 +28,7 @@ class TestHTML:
 
 def testEachStep(gen,
                  goal = None,
-                 model = model,
+                 modelName = None,
                  isQuestion = True,
                  asked = frozenset({"Definition"}),
                  hide = frozenset(),
@@ -49,7 +49,8 @@ def testEachStep(gen,
         asked = asked,
         mandatory = mandatory,
         hide = hide,
-        toPrint = toPrint
+        toPrint = toPrint,
+        modelName=modelName
     )
 
 def prettifyGen(*args, **kwargs):

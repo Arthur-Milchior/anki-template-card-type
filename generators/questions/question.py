@@ -18,6 +18,7 @@ class FromAndTo(NotNormal):
         self.prefix =prefix
         self.suffix=suffix
         super().__init__()
+        
     def getNormalForm(self):
         prefix=[Field(self.questionField), self.fieldToQuestion]
         df= DecoratedField(prefix = prefix,

@@ -13,17 +13,17 @@ class Asked(FieldChild):
     def _getWithoutRedundance(self):
         return self.cloneSingle(self.getChild().getWithoutRedundance().assumeAsked(self.field))
 
-    def _assumeAsked(self, field):
+    def _assumeAsked(self, field, modelName):
         if self.field == field:
-            child = self.getChild().assumeAsked(field)
+            child = self.getChild().assumeAsked(field, modelName)
             return child
         else:
-            return self.cloneSingle(self.getChild().assumeAsked(field))
+            return self.cloneSingle(self.getChild().assumeAsked(field,modelName))
     def _assumeNotAsked(self, field):
         if self.field == field:
             return None
         else:
-            return self.cloneSingle(self.getChild().assumeAsked(field))
+            return self.cloneSingle(self.getChild().assumeNotAsked(field))
 
     def _noMoreAsk(self):
         return None
@@ -40,18 +40,18 @@ class NotAsked(FieldChild):
     
     def _assumeNotAsked(self, field):
         if self.field == field:
-            return self.getChild().assumeAsked(field)
+            return self.getChild().assumeNotAsked(field)
         else:
-            return self.cloneSingle(self.getChild().assumeAsked(field))
+            return self.cloneSingle(self.getChild().assumeNotAsked(field))
 
     def _noMoreAsk(self):
         return self.getChild().noMoreAsk()
 
-    def _assumeAsked(self, field):
+    def _assumeAsked(self, field,modelName):
         if self.field == field:
             return None
         else:
-            return self.cloneSingle(self.getChild().assumeAsked(field))
+            return self.cloneSingle(self.getChild().assumeAsked(field,modelName))
         
     def _applyTag(self, *args, **kwargs):
         raise ExceptionInverse("NotAsked._applyTag should not exists")
@@ -90,15 +90,14 @@ class Cascade(FieldChild):
     def _applyTag(self, *args, **kwargs):
         raise ExceptionInverse("NotAsked._applyTag should not exists")
 
-    #@debugOnlyThisMethod
-    def _assumeAsked(self,field):
+    def _assumeAsked(self,field,modelName):
         if self.field == field:
-            child = self.getChild().assumeAsked(field)
+            child = self.getChild().assumeAsked(field,modelName)
             for cascaded in self.cascade:
-                child = child.assumeAsked(cascaded)
+                child = child.assumeAsked(cascaded,modelName)
             return child
         else:
-            return self.cloneSingle(self.getChild().assumeAsked(field))
+            return self.cloneSingle(self.getChild().assumeAsked(field,modelName))
 
     def _assumeNotAsked(self,field):
         if self.field == field:

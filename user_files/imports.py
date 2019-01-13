@@ -1,16 +1,7 @@
-from .algebra import algebra
-from .automata import automata
-from .category import category
-from .knot import knot
-from .ordinal import ordinal
-from .statistical_distribution import statistical_distribution
-from .theory import theory
-from .topology import topology
-from .shortQuestions import french,french2, english,english2, abbreviation,abbreviation2,abbreviation3,etymology,etymology2
-from .general import namesNotationsDenotedBy, notations, names, header, footer
-from .hacker import hacker
-from .mnemo import mnemo
-from .constant import constant
-from .definition import definition
-from .question import question
-from .example import nameExample
+#This input every generators created for this add-on
+from ..generators.imports import *
+
+"""Put here every variables which you want to be able to use in your template. Look at ../examples for examples of templates created by the user."""
+
+# This line allows to use the examples in the templates.
+from ..examples.imports import *

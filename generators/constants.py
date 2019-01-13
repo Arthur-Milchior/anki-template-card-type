@@ -33,12 +33,12 @@ class Step:
     
     def previousStep(step):
         ret = {
-            NORMAL: BASIC,
-            WITHOUT_REDUNDANCY: NORMAL,
-            QUESTION_ANSWER: WITHOUT_REDUNDANCY,
-            MODEL_APPLIED: QUESTION_ANSWER,
-            TEMPLATE_APPLIED: MODEL_APPLIED,
             TAG: TEMPLATE_APPLIED,
+            TEMPLATE_APPLIED: MODEL_APPLIED,
+            MODEL_APPLIED: QUESTION_ANSWER,
+            QUESTION_ANSWER: WITHOUT_REDUNDANCY,
+            WITHOUT_REDUNDANCY: NORMAL,
+            NORMAL: BASIC,
         }.get(step)
         if ret is None:
             raise ExceptionInverse(f"""Previous step of {step} does not exists.""")
@@ -58,5 +58,6 @@ WITHOUT_REDUNDANCY = Step(2, "WITHOUT_REDUNDANCY")
 QUESTION_ANSWER = Step(3, "QUESTION_ANSWER")
 MODEL_APPLIED = Step(4, "MODEL_APPLIED")
 TEMPLATE_APPLIED = Step(5, "TEMPLATE_APPLIED")
-TAG = Step(6, "TAG")#used for debugging
+QUESTIONS = Step(6, "QUESTIONS")
+TAG = Step(7, "TAG")#used for debugging
 EMPTY = Step(10, "EMPTY")

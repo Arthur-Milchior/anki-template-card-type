@@ -1,5 +1,5 @@
 # List of templates which must be equals
-from ...debug import assertEqual
+from ...debug import assertEqual, startDebug
 from ..data.imports import *
 from ..functions import *
 # Core
@@ -355,6 +355,15 @@ ListElement([
 
 ## Conditionals
 
+### ToAsk
+assert assertEqual(toask.getQuestions(),['Definition','Definition2'])
+assert toask.getQuestionToAsk("model name") in ['Definition','Definition2']
+toask.assumeAsked("Definition","model name")
+assert assertEqual(toask.getQuestionToAsk("model name"),'Definition2')
+toask.assumeAsked("Definition2","model name")
+assert assertEqual(toask.getQuestionToAsk("model name"),None)
+
+
 ### MultipleRequirement
 assert assertEqual(compileGen(requireQuestion),Filled(
   field = 'Question',
@@ -409,6 +418,7 @@ assert assertEqual(compileGen(twoQuestionsAsTable, asked =frozenset({"Definition
                    tableTwoShownQuestionAll)
 assert assertEqual(compileGen(twoQuestionsAsTable, asked =frozenset({"Definitions"}), isQuestion = False),
                    tableTwoShownAnswerAll)
+
 
 ### Numbered
 assert assertEqual(compileGen(twoQuestionsNumbered, asked =frozenset()),

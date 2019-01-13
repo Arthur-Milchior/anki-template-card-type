@@ -7,7 +7,7 @@ from ..conditionals.multiple import MultipleRequirement
 from ..ensureGen import ensureGen
 from ..generators import NotNormal, Gen, genRepr
 from ..html import TR, TD, br, HTML, LI
-from ..leaf import Field
+from ..leaf import Field, ToAsk
 from ..list import MultipleChildren, ListElement
 from .fields import QuestionnedField, LabeledField, Label, DecoratedField
 
@@ -16,7 +16,7 @@ class ListFields(NotNormal):
     Apply functions to each field, add separators between them, apply a function to the result
 
     fields -- a list of fields.
-    localFun -- the function to apply to each field. Takes as argument the field, as passed in fields. return a generator to add. May return a list of fields which should be present for this line to occurs. May also return as third element of the tuple a set of questions to ask if name is asked
+    localFun -- the function to apply to each field. Takes as argument the field, as passed in fields. return a generator to add. May return a list of fields which should be present for this line to occurs. May also return as third element of the tuple a set of questions to ask if name is asked. This set of question is also used as the set of potentially asked questions.
     globalSep -- the function to apply generate field separator. Takes as argument all the previous fields. By default, return None.
     globalFun -- the function to apply to generate the final object. Takes as argument the list of fields and separator passed as argument. By default, apply ListElement.
     name -- a name for this generator. When this name is asked, the questions returned as 3rd element by localFun are also considered to be asked
@@ -46,7 +46,7 @@ class ListFields(NotNormal):
     def _getNormalForm(self):
         elements = []
         seen = []
-        toCascade = set()
+        toCascade = []
         for field in self.originalFields:
             #print(f"Considering field {field}")
             if seen:
@@ -58,13 +58,13 @@ class ListFields(NotNormal):
             if isinstance(processedField,tuple):
                 if len(processedField) is 2:
                     processedField,filledField = processedField
-                    toCascadeLocal=set()
+                    toCascadeLocal=[]
                 elif len(processedField) is 3:
                     processedField,filledField, toCascadeLocal = processedField
                 else:
                     assert False
             else:
-                toCascadeLocal= set()
+                toCascadeLocal= []
                 filledField = set()
             if processedField is not None:
                 if filledField:
@@ -72,16 +72,15 @@ class ListFields(NotNormal):
                         requireFilled=filledField,
                         child = processedField)
                 elements.append(processedField)
-            toCascade |= toCascadeLocal
-            #print(f"Adding {toCascadeLocal} to toCascade, it's now {toCascade}")
-        #print(f"toCascade is finally {toCascade}")
+            toCascade += toCascadeLocal
         ret = self.globalFun(elements)
         ret = [self.prefix,ret,self.suffix]
-        if self.name is not None and toCascade:
-            #print("Adding toCascade to ret")
-            ret = Cascade(field = self.name,
-                          child = ret,
-                          cascade = toCascade)
+        if toCascade:
+            if self.name is not None:
+                ret = Cascade(field = self.name,
+                              child = ret,
+                              cascade = toCascade)
+            ret = [ret,ToAsk(toCascade)]
         ret = self._ensureGen(ret)
         ret = ret.getNormalForm()
         return ret
@@ -125,7 +124,7 @@ class TableFields(ListFields):
         def globalFun(lines):
             ret=HTML(tag = "table", child = lines, attrs = attrs)
             return ret
-        super().__init__(fields, localFun = localFun, globalFun = globalFun, name = name)
+        super().__init__(fields, localFun = localFun, globalFun = globalFun, name = name,**kwargs)
 
     def _repr(self):
         t= f"""TableFields({self.fields},"""
@@ -150,7 +149,7 @@ class NumberedFields(ListFields):
     question called fieldPrefixs (note the s)
 
     """
-    def __init__(self,fieldPrefix, greater,label = None, attrs= dict(), liAttrs=dict(), unordered= False,localFun=None,globalFun=None,  **kwargs):
+    def __init__(self,fieldPrefix, greater,label = None, attrs= dict(), liAttrs=dict(), unordered= False,localFun=None,globalFun=None, firstField=None,  **kwargs):
         self.fieldPrefix = fieldPrefix
         self.greater = greater
         self.attrs =attrs
@@ -162,6 +161,7 @@ class NumberedFields(ListFields):
         assert(isinstance(greater, int))
         self.suffixes = [""]+[str(i) for i in range(2,greater+1)]
         self.numberedFields=[f"{fieldPrefix}{i}" for i in self.suffixes]
+        self.firstField=fieldPrefix
         self.groupName=f"{fieldPrefix}s"
         if localFun is None:
             def localFun(i):

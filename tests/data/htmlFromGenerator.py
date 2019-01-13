@@ -36,3 +36,16 @@ listHtml ="""foo
 #  </td>
 # </tr>
 # {{/Question}}"""
+
+chooseHtml="""<span choose="yes" generator="toaskForHtml" template="eval" />"""
+chooseHtml1="""<span askedmandatory="Definition" choose="yes" generator="toaskForHtml" template="eval">
+</span>"""
+chooseHtml2="""<span askedmandatory="Definition2" choose="yes" generator="toaskForHtml" template="eval">
+</span>"""
+chooseHtmlInList="""<span choose="yes" generator="toaskForHtmlInList" template="eval" />"""
+chooseHtml1InList="""<span askedmandatory="Definition" choose="yes" generator="toaskForHtmlInList" template="eval">
+ foo
+</span>"""
+chooseHtml2InList="""<span askedmandatory="Definition2" choose="yes" generator="toaskForHtmlInList" template="eval">
+ foo
+</span>"""

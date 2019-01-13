@@ -43,7 +43,9 @@ class QuestionnedField(AskedOrNot):
     def __init__(self,
                  field,
                  classes = None,
+                 child=None,
                   **kwargs):
+        
         if isinstance(field,str):
             self.fieldName = field
             self.field = Field(field)
@@ -51,13 +53,14 @@ class QuestionnedField(AskedOrNot):
             assert assertType(field,Field)
             self.field = field
             self.fieldName = field.field
+        self.child = Field(field) if child is None else child
         if classes is None:
             classes = [self.fieldName]
         if isinstance(classes,str):
             classes=[classes]
         classes = ["Answer"]+classes
         self.classes = classes
-        self.asked = QuestionOrAnswer("???", CLASS(classes,self.field))
+        self.asked = QuestionOrAnswer("???", CLASS(classes,self.child))
         #todo emphasize answerAsked
         super().__init__(self.fieldName,
                          self.asked,
@@ -76,6 +79,8 @@ class Label(QuestionOrAnswer):
         self.classes = classes
         if self.classes is None:
             self.classes = [label]
+        if isinstance(self.classes,str):
+            self.classes=[self.classes]
         self.classes=["Question"]+self.classes
         questionSide = AtLeastOneField(child = CLASS(self.classes,label),
                                        fields = fields,
@@ -96,9 +101,12 @@ class DecoratedField(Filled):
                  prefix = None,
                  suffix = br,
                  toKeep = True,
+                 classes=None,
+                 child=None,
                  **kwargs):
         """field -- a field object, or a string"""
         self.prefix=prefix
+        self.child=child
         self.infix = infix
         self.suffix=suffix
         self.field = field
@@ -108,16 +116,23 @@ class DecoratedField(Filled):
             self.label = self.field.field
         else:
             self.label =label
+        if classes is None:
+            self.classes=[self.field.field]
+        else:
+            self.classes=classes
+        if self.child is None:
+            self.child = QuestionnedField(self.field,
+                                          classes=self.classes)
         labelGen = Label(label = self.label,
                          fields = [self.field.field],
-                         classes = [self.field.field])
-        super().__init__(field = self.field,
+                         classes = self.classes)
+        super().__init__(field = self.field.field,
                          child = [
                              self.prefix,
                              labelGen,
                              self.infix,
-                             QuestionnedField(self.field),
-                             self.suffix
+                             self.child,
+                             self.suffix,
                          ],
                          **kwargs
         )

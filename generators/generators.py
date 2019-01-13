@@ -1,4 +1,3 @@
-import sys
 from ..debug import debug, assertType, debugFun, ExceptionInverse, optimize, debugOnlyThisMethod
 from ..utils import identity, standardContainer
 from .ensureGen import ensureGen, addTypeToGenerator
@@ -359,7 +358,7 @@ class Gen:
     #@ensureGenAndSetState(TEMPLATE_APPLIED) done in NoMoreAsk
     #@emptyToEmpty
     @debugFun
-    def template(self, asked = frozenset(), hide = frozenset(), mandatory = frozenset()):
+    def template(self, asked = frozenset(), hide = frozenset(), mandatory = frozenset(),modelName=None):
         """A copy of self where every Asked(foo) or NotAsked(foo), with foo in
         hide, is hidden. And everything in asked is asked. Everything else
         is not hidden.
@@ -367,17 +366,17 @@ class Gen:
         step = self
         if mandatory:
             step = step.addMandatory(mandatory)
-        return step._template(asked = asked, hide = hide)
+        return step._template(asked = asked, hide = hide, modelName=modelName)
     
     @debugFun
-    def _template(self, asked = frozenset(), hide = frozenset()):
+    def _template(self, asked = frozenset(), hide = frozenset(),modelName=None):
         assert standardContainer(asked)
         assert standardContainer(hide)
         current = self
         for name in hide:
             current = current.removeName(name)
         for name in asked:
-            current = current.assumeAsked(name)
+            current = current.assumeAsked(name,modelName=modelName)
         return current.noMoreAsk()
     @debugFun
     def addMandatory(self, mandatory):
@@ -480,13 +479,13 @@ class Gen:
     #@emptyToEmpty
     @ensureReturnGen
     @debugFun
-    def assumeAsked(self, name):
+    def assumeAsked(self, name,modelName=None):
         """Assume that name is asked. Thus remove
         notAsked(name,foo). Replace Asked(name,foo) by foo"""
-        return self._assumeAsked(name)
+        return self._assumeAsked(name,modelName)
     @debugFun
-    def _assumeAsked(self, name):
-        return self.callOnChildren("assumeAsked", name)
+    def _assumeAsked(self, name,modelName):
+        return self.callOnChildren("assumeAsked", name,modelName)
         
     #@emptyToEmpty
     @ensureReturnGen
@@ -532,6 +531,28 @@ class Gen:
         return ret
 
     @debugFun
+    def getQuestions(self):
+        return self._getQuestions()
+
+    @debugFun
+    def _getQuestions(self):
+        s=[]
+        for child in self.getChildren():
+            s+=child.getQuestions()
+        return s
+    @debugFun
+    def getQuestionToAsk(self,model):
+        return self._getQuestionToAsk(model)
+
+    @debugFun
+    def _getQuestionToAsk(self,model):
+        for child in self.getChildren():
+            q=child.getQuestionToAsk(model)
+            if q is not None:
+                return q
+        return None
+
+    @debugFun
     def _applyTag(self, soup):
         """A (list of) BeautifulSoup object representing this
         generator. Or None
@@ -547,7 +568,8 @@ class Gen:
                 asked = None,
                 mandatory = None,
                 hide = None,
-                toPrint = False
+                toPrint = False,
+                modelName=None,
     ):
         """Compile as much as possible given the informations. Or up to goal."""
         if goal is None:
@@ -602,7 +624,8 @@ class Gen:
             raise Exception(f"{missingFields} are mandatory but not in the model.")
         templateRestriction = modelRestriction.template(asked = asked,
                                                         hide = hide,
-                                                        mandatory = mandatory)
+                                                        mandatory = mandatory,
+                                                        modelName=modelName)
         if toPrint: print(f"""\nWith template applied, "{templateRestriction}".""")
         if goal == TEMPLATE_APPLIED:
             return templateRestriction
@@ -679,15 +702,19 @@ class NotNormal(Gen):
     # def assumeFieldInSet(self, *args, **kwargs):
     #     raise ExceptionInverse(f"assumeFieldInSet from not normal")
     def _assumeFieldFilled(self, field):
-        assert False
+        raise ExceptionInverse(f"_assumeFieldFilled from not normal:{self}")
     def _assumeFieldEmpty(self, field):
-        assert False
+        raise ExceptionInverse(f"_assumeFieldEmpty from not normal:{self}")
     def _assumeFieldPresent(self, field):
-        assert False
+        raise ExceptionInverse(f"_assumeFieldPresent from not normal:{self}")
     def _assumeAnswer(self, changeStep = False):
-        assert False
+        raise ExceptionInverse(f"_assumeAnswer from not normal:{self}")
+
     def _assumeFieldAbsent(self, field):
-        assert False
+        raise ExceptionInverse(f"_assumeFieldAbsent from not normal:{self}")
+
+    def _getQuestions(self):
+        raise ExceptionInverse(f"_getQuestions from not normal:{self}")
     # def _assumeFieldInSet(self, *args, **kwargs):
     #     raise ExceptionInverse(f"_assumeFieldInSet from not normal")
     def _assumeQuestion(self, *args, **kwargs):

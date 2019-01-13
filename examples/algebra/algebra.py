@@ -1,5 +1,5 @@
-from ..generators.imports import *
-from .general import header, footer
+from ...generators.imports import *
+from ..general import header, footer
 FOE= FilledOrEmpty
 
 ringCom1 = FOE('/',
@@ -16,14 +16,14 @@ ringCom1 = FOE('/',
                                FOE('Integral',
                                    'UFD',
                                    'Unique Factorization Ring'),
-                               AtLeastOneField(['⋀','⋁'],
-                                               'GCD domain',
-                                               FOE('Integral',
-                                                   FOE('Closed',
-                                                       'Integrally closed ring',
-                                                       'Commutative ring',
-                                                   ),
-                                                   'Unitary commutative ring',
+                               AtLeastOneField(fields=['⋀','⋁'],
+                                               child='GCD domain',
+                                               otherwise=FOE('Integral',
+                                                             FOE('Closed',
+                                                                 'Integrally closed ring',
+                                                                 'Commutative ring',
+                                                             ),
+                                                             'Unitary commutative ring',
                                                )
                                )
                            )
@@ -183,10 +183,10 @@ lattice = FOE('⋀',#Assumed associative commutative idempotent
                       'Bounded join-semilattice',
                       'Join-semilattice'
                   ),
-                  AtLeastOneField(['≤','<'],
-                                  FOE('Total',
-                                      'Total order',
-                                      'Poset'
+                  AtLeastOneField(fields=['≤','<'],
+                                  child=FOE('Total',
+                                            'Total order',
+                                            'Poset'
                                   ),
                   )
               )
@@ -251,7 +251,7 @@ properties = TableFields(
      "Base2",
      "Base3",
      "Dimension",
-     "Type",
+     ("Typ","Type"),
      "Free family",
      "Generating family",
      "Inner product",

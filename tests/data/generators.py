@@ -13,6 +13,11 @@ fieldFoo = Field("foo")
 fieldQuestion = Field("Question")
 fieldFoo_ = ensureGen(Field('foo'))
 
+### ToAsk
+toask= ToAsk(["Definition","Definition2"])
+toaskForHtml= ToAsk(["Definition","Definition2"])
+toaskForHtmlInList= [ToAsk(["Definition","Definition2"]),"foo"]
+
 ## SingleChild
 ### HTML
 image = Image("http://www.foo.bar")
@@ -199,37 +204,49 @@ tableTwoLine2 = Filled(
                 tag = 'td')],),
         tag = 'tr'),)
 
-tableTwoShown= HTML(
+tableTwoShown= ListElement(
+    [HTML(
         child = ListElement([
             tableTwoLine1,
             tableTwoLine2
         ]),
-    tag = 'table')
+        tag = 'table'),
+    ToAsk(['Definition', 'Definition2'])])
 
-tableTwoShownQuestion1= HTML(
+tableTwoShownQuestion1= ListElement([
+    HTML(
         child = ListElement([
             tableTwoLine1Question,
             tableTwoLine2
         ]),
-    tag = 'table')
-tableTwoShownQuestionAll= HTML(
+        tag = 'table'),
+    ToAsk({'Definition': {None}, 'Definition2': set()})])
+
+tableTwoShownQuestionAll= ListElement([
+    HTML(
         child = ListElement([
             tableTwoLine1Question,
             tableTwoLine2Question
         ]),
-    tag = 'table')
-tableTwoShownAnswer1= HTML(
+        tag = 'table'),
+    ToAsk({'Definition': set(), 'Definition2': set()})])
+tableTwoShownAnswer1= ListElement(
+    [HTML(
         child = ListElement([
             tableTwoLine1Answered,
             tableTwoLine2
         ]),
-    tag = 'table')
-tableTwoShownAnswerAll= HTML(
+        tag = 'table'),
+     ToAsk({'Definition': {None}, 'Definition2': set()})])
+
+tableTwoShownAnswerAll= ListElement([
+    HTML(
         child = ListElement([
             tableTwoLine1Answered,
             tableTwoLine2Answered
         ]),
-    tag = 'table')
+        tag = 'table'),
+    ToAsk({'Definition': set(), 'Definition2': set()})])
 
 ### Numbered
 twoQuestionsNumbered = NumberedFields('Definition', 2)
@@ -259,65 +276,78 @@ twoQuestionsNumberedLine2 = Filled(
                  child =Field(field = "Definition2",),),)
 
 twoQuestionsNumberedShown = ListElement([
+    ListElement([
   Literal(text = "Definitions",),
   Literal(text = ": ",),
     HTML("ol",
          child = ListElement([
              twoQuestionsNumberedLine1,
              twoQuestionsNumberedLine2
-         ],),)],)
+         ],),)],),
+    ToAsk({'Definition': set(), 'Definition2': set()})])
 labelQuestion=CLASS(["Question", "Definitions"],
                     Literal(text = "Definitions",)
                     )
 labelNormal= Literal(text = "Definitions",)
 twoQuestionsNumberedShown1Question = ListElement([
-  labelQuestion,
-  Literal(text = ": ",),
-    HTML("ol",
-         child = ListElement([
-             twoQuestionsNumberedLine1Question,
-             twoQuestionsNumberedLine2
-         ],),)],)
+    ListElement([
+        labelQuestion,
+        Literal(text = ": ",),
+        HTML("ol",
+             child = ListElement([
+                 twoQuestionsNumberedLine1Question,
+                 twoQuestionsNumberedLine2
+             ],),)],),
+    ToAsk({'Definition': {None}, 'Definition2': set()})])
 twoQuestionsNumberedShown1Answer = ListElement([
-  labelNormal,
-  Literal(text = ": ",),
-    HTML("ol",
-         child = ListElement([
-             twoQuestionsNumberedLine1Answer,
-             twoQuestionsNumberedLine2
-         ],),)],)
+    ListElement([
+        labelNormal,
+        Literal(text = ": ",),
+        HTML("ol",
+             child = ListElement([
+                 twoQuestionsNumberedLine1Answer,
+                 twoQuestionsNumberedLine2
+             ],),)],),
+    ToAsk({'Definition': {None}, 'Definition2': set()})])
 
 twoQuestionsNumberedAskDefinitionMandatory = Filled(
-  field = 'Definition',
-  child = ListElement([
-    HTML("span",
-      attrs = {'class': 'Question Definitions'},
-      child = Literal(text = "Definitions",),),
-    Literal(text = ": ",),
-    HTML("ol",
-      child = ListElement([
-        HTML("li",
-          child = Literal(text = "???",),),
-        Filled(
-          field = 'Definition2',
-          child = HTML("li",
-            child = Field(field = "Definition2",),),)],),)],),)
+    field = 'Definition',
+    child = ListElement([
+        ListElement([
+            HTML("span",
+                 attrs = {'class': 'Question Definitions'},
+                 child = Literal(text = "Definitions",),),
+            Literal(text = ": ",),
+            HTML("ol",
+                 child = ListElement([
+                     HTML("li",
+                          child = Literal(text = "???",),),
+                     Filled(
+                         field = 'Definition2',
+                         child = HTML("li",
+                                      child = Field(field = "Definition2",),),)],),)],),
+        ToAsk({'Definition': {None}, 'Definition2': set()})]))
 
 twoQuestionsNumberedAllAsked = ListElement([
-  labelQuestion,
-  Literal(text = ": ",),
-  HTML("ol",
-    child = ListElement([
-      twoQuestionsNumberedLine1Question,
-      twoQuestionsNumberedLine2Question,
-    ],),)],)
+    ListElement([
+        labelQuestion,
+        Literal(text = ": ",),
+        HTML("ol",
+             child = ListElement([
+                 twoQuestionsNumberedLine1Question,
+                 twoQuestionsNumberedLine2Question,
+             ],),)],),
+    ToAsk({'Definition': set(), 'Definition2': set()})])
+
 twoQuestionsNumberedAllAnswer = ListElement([
-  labelNormal,
-  Literal(text = ": ",),
-  HTML("ol",
-    child = ListElement([
-      twoQuestionsNumberedLine1Answer,
-      twoQuestionsNumberedLine2Answer,
-    ],),)],)
+    ListElement([
+        labelNormal,
+        Literal(text = ": ",),
+        HTML("ol",
+             child = ListElement([
+                 twoQuestionsNumberedLine1Answer,
+                 twoQuestionsNumberedLine2Answer,
+             ],),)],),
+    ToAsk({'Definition': set(), 'Definition2': set()})])
 
 

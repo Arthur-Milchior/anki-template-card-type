@@ -33,17 +33,18 @@ class AtLeastNField(SingleChild, NotNormal):
     """
     #@debugInit
     def __init__(self, child, fields, otherwise = None, asked = False, n=1):
-        super().__init__(child)
-        self.otherwise = self._ensureGen(otherwise)
         self.n = n
         self.asked = asked
-        self.fields = fields
         self.setOfRequiredFields = fields
+        assert assertType(fields,list)
+        self.otherwise=otherwise
+        super().__init__(child)
+        self.otherwise = self._ensureGen(otherwise)
         
     def _repr(self):
         t="""AtLeastNField(\n"""
         t+=f"""{genRepr(self.child, label ="child")},\n"""
-        t+=f"""{genRepr(self.fields, label="fields")},\n"""
+        t+=f"""{genRepr(self.setOfRequiredFields, label="fields")},\n"""
         if self.otherwise is not None:
             t+=genRepr(self.otherwise,label= "otherwise")+",\n"
         if self.otherwise is not False:

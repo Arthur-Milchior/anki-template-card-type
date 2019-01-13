@@ -12,7 +12,8 @@ exprs=NumberedFields("Expression",
                      localFun=(lambda i:
                                (LI([QuestionnedField(f"Expression{i}",classes=["Expression"]),
                                     Filled(f"Explanation{i}",Answer(Parenthesis({f"Explanation{i}"})))]),
-                                   {f"Expression{i}"},{f"Expression{i}"})))
+                                   {f"Expression{i}"},{f"Expression{i}"})),
+                     suffix=hr)
 
 
 

@@ -63,14 +63,26 @@ defined only on core generators.
   that some question are asked, some other informations are hidden,
   according to the attributes of the tag from which this generator is
   called. It also ensure that each required fields is filled. This is
-  done using the method ```template(self,asked, hide, mandatory)```
+  done using the method ```template(self,asked, hide, mandatory,modelName)```
 * TAG: There is no generator in this step. This is a step mostly used
   for debugging. It means that the template has been used to generate
-  some html content. This contant can be returned using the method ```applyTag(self,soup)```, where soup is a BeautifulSoup object used to
-  create new tag.
+  some html content. This contant can be returned using the model ```applyTag(self,soup,model)```, where soup is a BeautifulSoup object used to
+  create new tag. The parameter ```model``` is the name of the model
+  currently used. This is used to know in which model questions were
+  already asked.
 * EMPTY: This is the last step. Most generators never reach it. In
   this step, it has been found that the generator has actually no
   content, and thus can be discarded.
+
+### Other methods
+#### getQuestions
+
+This return a set of questions which may be asked in this
+generator. This is currently not used.
+
+#### getQuestionToAsk(nb)
+We return a question of this generator which has not yet been
+asked in this model.
 
 ## Current cores
 Here is the current list of Core generators. They are described in README.md

@@ -48,6 +48,24 @@ which could not be computed immediatly. If the computation is costly,
 it ensures that it is done only if the value is required. And
 furthermore, that it is done only once (this is called memoization).
 
+### ToAsk
+The generator ```ToAsk(set)``` ensure that it is known that the
+content of the set consists of questions one may want to ask in
+templates. It's required for the method getQuestions, which returns
+this set, and for the method questQuestionToAsk(model), which, given a
+model, returns a question which has not yet been added in this model.
+
+### Failure
+The generator ```Failure(lastStep)``` returns an error if it is still
+present in a generator at a step after the lastStep. lastStep being in
+element from constants.py
+
+This allows to ensure that an error is raised in case which should not
+exists at some step, but have not been properly eliminated at previous
+step.
+
+ 
+
 ## HTML
 The generator ```HTML(tag, atom = False, attrs={}, child=None)``` is
 interpreted as ```<tag attr_1=value_1
@@ -329,7 +347,7 @@ prefix, ```</td><td>``` as infix and ```</td></tr>``` as suffix.
 This generator as an optional argument ```name```. When ```name``` is
 asked, it is similarly to asking simultaneously every single fields.
 ##### NumberedFields
-Sometime, you have a liest of successive fields with name suffixed by
+Sometime, you have a list of successive fields with name suffixed by
 numbers, such as ```foo```, ```foo2```, ..., ```foon```. For example
 if you want to list different names of a same concept or different
 lines of a lyrics. In this case, there is no reason to repeat the
@@ -391,7 +409,9 @@ ListFields takes the following parameters:
   assumed to be asked.
 * localFun: a function, applied to each element of fields which return
   the following tuple: (a generator, a set of fields which must be set
-  for this field to be displayed, a set of question).  If the last or
-  the two lasts are empty set, they don't have to be returned. By
-  default it is the identity function. Note that a tuple is also a
-  valid generator, pay attention not to return tuple generator from localFun.
+  for this field to be displayed, a set of question). Those sets of
+  question is used as potential questions in the generator ToAsk.  If
+  the last or the two lasts are empty set, they don't have to be
+  returned. By default it is the identity function. Note that a tuple
+  is also a valid generator, pay attention not to return tuple
+  generator from localFun.

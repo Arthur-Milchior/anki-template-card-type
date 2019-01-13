@@ -39,3 +39,9 @@ TestHTML(htmlFront, definitionAnswerHard, FrontHtml = definitionTemplateHard, ob
 
 TestHTML(definitionTemplateTable, definitionQuestionTable, objects = testObjects, isQuestion = True)
 TestHTML(htmlFront, definitionAnswerTable, FrontHtml = definitionTemplateTable, objects = testObjects, isQuestion = False)
+
+
+TestHTML(chooseHtml, chooseHtml1,objects={"toaskForHtml":toaskForHtml})
+TestHTML(chooseHtml, chooseHtml2,objects={"toaskForHtml":toaskForHtml})
+TestHTML(chooseHtmlInList, chooseHtml1InList,objects={"toaskForHtmlInList":toaskForHtmlInList})
+TestHTML(chooseHtmlInList, chooseHtml2InList,objects={"toaskForHtmlInList":toaskForHtmlInList})

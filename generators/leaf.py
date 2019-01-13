@@ -1,9 +1,10 @@
 import copy
+import sys
 import types
 from .constants import *
 from .generators import Gen, genRepr, thisClassIsClonable
 from .ensureGen import addTypeToGenerator
-from ..debug import debug, assertType, debugFun, ExceptionInverse
+from ..debug import debug, assertType, debugFun, ExceptionInverse, debugInit
 from bs4 import NavigableString
 from html import escape
 
@@ -154,10 +155,10 @@ class Field(Leaf):
             self.field = self.field[6:]
         
     def dealWithSpecial(self):
-        specialName = self.field in {"FrontSide":"frontside", "Tags":"tags", "Type":"typ", "Deck":"deck", "Card":"card"}
-        if specialName and not self.special:
-            print(f"""Beware: you use field "{self.field}", which is a special field. If you want to use this special field, use the constant "{specialName(self.field)}".""", file=sys.stderr)
-        if not self.special and specialName:
+        specialName = {"FrontSide":"frontside", "Tags":"tags", "Type":"typ", "Deck":"deck", "Card":"card"}
+        if self.field in specialName and not self.special:
+            print(f"""Beware: you use field "{self.field}", which is a special field. If you want to use this special field, use the constant "{[self.field]}".""", file=sys.stderr)
+        if not self.special and self.field in specialName:
             print(f"""Beware: you want to create a special field, which does not belong to {specialName}, thus is not a special name.""", file=sys.stderr)
         if self.special:
             if self.typ:
@@ -216,6 +217,24 @@ class Field(Leaf):
         cloze = "cloze:" if self.typ else ""
         return NavigableString(f"""{{{{{typ}{cloze}{self.field}}}}}""")
 
+class Failure(Leaf):
+    """This structure should fail if it appears at a step where it should not be exists anymore"""
+    def __init__(self,last_step):
+        self.last_step = last_step
+
+    def setState(self,state):
+        if state != EMPTY and self.last_step < state:
+            raise Exception
+        
+    def _repr(self):
+        return f"Failure({self.last_step})"
+
+    def __eq__(self,other):
+        return isinstance(other,Leaf) and self.last_step==other.last_step
+    #def _applyTag(self, soup):
+    #this method is not defined. If it isacceptable to create a tag in this generator,then it is useless
+    
+    
 addTypeToGenerator(set, Field)
 frontside = Field("FrontSide", special = True)
 tags = Field("Tags", special = True)
@@ -224,3 +243,53 @@ deck = Field("Deck", special = True)
 card = Field("Card", special = True)
 
 
+@thisClassIsClonable
+class ToAsk(Leaf):
+    @debugInit
+    def __init__(self,setQuestions,*args,**kwargs):
+        if isinstance(setQuestions,dict):
+            self.setQuestions=[]
+            self.questionsAsked=setQuestions
+            for key in self.questionsAsked:
+                self.setQuestions.append(key)
+            self.setQuestions=list(sorted(self.setQuestions))
+            #for debugging purpose, having this sorted is useful.
+            #anyway, weconstruct using a dictionnary only in the case of debugging
+        elif isinstance(setQuestions,list):
+            self.questionsAsked=dict()
+            for q in setQuestions:
+                self.questionsAsked[q]=set()
+                self.setQuestions=setQuestions
+        else:
+            assert False   
+        super().__init__(*args,**kwargs)
+
+    @debugFun
+    def _getQuestions(self):
+        return self.setQuestions
+
+    @debugFun
+    def _getQuestionToAsk(self,model):
+        for key in self.questionsAsked:
+            models = self.questionsAsked[key]
+            if model not in models:
+                return key
+
+        return None
+
+    @debugFun
+    def _assumeAsked(self,field,modelName):
+        if field in self.setQuestions:
+            assert assertType(field,str)
+            assert modelName is None or  assertType(modelName,str)
+            self.questionsAsked[field].add(modelName)
+        return self
+    
+    def _repr(self):
+        return f"ToAsk({self.questionsAsked})"
+    
+    def __eq__(self,other):
+        #For debugging purpose, we want to have an exact match, and not only on sets.
+        return isinstance(other,ToAsk) and self.questionsAsked==other.questionsAsked
+    def _applyTag(self, soup):
+        return []

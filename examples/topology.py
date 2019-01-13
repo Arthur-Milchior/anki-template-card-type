@@ -6,7 +6,7 @@ definition_topology = TableFields(
     name = "Topology",
     fields = ["Set", "Definition", "Definition2", "Opens", "Compactification of", "Completion of", "Base", "Base2", "Order", "Metric", "Prebase", "Prebase2"]
 )
-compactness= TableFields(tableName="Compactness",
+compactness= TableFields(name="Compactness",
                          fields = ['a paracompact',
                                    'compact',
                                    'sequentially compact',
@@ -26,20 +26,20 @@ compactness= TableFields(tableName="Compactness",
                                    'freebly compact']
 )
 
-bounded =TableFields(tableName="Bounded",
+bounded =TableFields(name="Bounded",
             fields=[
                 'bounded',
                 'totally bounded'
             ]
 )
 
-points = TableFields(tableName="Points",
+points = TableFields(name="Points",
  fields=[
 'limit points',
 'isolated points',
 ])
 
-sets =TableFields(tableName="Sets",
+sets =TableFields(name="Sets",
             fields=[
                 'clopen',
                 'dense',
@@ -47,7 +47,7 @@ sets =TableFields(tableName="Sets",
 )
 
 separation= TableFields(
-    tableName="Separation",
+    name="Separation",
     fields=[
         'T0 Kolmogorov',
         'R0 Symmetric',
