@@ -10,9 +10,10 @@ definition_hacker = TableFields(
 exprs=NumberedFields("Expression",
                      6,
                      localFun=(lambda i:
-                               (LI([QuestionnedField(f"Expression{i}",classes=["Expression"]),
-                                    Filled(f"Explanation{i}",Answer(Parenthesis({f"Explanation{i}"})))]),
-                                   {f"Expression{i}"},{f"Expression{i}"})),
+                               {"child":LI([QuestionnedField(f"Expression{i}",classes=["Expression"]),
+                                            Filled(f"Explanation{i}",Answer(Parenthesis({f"Explanation{i}"})))]),
+                                "filledFields": [f"Expression{i}"],
+                                "questions":{f"Expression{i}"}}),
                      suffix=hr)
 
 

@@ -1,7 +1,7 @@
 from ..general import short_header, footer
 from ...generators.imports import *
 
-label=[{"Name"}," is"]
+label=[Field("Name", isMandatory = True)," is"]
 def no(i):
     filled=Filled(f"Not{i}",
                   "not ")
@@ -17,7 +17,8 @@ def when(i):
                       label="when ",
                       classes="Condition",
                       infix="",
-                      suffix="")
+                      suffix="",
+                      isMandatory = True)
     question=[Label("when",
                     fields=[f"Conditions",f"Condition{i}",f"Case{i}"],
                     classes=["Condition"]),
@@ -29,19 +30,22 @@ def when(i):
     return QuestionOrAnswer(alo,
                             df)
     
-def cu(i):
+def closedUnder(i):
     return DecoratedField(field=f"Case{i}",
                           label="closed under ",
                           classes="Case",
                           infix="",
-                          suffix="")
+                          suffix="",
+                          isMandatory = True)
 def line(i):
-    return [no(i),cu(i),when(i)]
+    return [no(i),closedUnder(i),when(i)]
     
 _closed = NumberedFields(fieldPrefix = "Case",
                          greater=11,
                          label=label,
-                         localFun=(lambda i:(LI(line(str(i))),{f"Case{i}"},{f"Case{i}"})),
+                         localFun=(lambda i:{"child":LI(line(str(i))),
+                                             "questions":{f"Case{i}"},
+                                             "filledFields":[f"Case{i}"]}),
                          unordered=True,
 )
 

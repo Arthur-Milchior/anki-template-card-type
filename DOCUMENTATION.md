@@ -128,7 +128,7 @@ in this add-on.
 The most basic template's value is a generator. This generator is
 compiled and the result of the compilation is put between the tags.
 ```
-<span template="eval" generator="foo" asked="bar"/>
+<span template="eval" generator="foo" askedmandatory="bar"/>
 ```
 This compile as 
 ```

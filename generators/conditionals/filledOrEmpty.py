@@ -1,7 +1,7 @@
 import bs4
 from ..generators import thisClassIsClonable
 from ...debug import debugFun, debug
-from .meta import FieldChild
+from .meta import FieldChild, Dichotomy
 from ..generators import addTypeToGenerator
 from ..leaf import emptyGen
 from ..list import ListElement
@@ -90,14 +90,16 @@ def tupleToFilled(tup):
 addTypeToGenerator(tuple, tupleToFilled)
 #It is useful to be able to create Filled from generators. Thus it should be in typeToGenerator. Tuple is a type not yet used, which have sens.
     
-class FilledOrEmpty(ListElement):
-    # def __repr__(self):
-    #     return """FilledOrEmpty({self.field},{self.filledCase},{self.emptyCase})"""
+# class FilledOrEmpty(ListElement):
+#     # def __repr__(self):
+#     #     return """FilledOrEmpty({self.field},{self.filledCase},{self.emptyCase})"""
     
-    def __init__(self,field,filledCase = emptyGen, emptyCase = emptyGen,  **kwargs):
-        self.filledCase = filledCase
-        self.emptyCase = emptyCase
-        self.field = field
-        super().__init__([
-            Filled(field = field, child = filledCase),
-            Empty(field = field, child = emptyCase),],  **kwargs)
+#     def __init__(self, field, filledCase = emptyGen, emptyCase = emptyGen,  **kwargs):
+#         self.filledCase = filledCase
+#         self.emptyCase = emptyCase
+#         self.field = field
+#         super().__init__([
+#             Filled(field = field, child = filledCase),
+#             Empty(field = field, child = emptyCase)],  **kwargs)
+
+FilledOrEmpty = Dichotomy(Filled,Empty,"FilledOrEmpty")

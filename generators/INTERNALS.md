@@ -119,7 +119,7 @@ In order to create a new Core generator, you must:
 descendant). 
 * the class must be preceeded by the class by the decorator
   ``@thisClassIsClonable```,
-* the class must implement ```__hash__```, and ```__eq__```.
+* the class must implement ```__hash__```.
 * the class must implement ```clone(self, elements)```, which, returns
 a copy, similar to self, where the children are elements.
 * the class must implement ```_getChildren``` returning the set of
@@ -138,9 +138,13 @@ following method:
   children. You can use genRepr(child, label = None) to print the
   parameter, prefixed by «label =», if you want to print some
   parameters.
-* the method ```outerEq``` is similar to __eq__ but does not consider
+* the method ```_outerEq``` is similar to __eq__ but does not consider
   the children. For example, it should return true for two lists of
   the same length, two html tags with the same tag and attributes.
+* __eq__ should be the conjunction of ```_outerEq``` and
+  ```_innerEq```. Hence, the method ```_innerEq``` should test the
+  equality of everything, except the surface. It may be assume that it
+  is called only if ```_outerEq``` returns True.
 * the method _firstDifference(self,other) must return a pair of
   generators. Those are in the same position in the tree self/other,
   but which are distinct on surface. I.e. outerEq return false on

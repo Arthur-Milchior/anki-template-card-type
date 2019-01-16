@@ -1,7 +1,7 @@
 from ...generators.imports import *
-from ..general import header, footer
-FOE= FilledOrEmpty
-
+from ..general import header, footer, typDic
+def FOE(*args,**kwargs):
+    return FilledOrEmpty(*args, isMandatory=True, **kwargs)
 ringCom1 = FOE('/',
                'Field',
                FOE('Graduation',
@@ -161,7 +161,7 @@ lattice = FOE('⋀',#Assumed associative commutative idempotent
                                FOE('¬',
                                    FOE('Distributive',
                                        'Boolean algebra',
-                                       FOE('Modular'
+                                       FOE('Modular',
                                            'Orthomodular lattice',#Assume idempotent
                                            'Orthocomplemented lattice',#Assume idempotent
                                        ),
@@ -251,7 +251,7 @@ properties = TableFields(
      "Base2",
      "Base3",
      "Dimension",
-     ("Typ","Type"),
+     typDic,
      "Free family",
      "Generating family",
      "Inner product",

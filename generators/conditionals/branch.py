@@ -1,5 +1,16 @@
+# ### Branch
+# In my template, there is a recurring case. Some part of the code have
+# most of the time a fixed value. But it also have a value for the
+# question side when some name is asked, and also a value for the answer
+# side when the name is asked. 
+
+# A Branch allow to give a default value. A value for question/answer
+# side, or for asked/not asked side, and to override this default value
+# only when some conditions are met. 
+
 from ...utils import firstTruth
 from .askedOrNot import AskedOrNot
+
 class Branch(AskedOrNot):
     """The class which expands differently in function of the question/hidden value.
 

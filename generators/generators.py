@@ -3,6 +3,7 @@ from ..utils import identity, standardContainer
 from .ensureGen import ensureGen, addTypeToGenerator
 from .constants import *
 import bs4
+import sys
 #from ..templates.soupAndHtml import templateFromSoup
 
 
@@ -118,13 +119,27 @@ class Gen:
     #@debugFun
     def __init__(self,
                  *,
+                 localMandatories = frozenset(),
                  toKeep = None,
                  state = BASIC,
                  locals_ = None,
     ):
+        assert isinstance(localMandatories,set) or assertType(localMandatories,frozenset) 
         self.locals_ = locals_
         self.toKeep = toKeep
         self.state = state
+        self.localMandatories = localMandatories
+        for m in localMandatories:
+            assert assertType(m,str)
+
+    def getLocalMandatories(self):
+        return self.localMandatories
+
+    def getGlobalMandatories(self):
+        m = self.getLocalMandatories()
+        for c in self.getChildren():
+            m|= c.getGlobalMandatories()
+        return m
 
     indentation = 0
     #@debugFun
@@ -133,6 +148,7 @@ class Gen:
         gen = ensureGen(element, self.locals_)
         gen.setState(self.getState())
         return gen
+
 
     @debugFun
     def clone(self,children):
@@ -172,6 +188,11 @@ class Gen:
 {space}toKeep = {self.toKeep},
 {space}state = {self.getState()}"""
 
+    def _outerEq(self, other):
+        return self.getLocalMandatories() == other.getLocalMandatories()
+
+    def __eq__(self,other):
+        return self._outerEq(other) and self._innerEq(other)
     #######################
     # Finding status
 
@@ -277,15 +298,15 @@ class Gen:
         if someChange:
             debug("Some change did occurs, thus we clone")
             ret = self.clone(elements = elements)
-            if ret == self:
-                debug("However the clone is identic")
-                ret = self
-            else:
-                debug("and the clone is different")
+            return ret
+            # if ret == self:
+            #     debug("However the clone is identic")
+            #     ret = self
+            # else:
+            #     debug("and the clone is different")
         else:
             debug("No change found, so we keep the old element")
-            ret = self
-        return ret
+            return self
 
     ###########################
     # Changing step
@@ -349,6 +370,9 @@ class Gen:
         requireInModel/requireAbsentOfModel requirement. It contains
         no Field(foo), or Filled(foo), if foo does not belong to the model.
         """
+        missing = self.getLocalMandatories() - fields
+        if missing:
+            print(f"""Beware: the generator {self} request the field(s) {missing} which is/are absent from your model.""", file=sys.stderr)                    
         return self._restrictToModel(fields = fields)
     @debugFun
     def _restrictToModel(self,fields):
@@ -365,7 +389,7 @@ class Gen:
         """
         step = self
         if mandatory:
-            step = step.addMandatory(mandatory)
+            step = step.addMustBeFilled(mandatory)
         return step._template(asked = asked, hide = hide, modelName=modelName)
     
     @debugFun
@@ -378,8 +402,10 @@ class Gen:
         for name in asked:
             current = current.assumeAsked(name,modelName=modelName)
         return current.noMoreAsk()
+    
     @debugFun
-    def addMandatory(self, mandatory):
+    def addMustBeFilled(self, mandatory):
+        """Self, where the display only occurs if each fields of mandatory are be filled"""
         current = self
         for field in mandatory:
             current = current.assumeFieldFilled(field)
@@ -568,6 +594,7 @@ class Gen:
                 asked = None,
                 mandatory = None,
                 hide = None,
+                hideQuestions = None,
                 toPrint = False,
                 modelName=None,
     ):
@@ -584,17 +611,17 @@ class Gen:
             else :
                 goal = TAG
                 
-        if toPrint: print(f"""\ntesting each step of "{self}".""")
+        if toPrint: print(f"""\nTesting each step of "{self}".""")
         if goal == BASIC:
             return self
 
         nf = self.getNormalForm()
-        if toPrint: print(f"""\nnormal form is "{nf}".""")
+        if toPrint: print(f"""\nNormal form is "{nf}".""")
         if goal == NORMAL:
             return nf
 
         wr = nf.getWithoutRedundance()
-        if toPrint: print(f"""\nwithout redundance is "{wr}".""")
+        if toPrint: print(f"""\nWithout redundance is "{wr}".""")
         if goal == WITHOUT_REDUNDANCY:
             return wr
 
@@ -605,9 +632,13 @@ class Gen:
         if goal == QUESTION_ANSWER:
             return questionRestriction
 
+        if isQuestion and hideQuestions:
+            for hideQuestion in hideQuestions:
+                questionRestriction = questionRestriction.removeName(hideQuestion)
+                
         assert fields is not None
         modelRestriction = questionRestriction.restrictToModel(fields)
-        if toPrint: print(f"""\nWith model applied, "{modelRestriction}".""")
+        if toPrint: print(f"""\nWith model({fields}) applied, "{modelRestriction}".""")
         if goal == MODEL_APPLIED:
             return modelRestriction
         
@@ -625,8 +656,8 @@ class Gen:
         templateRestriction = modelRestriction.template(asked = asked,
                                                         hide = hide,
                                                         mandatory = mandatory,
-                                                        modelName=modelName)
-        if toPrint: print(f"""\nWith template applied, "{templateRestriction}".""")
+                                                        modelName = modelName)
+        if toPrint: print(f"""\nWith template(asked = {asked}, hide = {hide}, mandatory = {mandatory}, modelName = {modelName}) applied, "{templateRestriction}".""")
         if goal == TEMPLATE_APPLIED:
             return templateRestriction
 
@@ -677,22 +708,24 @@ class MultipleChildren(Gen):
     #@debugFun
     def __init__(self, toKeep = None,  **kwargs):
         super().__init__(**kwargs)
-        if toKeep is None:
-            allFalse = True
-            for element in self.getChildren():
-                shouldIt = shouldBeKept(element)
-                if shouldIt is True:
-                    toKeep = True
-                    allFalse = False
-                    break
-                if shouldIt is None:
-                    allFalse = None
-            if allFalse:
-                toKeep = False
-        if toKeep is True:
-            self.doKeep()
-        elif toKeep is False:
-            self.dontKeep()
+
+        
+        # if toKeep is None:
+        #     allFalse = True
+        #     for element in self.getChildren():
+        #         shouldIt = shouldBeKept(element)
+        #         if shouldIt is True:
+        #             toKeep = True
+        #             allFalse = False
+        #             break
+        #         if shouldIt is None:
+        #             allFalse = None
+        #     if allFalse:
+        #         toKeep = False
+        # if toKeep is True:
+        #     self.doKeep()
+        # elif toKeep is False:
+        #     self.dontKeep()
             
 class NotNormal(Gen):
     def _getWithoutRedundance(self):
@@ -782,11 +815,12 @@ class SingleChild(MultipleChildren):
 {genRepr(self.child, label="child")},{self.params()})"""
         return t
 
-    def __eq__(self,other):
+    def _innerEq(self,other):
         """It may require to actually compute the child"""
-        return self._outerEq(other) and self.getChild() == other.getChild()
+        return self.getChild() == other.getChild()
     
-    def _outerEq(self,other):
-        return isinstance(other,SingleChild)
+    def _outerEq(self, other):
+        return isinstance(other, SingleChild) and super()._outerEq(other)
+    
     def _firstDifference(self,other):
         return self.getChild().firstDifference(other.getChild())

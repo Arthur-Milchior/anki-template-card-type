@@ -36,16 +36,30 @@ ex=('Example',
              NumberedFields('Example',
                             4,
                             suffix=hr,
-                            localFun= (lambda i:(LI(FilledOrEmpty(f"Applied to{i}",
-                                                                  DecoratedField(prefix="On ",
-                                                                                 label = {f"Applied to{i}"},
-                                                                                 field=f"Example{i}",
-                                                                                 suffix=""),
-                                                                  QuestionnedField(f"Example{i}",classes="Example"))),
-                                                 {f"Example{i}"},{f"Example{i}"}))))
+                            localFun= (lambda i:{"child":LI(FilledOrEmpty(f"Applied to{i}",
+                                                                           DecoratedField(prefix="On ",
+                                                                                          label = {f"Applied to{i}"},
+                                                                                          field=f"Example{i}",
+                                                                                          suffix=""),
+                                                                          QuestionnedField(f"Example{i}",classes="Example"))),
+                                                 "filledFields":[f"Example{i}"],
+                                                 "questions":{f"Example{i}"}})))
+
+
+na=NotAsked(
+      field = 'asked',
+      child = Literal(text = "Asked is not asked",),)
+# compileGen(na, asked=frozenset(),toPrint=True)
+# print("""
 
 
 
+
+
+
+# """)
+# compileGen(cascadeUseless, asked=frozenset(),toPrint=True)
+#compileGen(question, fields={"Question","Answer","Answer2"}, isQuestion=True,asked={"Answer"}, toPrint=True)
 
 startDebug()
 #print(cascadeBeforeTemplate.template(asked={"cascaded"}))
@@ -53,4 +67,10 @@ startDebug()
 endDebug()
 # compileGen(DecoratedField("Question"), asked =frozenset("Question"),   toPrint=True)
 
-# raise Exception
+
+# compileGen(
+#     fourQuestionsAsTable,
+#     asked = frozenset(),
+#     fields = {"Question","Question2", "Name","Name2"},
+#     toPrint = True
+# )

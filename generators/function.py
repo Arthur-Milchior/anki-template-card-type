@@ -26,10 +26,10 @@ class Function(Gen):
     def __hash__(self):
         return hash(self.fun)
 
-    def __eq__(self, other):
-        return isinstance(other, Function) and self.fun == other.fun
+    def _innerEq(self, other):
+        return self.fun == other.fun
     def _outerEq(self,other):
-        return isinstance(other,Function)
+        return isinstance(other,Function) and super().__outerEq(self,other)
     def _firstDifference(self,other):
         return None
     

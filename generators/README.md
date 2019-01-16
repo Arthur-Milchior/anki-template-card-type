@@ -79,9 +79,8 @@ A number of generators are created for standard HTML, and ready to use:
   tr lines, tdAttrs are attribute for td cells, and attrs are
   attributes for the whole table.
 * ```SPAN(child, attrs = {})``` is similar to ```HTML("span", child,
-    attrs)```. And similarly for ```LI```, ```DIV```, ```P```,
-    ```TR```, ```SUB```, ```SUP``` and ```TD```, and the HTML5
-    ```HEADER``` and ```FOOTER```. That is, they are constructors with
+    attrs)```. And similarly for LI, DIV, P, TR, SUB, SUP and TD, and
+    the HTML5 HEADER and FOOTER. That is, they are constructors with
     the name of the tag fixed.
 * ```OL(elements, liAttrs = {}, attrs = {})``` is an ordered list,
   where each element of elements is a child, enclosed in a ```LI```
@@ -206,17 +205,18 @@ of fields/name which must satisfy some properties. Those names are
 given in arguments requireFilled, requireEmpty, requireInModel,
 requireAbsentOfModel, requireAsked, requireNotAsked.
 
-### Branch
-In my template, there is a recurring case. Some part of the code have
-most of the time a fixed value. But it also have a value for the
-question side when some name is asked, and also a value for the answer
-side when the name is asked. 
+### HideInSomeQuestions
+Sometime, there are part of the generator which should always be
+shown, except when some particular questions is asked. Not because
+it's the answer to the question, but may be it would give too much
+clues.
 
-A Branch allow to give a default value. A value for question/answer
-side, or for asked/not asked side, and to override this default value
-only when some conditions are met. 
-
-
+The generator
+```Python
+HideInSomeQuestions(fields,child)
+```
+Print child, except on the question side when some field in the
+container fields is asked.
 
 ## Syntax
 In this section, we present more complex generators. They represents
@@ -333,13 +333,20 @@ respectively. Furthermore, ```tdLabelAttrs``` and ```tdFieldAttrs```
 are used to give attributes to the td's tags of the label and of the
 field respectively.
 
-The only mandatory argument is the first one, called ```field```. This
+The only mandatory argument is the first one, called ```fields```. This
 argument contains a list of table line. Each of those table line is
 given either:
-* as a Field generator. In this case, the field name is used as label.
-* as a string. This case is similar to the precedent.
-* as a pair (label,field) with field being either a Field generator or
-  a string.
+* as a string. In this case, the field name is used as label.
+* as a dictionnary. This dictionnary may contain:
+  * "field" (this is the only mandatory value), which is the name of
+    the field shown in this line
+  * "label" the label to put in the first column in this line
+  * "hideInSomeQuestion": apply HideInSomeQuestion to this line, with
+    the value contained in this entry.
+* as a list ```relatedList```. In which case, it is assumed that for
+  each field ```f``` of ```relatedList```, the list ```fields```
+  contains an entry ```{"field":f,
+  hideInSomeQuestion:relatedList-f}```.
   
 Each line is similar to a Question generator, with ```<tr><td>``` as
 prefix, ```</td><td>``` as infix and ```</td></tr>``` as suffix.
@@ -408,10 +415,13 @@ ListFields takes the following parameters:
   name is asked, the union of the set returned by localFun's calls are
   assumed to be asked.
 * localFun: a function, applied to each element of fields which return
-  the following tuple: (a generator, a set of fields which must be set
-  for this field to be displayed, a set of question). Those sets of
-  question is used as potential questions in the generator ToAsk.  If
-  the last or the two lasts are empty set, they don't have to be
-  returned. By default it is the identity function. Note that a tuple
-  is also a valid generator, pay attention not to return tuple
-  generator from localFun.
+  either a generator or a dictionnary. If it is a generator, then this
+  generator is added to the list directly. Otherwire, the dictionnary
+  is as follows:
+  * child: the generator to display
+  * questions: a set such that if ```name``` is asked, then those
+    elements are also supposed to be asked.
+  * filledFields: request that at least one of the field from this
+    list is filled to display the line
+  * hideInSomeQuestion: apply HideInSomeQuestion with those fields to
+  this line.

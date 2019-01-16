@@ -3,10 +3,10 @@ from ..generators.imports import *
 
 answers = PotentiallyNumberedFields("Answer",
                                     7,
-                                    prefix=DecoratedField("Question",suffix=[":",br]),
-                                    infix=None,
-                                    label="",
-                                    suffix=hr)
+                                    label = Field("Question"),
+                                    infix = None,
+                                    suffix = hr)
                                     
-question = Filled("Question",
-                  [header, answers, DecoratedField("Construction", suffix=hr), footer])
+question = [Filled("Question",
+                   [header, answers, DecoratedField("Construction", suffix=hr), footer]),
+            hr]

@@ -3,7 +3,6 @@ from .generators import Gen, shouldBeKept, genRepr, thisClassIsClonable, Multipl
 from .constants import *
 from .ensureGen import addTypeToGenerator
 from ..debug import debug, assertType, debugFun, ExceptionInverse, debugInit, debugOnlyThisMethod
-from .leaf import emptyGen
 
  
 @thisClassIsClonable
@@ -17,6 +16,7 @@ class ListElement(MultipleChildren):
         elements -- list of elements
         """
         # self.childEnsured = False
+        assert assertType(elements,list)
         self.elements = elements
         super().__init__(**kwargs)
         self.changeElements()
@@ -24,14 +24,14 @@ class ListElement(MultipleChildren):
         
     def changeElements(self):
         truthyElements = []
-        someToKeep = False
+        # someToKeep = False
         for element in self.elements:
             if element:
                 element = self._ensureGen(element)
                 truthyElements.append(element)
-                if element.getToKeep() is not False:
-                    someToKeep = True
-        if len(truthyElements)==0 or not someToKeep:
+                # if element.getToKeep() is not False:
+                #     someToKeep = True
+        if len(truthyElements)==0:# or not someToKeep:
             self.elements = []
             self.setState(EMPTY)
         else:
@@ -40,9 +40,10 @@ class ListElement(MultipleChildren):
     def clone(self, elements):
         l= ListElement(elements)
         if not l.elements:
-            return emptyGen
+            return None
         elif len(l.elements) is 1:
-            return l.elements[0]
+            child = l.elements[0]
+            return child
         else:
             return l
         
@@ -60,10 +61,10 @@ class ListElement(MultipleChildren):
         t+=f"""],{self.params()})"""
         return t
 
-    def __eq__(self,other):
-        return self._outerEq(other) and self.elements == other.elements
+    def _innerEq(self,other):
+        return self.elements == other.elements
     def _outerEq(self,other):
-        return isinstance(other,ListElement) and len(self.elements) == len(other.elements)
+        return isinstance(other,ListElement) and len(self.elements) == len(other.elements) and super()._outerEq(other)
     def _firstDifference(self,other):
         for i in range(len(self.elements)):
             ret = self.elements[i].firstDifference(other.elements[i])

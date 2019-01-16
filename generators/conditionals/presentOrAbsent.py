@@ -1,4 +1,4 @@
-from .meta import FieldChild
+from .meta import FieldChild, Dichotomy
 from ..generators import thisClassIsClonable
 from ...debug import debugFun, debug
 from ..list import ListElement
@@ -76,12 +76,13 @@ class Present(FieldChild):
         
     def _applyTag(self, soup):
         assert False
-class PresentOrAbsent(ListElement):
-    def __init__(self, field, presentCase = None, absentCase = None,  **kwargs):
-        self.presentCase = presentCase
-        self.absentCase = absentCase
-        self.field = field
-        super().__init__([
-            Present(field = field, child = presentCase),
-            Absent(field = field, child = absentCase),],  **kwargs)
+# class PresentOrAbsent(ListElement):
+#     def __init__(self, field, presentCase = None, absentCase = None,  **kwargs):
+#         self.presentCase = presentCase
+#         self.absentCase = absentCase
+#         self.field = field
+#         super().__init__([
+#             Present(field = field, child = presentCase),
+#             Absent(field = field, child = absentCase),],  **kwargs)
 
+PresentOrAbsent = Dichotomy(Present, Absent, "PresentOrAbsent")

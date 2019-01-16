@@ -29,16 +29,19 @@ stringFoo = ensureGen("foo")
 assert assertEqual(stringFoo, literalFoo)
 
 ### Field 
-assert assertEqual(fieldFoo_, fieldFoo)
-assert fieldFoo  !=  Literal("test")
-assert fieldFoo !=  Literal("{{foo}}")
-assert assertEqual(fieldFoo, Field('foo'))
-assert assertEqual(fieldFoo, fieldFoo.getNormalForm())
-assert assertEqual(fieldFoo, fieldFoo.getWithoutRedundance())
-assert not fieldFoo.isEmpty()
-assert fieldFoo.toKeep
-assert fieldFoo
-assert assertEqual(compileGen(fieldFoo), emptyGen)
+assert assertEqual(fieldFoo_, fieldFooClassless)
+assert fieldFooClassless  !=  Literal("test")
+assert fieldFooClassless !=  Literal("{{foo}}")
+assert fieldFooClassless != fieldFooClass
+assert assertEqual(fieldFooClassless, Field('foo',addClass=False))
+assert assertEqual(fieldFooClassless, fieldFooClassless.getNormalForm())
+assert assertEqual(fieldFooClassless, fieldFooClassless.getWithoutRedundance())
+assert assertEqual(compileGen(fieldFooClass, fields={"foo"}), CLASS("foo",Field("foo",addClass=False)))
+assert assertEqual(fieldFooClass, fieldFooClass.getWithoutRedundance())
+assert not fieldFooClassless.isEmpty()
+assert fieldFooClassless.toKeep
+assert fieldFooClassless
+assert assertEqual(compileGen(fieldFooClassless), emptyGen)
 assert assertEqual(compileGen(fieldQuestion), fieldQuestion)
 
 ## singleChild
@@ -104,7 +107,7 @@ assert assertEqual(compileGen(unorderedList),HTML(
                    ))
 
 ### Conditional
-assert assertEqual(compileGen(filledField),filledField)
+assert assertEqual(compileGen(filledFields),filledFields)
                        # MultipleRequirement(requireFilled = {"Question"},
                        #             child = Literal("Question is filled")))
 assert assertEqual(compileGen(emptyField),emptyField)
@@ -146,7 +149,7 @@ assert assertEqual(compileGen(cascade, hide=frozenset(["asked"])), emptyGen)
 
 ## MultipleChildren
 ### List
-listEmptyInexistingField_ = ensureGen(["foo",emptyGen,fieldFoo])
+listEmptyInexistingField_ = ensureGen(["foo",emptyGen,fieldFooClassless])
 assert listEmptyInexistingField
 assert listEmptyInexistingField.toKeep is not False
 assert not listEmptyInexistingField.isEmpty()
@@ -171,8 +174,8 @@ assert assertEqual(compileGen(questionsRecursive, isQuestion = False),Literal("a
 # Sugar
 assert assertEqual(compileGen(parenthisedFoo),
                    ListElement(["(","foo",")"]))
-assert assertEqual(compileGen(emptyParenthesis),
-                   emptyGen)
+# assert assertEqual(compileGen(emptyParenthesis),
+#                    emptyGen) TODO when tokeep is precise
 ## Dichotomy
 assert assertEqual(compileGen(filledOrEmpty),
                    ListElement([Filled(field = "Question", child = Literal(text = "Question is filled", ), ), Empty(field = "Question", child = Literal(text = "Question is empty", ), )], ))
@@ -199,7 +202,7 @@ assert assertEqual(compileGen(labelBarForFieldFoo,
 assert assertEqual(compileGen(labelBarForFieldFoo,
                               asked = {"foo"},
                               isQuestion=True),
-                   CLASS("Question foo",Literal("bar")))
+                   CLASS(["Question","Emphasize", "foo"],Literal("bar")))
 assert assertEqual(compileGen(labelBarForFieldFoo,
                               isQuestion = True),
                    Literal("bar"))
@@ -216,29 +219,39 @@ assert assertEqual(compileGen(labelBarForFieldsFoos,
 assert assertEqual(compileGen(labelBarForFieldsFoos,
                               asked = {"foo"},
                               isQuestion=True),
-                   CLASS("Question foos",Literal("bar")))
+                   CLASS(["Question","Emphasize","foos"],Literal("bar")))
+
+## Hide
+assert assertEqual(compileGen(hideTest, asked = frozenset(), isQuestion = True), 
+                   Literal("Content"))
+assert assertEqual(compileGen(hideTest, asked = frozenset({"hide field"}), isQuestion = True), 
+                   emptyGen)
+assert assertEqual(compileGen(hideTest, asked = frozenset(), isQuestion = False), 
+                   Literal("Content"))
+assert assertEqual(compileGen(hideTest, asked = frozenset({"hide field"}), isQuestion = False), 
+                   Literal("Content"))
 
 ## Fields
 assert assertEqual(compileGen(questionnedField, asked = frozenset({"Question"})), 
                    Literal("???"))
 assert assertEqual(compileGen(questionnedField, asked = frozenset()), 
-                   Field("Question"))
+                   Field("Question",addClass=False))
 assert assertEqual(compileGen(questionnedField, isQuestion = False),
-                   Field("Question"))
+                   Field("Question",addClass=False))
 assert assertEqual(
     compileGen(
         decoratedField,
         asked = frozenset({"Question"})),
     Filled(field = "Question",
            child = ListElement([
-               CLASS(["Question", "Question"],Literal("Question")), Literal(": "), Literal("???"), br]
+               CLASS(["Question","Emphasize", "Question"],Literal("Question")), Literal(": "), Literal("???"), br]
            )))
 assert assertEqual(compileGen(decoratedField, asked = frozenset()), 
                    Filled(field = "Question",
                           child = ListElement([
                               Literal("Question"),
                               Literal(": "),
-                              Field("Question"),
+                              Field("Question",addClass=False),
                               br]
                           )))
 assert assertEqual(compileGen(decoratedField, isQuestion = False),
@@ -246,7 +259,7 @@ assert assertEqual(compileGen(decoratedField, isQuestion = False),
                           child = ListElement([
                               Literal("Question"),
                               Literal(": "),
-                              Field("Question"),
+                              Field("Question",addClass=False),
                               br]
                           )))
 ## FromAndTo
@@ -257,7 +270,7 @@ assert assertEqual(compileGen(decoratedField, isQuestion = False),
 #                                                            Literal(" in ")]),
 #                                               Literal("French"),
 #                                               Literal(" is "),
-#                                               Field("Français"),
+#                                               Field("Français",addClass=False),
 #                                               br]
 #                                  )
 #                           )
@@ -266,9 +279,12 @@ assert assertEqual(compileGen(decoratedField, isQuestion = False),
 assert assertEqual(compileGen(EnglishToFrench, fields={"Français","English"}),
                    Filled("Français",
                           Filled("English",
-                                 ListElement([ListElement([Field("English"),
+                                 ListElement([ListElement([HTML("span",
+  attrs = {'class': 'English'},
+  child = Field(field = "English",
+    addClass = False,),),
                                                            Literal(" in ")]),
-                                              CLASS(["Question","Français"],
+                                              CLASS(["Question","Emphasize","Français"],
                                                     Literal("French")),
                                               Literal(" is "),
                                               Literal("???"),
@@ -280,18 +296,22 @@ assert assertEqual(compileGen(EnglishToFrench, fields={"Français","English"}),
 assert assertEqual(compileGen(EnglishToFrench, fields={"Français","English"},isQuestion = False),
                    Filled("Français",
                           Filled("English",
-                                 ListElement([ListElement([Field("English"),
+                                 ListElement([ListElement([HTML("span",
+  attrs = {'class': 'English'},
+  child = Field(field = "English",
+    addClass = False,),),
                                                            Literal(" in ")]),
                                               Literal("French"),
                                               Literal(" is "),
-                                              CLASS(["Answer","Français"],
-                                                    Field("Français")
+                                              CLASS(["Answer","Emphasize","Français"],
+                                                    Field("Français",addClass=False)
                                               ),
                                               br]
                                  )
                           )
                    )
 )
+
 ## Numbers
 assert assertEqual(compileGen(atLeastOneQuestion),
                    Filled(field = "Question", child = Literal(text = "At least one", ), ))
@@ -380,25 +400,26 @@ assert assertEqual(compileGen(requiringInexistant),emptyGen)
 ## List Fields
 
 # assert assertEqual(compileGen(twoQuestionsAsList, asked =frozenset()),
-#                    compileGen([["Definition", ": ", Field("Definition")],["Definition2", ": ", Field("Definition2")]]))
+#                    compileGen([["Definition", ": ", Field("Definition",addClass=False)],["Definition2", ": ", Field("Definition2",addClass=False)]]))
 # assert assertEqual(compileGen(twoQuestionsAsList, asked ={"Definition"}, isQuestion = False),
-#                    compileGen([["Definition", ": ", Field("Definition")],["Definition2", ": ", Field("Definition2")]]))
+#                    compileGen([["Definition", ": ", Field("Definition",addClass=False)],["Definition2", ": ", Field("Definition2",addClass=False)]]))
 # assert assertEqual(compileGen(twoQuestionsAsList, asked ={"Definition"}),
-#                    compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Field("Definition2")]]))
+#                    compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Field("Definition2",addClass=False)]]))
 
 # assert assertEqual(compileGen(twoQuestionsAsNamedList, asked =frozenset()),
-#                    compileGen([["Definition", ": ", Field("Definition")],["Definition2", ": ", Field("Definition2")]]))
+#                    compileGen([["Definition", ": ", Field("Definition",addClass=False)],["Definition2", ": ", Field("Definition2",addClass=False)]]))
 # assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"Definition"}, isQuestion = False),
-#                    compileGen([["Definition", ": ", Field("Definition")],["Definition2", ": ", Field("Definition2")]]))
+#                    compileGen([["Definition", ": ", Field("Definition",addClass=False)],["Definition2", ": ", Field("Definition2",addClass=False)]]))
 # assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"Definition"}),
-#                    compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Field("Definition2")]]))
+#                    compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Field("Definition2",addClass=False)]]))
 # assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"ListName"}),
 #                    compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Literal("???")]]))
 
 assert assertEqual(
     compileGen(
         twoQuestionsAsTable,
-        asked =frozenset()
+        asked =frozenset(),
+        fields={"Definition","Definition2", "Name","Name2"}
     ),
     tableTwoShown
 )
@@ -407,18 +428,64 @@ assert assertEqual(
     compileGen(
         twoQuestionsAsTable,
         asked =frozenset({"Definition"}),
-        isQuestion = False
+        isQuestion = False,
+        fields={"Definition","Definition2", "Name","Name2"}
     ),
     tableTwoShownAnswer1
 )
                    
-assert assertEqual(compileGen(twoQuestionsAsTable, asked =frozenset({"Definition"})),
+assert assertEqual(compileGen(twoQuestionsAsTable,
+                              asked =frozenset({"Definition"}),
+                              fields={"Definition","Definition2", "Name","Name2"}),
                    tableTwoShownQuestion1)
-assert assertEqual(compileGen(twoQuestionsAsTable, asked =frozenset({"Definitions"})),
+assert assertEqual(compileGen(twoQuestionsAsTable,
+                              asked =frozenset({"Definitions"}),
+                              fields={"Definition","Definition2", "Name","Name2"}),
                    tableTwoShownQuestionAll)
-assert assertEqual(compileGen(twoQuestionsAsTable, asked =frozenset({"Definitions"}), isQuestion = False),
+assert assertEqual(compileGen(twoQuestionsAsTable,
+                              asked =frozenset({"Definitions"}),
+                              fields={"Definition","Definition2", "Name","Name2"},
+                              isQuestion = False),
                    tableTwoShownAnswerAll)
 
+### Table 3 columns
+assert assertEqual(
+    compileGen(
+        fourQuestionsAsTable,
+        asked =frozenset(),
+        fields={"Definition","Definition2", "Name","Name2"}
+    ),
+    tableFourShown
+)
+                   
+assert assertEqual(
+    compileGen(
+        fourQuestionsAsTable,
+        asked =frozenset({"Definition"}),
+        isQuestion = False,
+        fields={"Definition","Definition2", "Name","Name2"},
+    ),
+    tableFourShownAnswer1
+)
+                   
+assert assertEqual(
+    compileGen(
+        fourQuestionsAsTable,
+        fields={"Definition","Definition2", "Name","Name2"},
+        asked =frozenset({"Definition"})),
+    tableFourShownQuestion1)
+
+assert assertEqual(
+    compileGen(fourQuestionsAsTable,
+               fields={"Definition","Definition2","Name","Name2"},
+               asked = frozenset({"Definitions"})),
+    tableFourShownQuestionAll)
+
+assert assertEqual(compileGen(fourQuestionsAsTable,
+                              fields={"Definition","Definition2", "Name", "Name2"},
+                              asked = frozenset({"Definitions"}),
+                              isQuestion = False),
+                   tableFourShownAnswerAll)
 
 ### Numbered
 assert assertEqual(compileGen(twoQuestionsNumbered, asked =frozenset()),
@@ -436,3 +503,12 @@ assert assertEqual(compileGen(twoQuestionsNumbered,
                               asked =frozenset({"Definition"}),
                               mandatory = frozenset({"Definition"})),
                    twoQuestionsNumberedAskDefinitionMandatory)
+## For debugging
+decreaseRelation = Parenthesis(left = " ",
+                               right = " ",
+                               child = QuestionnedField(field = "Greater to smaller",
+                                                        child = FilledOrEmpty("Greater to smaller",
+                                                                              {"Greater to smaller"},
+                                                                              FilledOrEmpty( "Smaller to greater",
+                                                                                            {"Smaller to greater"},
+                                                                                            "implied by"))))

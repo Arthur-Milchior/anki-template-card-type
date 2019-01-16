@@ -194,7 +194,9 @@ from the missing case.
 closeds = NumberedFields(fieldPrefix = "Case",
                          greater=11,
                          label=label,
-                         localFun=(lambda i:(LI(line(i)),{f"Case{i}"},{f"Case{i}"})),
+                         localFun=(lambda i:{"child":LI(line(str(i))),
+                                             "questions":{f"Case{i}"},
+                                             "filledFields":[f"Case{i}"]}),
                          unordered=True,
 )
 ```

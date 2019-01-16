@@ -25,7 +25,9 @@ htmlFooObject = """<span generator="foo" template="conf">
 </span>"""
 htmlFooObjectCompiled = """<span generator="foo" template="conf">
  foo
- {{Question}}
+ <span class="Question">
+  {{Question}}
+ </span>
 </span>"""
 
 htmlFront = """<span template="Front Side">
@@ -38,7 +40,7 @@ htmlAnswerTestCompiled = """<span template="Front Side">
 htmlQuestion = """<span asked="Question" generator="Question" template="conf"/>"""
 htmlQuestionCompiled = """<span asked="Question" generator="Question" template="conf">
  {{#Question}}
- <span class="Question Question">
+ <span class="Question Emphasize Question">
   Question
  </span> :
  ???
@@ -53,7 +55,7 @@ htmlAnswerCompiled = """<span template="Front Side">
   {{#Question}}
   Question
   :
-  <span class="Answer Question">
+  <span class="Answer Emphasize Question">
    {{Question}}
   </span>  <br/>
   {{/Question}}
@@ -64,7 +66,7 @@ htmlAnswerCompiled = """<span template="Front Side">
 definitionTemplateList ="""<span asked="Definition" generator='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval"/>"""
 definitionQuestionList ="""<span asked="Definition" generator='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval">
  {{#Definition}}
- <span class="Question Definition">
+ <span class="Question Emphasize Definition">
   Definition
  </span> :
  ???
@@ -82,7 +84,7 @@ definitionAnswerList ="""<span template="Front Side">
   {{#Definition}}
   Definition
   :
-  <span class="Answer Definition">
+  <span class="Answer Emphasize Definition">
    {{Definition}}
   </span>  <br/>
   {{/Definition}}
@@ -98,7 +100,7 @@ definitionAnswerList ="""<span template="Front Side">
 definitionTemplateEasy ="""<span asked="Definition" generator="TwoDefsEasy" template="eval"/>"""
 definitionQuestionEasy ="""<span asked="Definition" generator="TwoDefsEasy" template="eval">
  {{#Definition}}
- <span class="Question Definition">
+ <span class="Question Emphasize Definition">
   Definition
  </span> :
  ???
@@ -116,7 +118,7 @@ definitionAnswerEasy ="""<span template="Front Side">
   {{#Definition}}
   Definition
   :
-  <span class="Answer Definition">
+  <span class="Answer Emphasize Definition">
    {{Definition}}
   </span>  <br/>
   {{/Definition}}
@@ -135,7 +137,7 @@ definitionQuestionTable ="""<span asked="Definition" generator="TableFields(['De
   {{#Definition}}
   <tr>
    <td>
-    <span class="Question Definition">
+    <span class="Question Emphasize Definition">
      Definition
     </span>
    </td>   <td>
@@ -160,7 +162,7 @@ definitionAnswerTable ="""<span template="Front Side">
     <td>
      Definition
     </td>    <td>
-     <span class="Answer Definition">
+     <span class="Answer Emphasize Definition">
       {{Definition}}
      </span>
     </td>
@@ -207,7 +209,7 @@ definitionAnswerTable ="""<span template="Front Side">
 
 definitionTemplateHard ="""<span asked="Definition" generator="TwoDefsHard" template="eval"/>"""
 definitionQuestionHard ="""<span asked="Definition" generator="TwoDefsHard" template="eval">
- <span class="Question Definitions">
+ <span class="Question Emphasize Definitions">
   Definitions
  </span> :
  <ol>
@@ -228,7 +230,7 @@ definitionAnswerHard ="""<span template="Front Side">
   <ol>
    {{#Definition}}
    <li>
-    <span class="Answer Definition">
+    <span class="Answer Emphasize Definition">
      {{Definition}}
     </span>
    </li>   {{/Definition}}

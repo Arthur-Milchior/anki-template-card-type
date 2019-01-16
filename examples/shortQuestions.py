@@ -1,5 +1,5 @@
 from ..generators.imports import *
-from .general import contextOrDeck
+from .general import contextOrDeck, short_header
 
 def _question(questionFieldPrefix, fieldToQuestion, actualQuestion, questionToAnswer, answerPrefix):
     """Intuitively, it is ```{{questionFieldPrefix}} fieldToQuestion
@@ -10,7 +10,7 @@ def _question(questionFieldPrefix, fieldToQuestion, actualQuestion, questionToAn
     def fun(i=""):
         questionField = f"{questionFieldPrefix}{i}"
         answer = f"{answerPrefix}{i}"
-        return FromAndTo(questionField, fieldToQuestion, actualQuestion, questionToAnswer, answer,prefix=contextOrDeck)
+        return FromAndTo(questionField, fieldToQuestion, actualQuestion, questionToAnswer, answer,prefix=contextOrDeck, suffix= short_header,classes=answerPrefix)
     return fun
 
 _abbreviation = _question("Abbreviation", " is the ", "abbreviation", " of ", "Name")
@@ -19,6 +19,8 @@ def _language(question, answer, language):
     return _question(question," in ", language, " is ", answer)
 _french= _language("Name","French","French")
 _english= _language("French","Name","English")
+_toAbbreviation=_question("Name", "'s ", "abbreviation", " is ", "Abbreviation")
+_represented=_question('Represents', ' ', 'represents', ' ', 'Name')
 
 french = _french()
 french2=_french("2")
@@ -29,3 +31,7 @@ abbreviation2 = _abbreviation("2")
 abbreviation3 = _abbreviation("3")
 etymology = _etymology()
 etymology2 = _etymology("2")
+toAbbreviation = _toAbbreviation()
+toAbbreviation2 = _toAbbreviation("2")
+represented = _represented()
+represented2 = _represented("2")

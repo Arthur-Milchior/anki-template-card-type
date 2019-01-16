@@ -1,40 +1,8 @@
 import bs4
-from .leaf import emptyGen, Leaf
-from ..debug import debugFun, debugInit, debug, assertType, assertEqual
-from .generators import thisClassIsClonable, Gen, genRepr, SingleChild
-from .list import ListElement
+from ...debug import debugFun, debugInit, debug, assertType, assertEqual
+from ..generators import thisClassIsClonable, Gen, genRepr, SingleChild
+from ..list import ListElement
 
-@thisClassIsClonable
-class HTMLAtom(Leaf):
-    """A html tag, without content."""
-
-    def __init__(self,
-                 tag = None,
-                 attrs={},
-                 **kwargs):
-        assert assertType(tag,str)
-        self.tag = tag
-        self.attrs = attrs
-        super().__init__(**kwargs)
-
-    def __hash__(self):
-        return hash((self.tag,self.attrs))
-    
-    def _repr(self):
-        space = "  "*Gen.indentation
-        t= f"""HTMLAtom("{self.tag}","""
-        if self.attrs:
-            t+= "\n"+genRepr(self.attrs, label ="attrs")+","
-        t+=self.params()+")"
-        return t
-
-    def __eq__(self,other):
-        return isinstance(other,HTMLAtom) and self.tag == other.tag and self.attrs == other.attrs
-
-    @debugFun
-    def _applyTag(self, soup):
-        newtag = soup.new_tag(self.tag, **self.attrs)
-        return newtag
 
 @thisClassIsClonable
 class HTML(SingleChild):
@@ -71,7 +39,7 @@ class HTML(SingleChild):
         return t
 
     def _outerEq(self,other):
-        return isinstance(other,HTML) and self.tag == other.tag and self.attrs == other.attrs
+        return isinstance(other,HTML) and self.tag == other.tag and self.attrs == other.attrs and super()._outerEq(other)
 
     @debugFun
     def _applyTag(self, soup):
@@ -84,38 +52,39 @@ class HTML(SingleChild):
         newtag.contents = children
         return newtag
     
-br = HTMLAtom("br")
-hr = HTMLAtom("hr")
 
-class Image(HTMLAtom):
-    def __init__(self,url):
-        super().__init__("img", attrs = {"src":url})
 
 class Table(HTML):
     @debugInit
-    def __init__(self, content, trAttrs = {}, tdAttrs = {},  **kwargs):
+    def __init__(self, content, trAttrs = {}, tdAttrs = {},  caption = None, **kwargs):
         """
         A table with content stated. If content is emptyGen, its normal
         form is an Empty object.
         
-        content -- a list of n lists of m fields. Assuming each
-        element of content have the same length. """
+        content -- a list of lines. 
+        If the line is a list, TD is applied to its elements. Otherwise, it is added directly as is. """
         table = []
         for content_ in content:
             debug("Considering {content_}")
-            line = []
-            for content__ in content_:
-                debug("Considering {content__}")
-                td = HTML(tag = "td",
-                          attrs = tdAttrs,
-                          child = content__)
-                debug("adding td {td}") 
-                line.append(td)
+            if isinstance(content_, list):
+                line = []
+                for content__ in content_:
+                    debug("Considering {content__}")
+                    td = HTML(tag = "td",
+                              attrs = tdAttrs,
+                              child = content__)
+                    debug("adding td {td}") 
+                    line.append(td)
+                line = ListElement(elements = line)
+            else:
+                line=td
             tr = HTML(tag = "tr",
                       attrs = trAttrs,
-                      child = ListElement(elements = line))
+                      child = line)
             debug("adding tr {tr}") 
             table.append(tr)
+        if caption:
+            table= [CAPTION(caption)]+table
         debug("super on {table}") 
         super().__init__("table",
                          child = ListElement(
@@ -140,9 +109,15 @@ LI = _fixedTag("li")
 DIV = _fixedTag("div")
 P = _fixedTag("p")
 TR = _fixedTag("tr")
-TD = _fixedTag("td")
+TD_ = _fixedTag("td")
+class TD(TD_):
+    #TD should not be removed from the list, else it'd destroy the
+    #table. Thus it's never considered to be empty.
+    def isEmpty(self):
+        return False
 SUP = _fixedTag("sup")
 SUB = _fixedTag("sub")
+CAPTION = _fixedTag("caption")
 
 class _LIST(HTML):
     def __init__(self, elements, enclosing = None, liAttrs = {}, addLi=True, **kwargs):
@@ -161,8 +136,9 @@ class UL(_LIST):
         super().__init__(*args, enclosing = "ul", **kwargs)
 
 class CLASS(HTML):
-    def __init__(self, cl, *args, attrs = {}, **kwargs):
-        if isinstance(cl,list):
-            cl= " ".join(cl)
-        new_attrs = {**attrs, "class":cl}
+    def __init__(self, classes, *args, attrs = {}, **kwargs):
+        if isinstance(classes,str):
+            classes=[classes]
+        classes= " ".join([classe.replace(" ","_") for classe in classes])
+        new_attrs = {**attrs, "class":classes}
         super().__init__("span", *args, attrs = new_attrs, **kwargs)

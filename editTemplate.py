@@ -70,23 +70,31 @@ def processIfRequired(template, key, *args, **kwargs):
     soup,text = ret
     return ret
 
-def compileModel(model, objects = objects, action = "Template",  prettify = True):
+def compileModel(model, objects = objects, action = "Template",  prettify = True,ords = None):
     """Compile the model. If a compilation raised an exception, it is captured. List of exceptions are returned with the model"""
-    for templateObject in model['tmpls']:
+    if ords is None:
+        templateObjects = model['tmpls']
+    else:
+        templateObjects = [model['tmpls'][ord] for ord in ords]
+    for templateObject in templateObjects:
         for questionKey, answerKey in [(f"qfmt","afmt"),(f"bqfmt","bafmt")]:
-            if action=="Back to front":
+            if action=="FrontSide":
                 templateObject[answerKey]="""<span template="Front Side"/>"""
             else:
+                assert action in {"Template","ReTemplate"}
                 frontHtml=templateObject[questionKey]
+                print(f"Considering {action} on model {model['name']}, template {templateObject['name']}, Question side")
                 try:
                     questionSoup, questionText = processIfRequired(templateObject, questionKey, action = action, isQuestion = True, model = model, objects = objects, prettify = prettify)
                     if questionText:
                         templateObject[questionKey] = questionText
                 except Exception as e:
                     print("\n\n\n")
-                    print((templateObject["name"],questionKey,e),file=sys.stderr)
+                    print((model['name'],templateObject["name"],questionKey,e),file=sys.stderr)
                     traceback.print_exc(file=sys.stderr)
                     print("\n\n\n")
+                    break
+                print(f"Considering {action} on model {model['name']}, template {templateObject['name']}, answer side")
                 try:
                     answerSoup, answerText = processIfRequired(templateObject, answerKey, action = action, isQuestion = False, model = model, objects = objects, FrontHtml = frontHtml, prettify = prettify)
                     if answerText: 
@@ -94,9 +102,10 @@ def compileModel(model, objects = objects, action = "Template",  prettify = True
                         templateObject[answerKey] = answerText
                 except Exception as e:
                     print("\n\n\n")
-                    print((templateObject["name"],answerKey,e),file=sys.stderr)
+                    print((model['name'],templateObject["name"],answerKey,e),file=sys.stderr)
                     traceback.print_exc(file=sys.stderr)
                     print("\n\n\n")
+                    break
     return model
 
 def compileAndSaveModel(*args,**kwargs):

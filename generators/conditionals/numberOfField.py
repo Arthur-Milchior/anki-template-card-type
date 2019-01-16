@@ -4,6 +4,8 @@ from .filledOrEmpty import FilledOrEmpty
 from ..constants import *
 from ..generators import Gen, NotNormal, SingleChild, genRepr
 from ..conditionals.askedOrNot import AskedOrNot
+from ...utils import checkField
+
 
 # class AtMostNField(SingleChild, NotNormal):
 #     """Show the child if at most n of the fields have content.
@@ -36,9 +38,12 @@ class AtLeastNField(SingleChild, NotNormal):
         self.n = n
         self.asked = asked
         self.setOfRequiredFields = fields
+        for field in fields:
+            checkField(field)
         assert assertType(fields,list)
         self.otherwise=otherwise
         super().__init__(child)
+        self.child = self._ensureGen(child)
         self.otherwise = self._ensureGen(otherwise)
         
     def _repr(self):

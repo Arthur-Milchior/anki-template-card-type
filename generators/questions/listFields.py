@@ -1,17 +1,20 @@
 from ...debug import debug, ExceptionInverse, debugFun, assertType, debugInit, debugOnlyThisMethod
-from ...utils import identity
+from ...utils import identity, checkField
 from ..conditionals.askedOrNot import  AskedOrNot, Cascade
 from ..conditionals.numberOfField import AtLeastOneField
 from ..conditionals.filledOrEmpty import Filled, FilledOrEmpty
 from ..conditionals.multiple import MultipleRequirement
+from ..conditionals.hide import HideInSomeQuestions
 from ..ensureGen import ensureGen
 from ..generators import NotNormal, Gen, genRepr
-from ..html import TR, TD, br, HTML, LI
+from ..html.html import TR, TD, HTML, LI
+from ..html.atom import br
 from ..leaf import Field, ToAsk
 from ..list import MultipleChildren, ListElement
 from .fields import QuestionnedField, LabeledField, Label, DecoratedField
 
-class ListFields(NotNormal):
+
+class ListFields(ListElement):
     """
     Apply functions to each field, add separators between them, apply a function to the result
 
@@ -38,12 +41,6 @@ class ListFields(NotNormal):
         self.localFun = localFun or identity
         self.globalFun = globalFun or identity
         self.globalSep = globalSep or (lambda x:None)
-        
-        super().__init__(
-            toKeep = toKeep,
-            **kwargs)
-    
-    def _getNormalForm(self):
         elements = []
         seen = []
         toCascade = []
@@ -54,25 +51,31 @@ class ListFields(NotNormal):
                 if sep is not None:
                     elements.append(sep)
             seen.append(field)
-            processedField = self.localFun(field)
-            if isinstance(processedField,tuple):
-                if len(processedField) is 2:
-                    processedField,filledField = processedField
-                    toCascadeLocal=[]
-                elif len(processedField) is 3:
-                    processedField,filledField, toCascadeLocal = processedField
-                else:
-                    assert False
+            processedFieldDic = self.localFun(field)
+            if isinstance(processedFieldDic,str):
+                processedFieldDic = {"child":processedField}
+            processedField = processedFieldDic["child"]
+            filledFields = processedFieldDic.get("filledFields",[])
+            if isinstance(filledFields,str):
+                checkField(filledFields)
+                filledFields = [filledFields]
             else:
-                toCascadeLocal= []
-                filledField = set()
-            if processedField is not None:
-                if filledField:
-                    processedField = MultipleRequirement(
-                        requireFilled=filledField,
-                        child = processedField)
-                elements.append(processedField)
+                assert assertType(filledFields,list)
+                for field in filledFields:
+                    checkField(field)
+            toCascadeLocal = processedFieldDic.get("questions",frozenset()) 
+            hideFields = processedFieldDic.get("hideInSomeQuestion",frozenset()) 
+            if not processedField:
+                continue
+            if filledFields:
+                processedField = AtLeastOneField(
+                    fields = filledFields,
+                    child = processedField)
+            if hideFields:
+                processedField = HideInSomeQuestions(hideFields,processedField)
+            elements.append(processedField)
             toCascade += toCascadeLocal
+            
         ret = self.globalFun(elements)
         ret = [self.prefix,ret,self.suffix]
         if toCascade:
@@ -80,10 +83,9 @@ class ListFields(NotNormal):
                 ret = Cascade(field = self.name,
                               child = ret,
                               cascade = toCascade)
-            ret = [ret,ToAsk(toCascade)]
-        ret = self._ensureGen(ret)
-        ret = ret.getNormalForm()
-        return ret
+            super().__init__([ret,ToAsk(toCascade)],toKeep = toKeep, **kwargs)
+        else:
+            super().__init__(ret,toKeep = toKeep, **kwargs)    
 
 class TableFields(ListFields):
     @debugInit
@@ -95,9 +97,28 @@ class TableFields(ListFields):
                  tdLabelAttrs= dict(),
                  tdFieldAttrs = dict(),
                  tdAttrs = dict(),
+                 greater = 1,
+                 isMandatory = True,
+                 addClass = False,
+                 label = None,
                  **kwargs):
-        self.fields = fields
+        self.fields = []
+        for field_s in fields:
+            if isinstance(field_s,list):
+                s = set(field_s)
+                for field in field_s:
+                    if isinstance(field,str):
+                        d={"field" : field}
+                    elif isinstance(field,dict):
+                        d=field
+                    else:
+                        assert False
+                    d["hideInSomeQuestion"] =  s - {field}
+                    self.fields.append(d)
+            else:
+                self.fields.append(field_s)
         self.attrs = attrs
+        self.greater=greater
         self.trAttrs = trAttrs
         self.tdLabelAttrs = tdLabelAttrs
         self.tdFieldAttrs= tdFieldAttrs
@@ -105,26 +126,38 @@ class TableFields(ListFields):
         
         tdLabelAttrs = {**tdLabelAttrs,** tdAttrs}
         tdFieldAttrs = {**tdFieldAttrs,** tdAttrs}
-        def localFun(fieldInput):
-            labeledField = LabeledField(fieldInput)
-            field = labeledField.field
-            fieldName = field.field
-            label = labeledField.label
-            questionnedField = QuestionnedField(field)
-            debug("""pair is "{labeledField.label}", "{fieldName}".""")
+        def localFun(fieldInputDic):
+            if isinstance(fieldInputDic,str):
+                fieldInputDic = {"field":fieldInputDic}
+            defaultSet = [f"""{fieldInputDic["field"]}{i}""" for i in [""]+list(range(2,self.greater+1))]
+            assert assertType(fieldInputDic,dict)
+            fieldName = fieldInputDic["field"]
+            label = fieldInputDic.get("label",fieldName)
+            classes = fieldInputDic.get("classes",[fieldName])
             labelGen = Label(label = label,
                              fields = [fieldName],
-                             classes = [fieldName]
+                             classes = classes
             )
             tdLabel = TD(child = labelGen, attrs=tdLabelAttrs)
-            tdField = TD(child = questionnedField, attrs = tdFieldAttrs)
-            tr = TR(child = [tdLabel, tdField], attrs = trAttrs)
-            return (tr,{fieldName}, {fieldName})
+            def tdField(i=""):
+                if "function" in fieldInputDic:
+                    child = fieldInputDic["function"](i)
+                else:
+                    child = None
+                questionnedField = QuestionnedField(f"{fieldName}{i}", isMandatory = isMandatory, addClass=addClass, child = child)
+                return TD(child = questionnedField, attrs = tdFieldAttrs)
+            trChild = [tdLabel,tdField()]+[tdField(i) for i in range(2,self.greater+1)]
+            tr = TR(child = trChild,
+                    attrs = trAttrs)
+            return {"child":tr,
+                    "questions": fieldInputDic.get("questions",defaultSet),
+                    "filledFields":fieldInputDic.get("filledFields",defaultSet),
+                    "hideInSomeQuestion": fieldInputDic.get("hideInSomeQuestion",frozenset())}
         @debugFun
         def globalFun(lines):
-            ret=HTML(tag = "table", child = lines, attrs = attrs)
+            ret=HTML(tag = "table", child = lines, attrs = attrs, caption=label)
             return ret
-        super().__init__(fields, localFun = localFun, globalFun = globalFun, name = name,**kwargs)
+        super().__init__(self.fields, localFun = localFun, globalFun = globalFun, name = name,**kwargs)
 
     def _repr(self):
         t= f"""TableFields({self.fields},"""
@@ -149,7 +182,20 @@ class NumberedFields(ListFields):
     question called fieldPrefixs (note the s)
 
     """
-    def __init__(self,fieldPrefix, greater,label = None, attrs= dict(), liAttrs=dict(), unordered= False,localFun=None,globalFun=None, firstField=None,  **kwargs):
+    def __init__(self,
+                 fieldPrefix,
+                 greater,
+                 label = None,
+                 attrs= dict(),
+                 liAttrs=dict(),
+                 unordered= False,
+                 localFun=None,
+                 globalFun=None,
+                 firstField=None,
+                 smaller=1,
+                 isMandatory = True,
+                 addClass = False,
+                 **kwargs):
         self.fieldPrefix = fieldPrefix
         self.greater = greater
         self.attrs =attrs
@@ -159,15 +205,24 @@ class NumberedFields(ListFields):
         self.name = self.fieldPrefix+"s"
         assert(isinstance(fieldPrefix, str))
         assert(isinstance(greater, int))
-        self.suffixes = [""]+[str(i) for i in range(2,greater+1)]
-        self.numberedFields=[f"{fieldPrefix}{i}" for i in self.suffixes]
-        self.firstField=fieldPrefix
-        self.groupName=f"{fieldPrefix}s"
+        self.suffixes = [str(i) for i in range(smaller,greater+1)]
+        self.smaller = smaller
+        if smaller <= 1 <= greater:
+            self.suffixes[1-smaller] = ""
+        self.numberedFields = [f"{fieldPrefix}{i}" for i in self.suffixes]
+        self.firstField = fieldPrefix
+        self.groupName = f"{fieldPrefix}s"
         if localFun is None:
             def localFun(i):
-                field=f"""{fieldPrefix}{i}"""
-                li = LI(child = QuestionnedField(field,classes=[fieldPrefix]), attrs = liAttrs)
-                return (li, {field}, {field})
+                field = f"""{fieldPrefix}{i}"""
+                li = LI(child = QuestionnedField(field,
+                                                 classes=[fieldPrefix],
+                                                 isMandatory = isMandatory,
+                                                 addClass = addClass),
+                        attrs = liAttrs)
+                return {"child":li,
+                        "questions":{field},
+                        "filledFields":[field]}
 
         if globalFun is None:
             def globalFun(lines):
@@ -194,23 +249,28 @@ no other elements are present, and show only the first element."""
                  liAttrs = dict(),
                  suffix = br,
                  prefix = None,
-                 infix = ": "):
+                 infix = ": ",
+                 isMandatory = False,
+                 **kwargs):
         nf = NumberedFields(fieldPrefix,
                             greater,
                             label = label,
                             attrs = attrs,
-                            liAttrs = liAttrs)
+                            liAttrs = liAttrs,
+                            isMandatory = isMandatory)
         qu = DecoratedField(field = fieldPrefix,
                             label = label,
                             infix = infix,
                             prefix = prefix,
-                            suffix = suffix)
-        foe=FilledOrEmpty(field = f"""{fieldPrefix}2""",
-                         filledCase = nf,
-                         emptyCase = qu)
+                            suffix = suffix,
+                            isMandatory = isMandatory)
+        foe=FilledOrEmpty(f"""{fieldPrefix}2""",
+                          nf,
+                          qu)
         super().__init__(child=foe,
                          cascade=[fieldPrefix],
-                         field=fieldPrefix+"s")
+                         field=fieldPrefix+"s",
+                         **kwargs)
 
     # def __repr__(self):
     #     return f"""PotentiallyNumberedFields() on {super().__repr__()}"""

@@ -7,23 +7,23 @@ definition_topology = TableFields(
     fields = ["Set", "Definition", "Definition2", "Opens", "Compactification of", "Completion of", "Base", "Base2", "Order", "Metric", "Prebase", "Prebase2"]
 )
 compactness= TableFields(name="Compactness",
-                         fields = ['a paracompact',
-                                   'compact',
-                                   'sequentially compact',
-                                   'locally compact',
-                                   'feebly compact',
-                                   'limit point compact',
-                                   'paracompact',
-                                   'sigma-compact',
-                                   'countably compact',
+                         fields = ['A paracompact',
+                                   'Compact',
+                                   'Sequentially compact',
+                                   'Locally compact',
+                                   'Feebly compact',
+                                   'Limit point compact',
+                                   'Paracompact',
+                                   'Sigma-compact',
+                                   'Countably compact',
                                    'Hemicompact',
-                                   'mesocompact',
-                                   'metacompact',
-                                   'orthocompact',
-                                   'pseudocompact',
-                                   'realcompact',
-                                   'supercompact',
-                                   'freebly compact']
+                                   'Mesocompact',
+                                   'Metacompact',
+                                   'Orthocompact',
+                                   'Pseudocompact',
+                                   'Realcompact',
+                                   'Supercompact',
+                                   'Freebly compact']
 )
 
 bounded =TableFields(name="Bounded",
@@ -35,8 +35,8 @@ bounded =TableFields(name="Bounded",
 
 points = TableFields(name="Points",
  fields=[
-'limit points',
-'isolated points',
+'Limit points',
+'Isolated points',
 ])
 
 sets =TableFields(name="Sets",
@@ -45,112 +45,112 @@ sets =TableFields(name="Sets",
                 'dense',
             ]
 )
+separationTable = [
+    ['T0/Kolmogorov',None],
+    ['T1/accessible/Tichonov/Fréchet topology','R0/Symmetric'],
+    ['T2/Hausdorff/separated','R1/preregular'],
+    ['T2 1/2/Urysohn',None],
+    ['Completely T2/completely Hausdorff',None],
+    ['T3/regular Hausdorff','Regular'],
+    ['T3 1/2/Tychonoff','Completely regular'],
+    ['Normal T0','Normal'],
+    ['T4/normal Hausdorff','Normal regular'],
+    ['Completely normal T0', 'Completely normal'],
+    ['T5/completely normal Hausdorff','Completely normal regular'],
+    ['Perfectly normal T0', 'Perfectly normal'],
+    ['T6/perfectly normal Hausdorff','Perfectly normal regular'],
+]
 
-separation= TableFields(
+other_separations =['Weak Hausdorff', 'locally Hausdorff', 'Collectionwise Hausdorff',
+ 'Locally regular', 'Locally normal', 'Collectionwise normal',
+ 'Monotonically normal', 'Paranormal', 'Pseudonormal',]
+
+allSeparations=[]+other_separations
+for line in separationTable:
+    for elt in line:
+        if elt is not None:
+            allSeparations.append(elt)
+
+separations= TableFields(
     name="Separation",
-    fields=[
-        'T0 Kolmogorov',
-        'R0 Symmetric',
-        'T1 Tikhonov',
-        'R1 preregular',
-        'weAk Hausdorff',
-        'T2 HAusdorff separated',
-        'T2 1/2 UrysoHn',
-        'completely T2 Completely Hausdorff',
-        'regular',
-        'T3 regular Hausdorff',
-        'coMpletely regular',
-        'T3 1/2 TycHonoff',
-        'normal',
-        'T4 normal Hausdorff',
-        'coMpletely normal',
-        'T5 completEly normal Hausdorff',
-        'perfectly norMal',
-        'T6 perfectly norMal Hausdorff',
-        'locally Hausdorff',
-        'Collectionwise Hausdorff',
-        'locally regulaR',
-        'locally normal',
-        'Collectionwise normal',
-        'monotonically Normal',
-        'paranormal',
-        'Pseudonormal',
-    ])
+    fields=allSeparations)
 
 connexion = TableFields(name="Connexion",
             fields = [
                 'Connected',
-                'arc connected',
+                'Arc connected',
                 'Path connected',
-                'locally connecteD',
-                'locally simply connected',
+                'Locally connected',
+                'Locally simply connected',
                 'Extremmaly disconnected',
-                'hyperconnected',
+                'Hyperconnected',
                 'N connected',
-                'semi-locally Simply connected',
-                'simply connected',
+                'Semi-locally simply connected',
+                'Simply connected',
                 'Simply-connected at infinity',
-                'totally disconnected',
-                'ultraconnected'
+                'Totally disconnected',
+                'Ultraconnected'
             ])
 
 group = TableFields(name="Group",
             fields=[
-                'connected',
-                'fundamental group',
+                'Connected',
+                'Fundamental group',
             ])
 
 cardinal = TableFields(name="Cardinal",
             fields=[
-                'cardinality',
-                'locally finite',
-                'sequential',
-                'first-countable',
-                'second-countable',
-                'separable',
+                'Cardinality',
+                'Locally finite',
+                'Sequential',
+                'First-countable',
+                'Second-countable',
+                'Separable',
                 'Lindelof',
             ])
 
 others = TableFields(name="Other",
             fields=[
-                'interior',
-                'closure',
+                'Interior',
+                'Closure',
                 'Alexandrov',
                 'Baire',
-                'cellular',
-                'sober',
-                'semiregular',
-                'quasiregular',
-                'contractible',
+                'Cellular',
+                'Sober',
+                'Semiregular',
+                'Quasiregular',
+                'Contractible',
                 'D-space',
                 'Door space',
                 'Dowker',
-                'dyadic',
-                'ends',
+                'Dyadic',
+                'Ends',
                 'H-closed',
                 'Hurewicz',
                 'Luzin',
-                'manifold',
+                'Manifold',
                 'Menger',
                 'Noetherian',
-                'omega-bounded',
-                'perfect',
+                'Omega-bounded',
+                'Perfect',
                 'Polish',
-                'polyadic',
-                'resolvable',
+                'Polyadic',
+                'Resolvable',
                 'Rickart',
                 'Rothberger',
-                'shrinking',
-                'scattered',
-                'sub-stonean',
+                'Shrinking',
+                'Scattered',
+                'Sub-stonean',
                 'Toronto',
-                'uniformizable',
-                'universal cover',
+                'Uniformizable',
+                'Universal cover',
                 'Volterra',
-                'zero-dimensional',
-                'dimension',
+                'Zero-dimensional',
+                'Dimension',
             ])
                              
-properties = [compactness,bounded,points, sets, separation,connexion,
+properties = [compactness,bounded,points, sets, separations,connexion,
               group, cardinal,others]
 topology = [header, definition_topology, properties, footer]
+topologyBody = topology
+topologyHead = topology

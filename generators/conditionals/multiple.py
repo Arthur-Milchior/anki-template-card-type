@@ -5,6 +5,7 @@ from .filledOrEmpty import Filled, Empty
 from .askedOrNot import Asked, NotAsked
 from .presentOrAbsent import Present, Absent
 from ...debug import debugFun, debug
+from ...utils import standardContainer
 import sys
 
 class Inconsistent(Exception):
@@ -50,6 +51,7 @@ class MultipleRequirement(SingleChild, NotNormal):
                 self.requirements[name] = fun(requirements.get(name,default))
             else:
                 self.requirements[name] = default
+            assert standardContainer(self.requirements[name])
         if requirements is not None:
             self.requirements["isQuestion"]= requirements ["isQuestion"]
         else:
@@ -85,7 +87,7 @@ class MultipleRequirement(SingleChild, NotNormal):
         return current.getNormalForm()
     
     def _outerEq(self,other):
-        return isinstance(other,MultipleRequirement) and self.requirements == other.requirements
+        return isinstance(other,MultipleRequirement) and self.requirements == other.requirements and super().__outerEq(self,other)
     
     def isInconsistent(self):
         #debug("""isInconsistent("{self}")""",1)

@@ -1,4 +1,4 @@
-from .meta import FieldChild
+from .meta import FieldChild, Dichotomy
 from ..generators import thisClassIsClonable, Gen, genRepr
 from ...debug import debugFun, debug, debugOnlyThisMethod, debugInit,debugOnlyThisInit
 from ..list import ListElement
@@ -110,17 +110,18 @@ class Cascade(FieldChild):
 
         
     
-class AskedOrNot(ListElement):
-    """The class which expands differently in function of whether a name is asked or not."""
-    def __init__(self,
-                 field,
-                 asked = None,
-                 notAsked = None,
-                 cascade = frozenset(),
-                 **kwargs):
-        self.asked = asked
-        self.notAsked = notAsked
-        askedGen = Cascade(field = field, child = asked, cascade = cascade) if cascade else asked
-        askedGen = Asked(field = field, child = askedGen)
-        notAskedGen = NotAsked(field = field,child = notAsked)
-        super().__init__([askedGen, notAskedGen ], **kwargs)
+# class AskedOrNot(ListElement):
+#     """The class which expands differently in function of whether a name is asked or not."""
+#     def __init__(self,
+#                  field,
+#                  asked = None,
+#                  notAsked = None,
+#                  cascade = frozenset(),
+#                  **kwargs):
+#         self.asked = asked
+#         self.notAsked = notAsked
+#         askedGen = Cascade(field = field, child = asked, cascade = cascade) if cascade else asked
+#         askedGen = Asked(field = field, child = askedGen)
+#         notAskedGen = NotAsked(field = field,child = notAsked)
+#         super().__init__([askedGen, notAskedGen ], **kwargs)
+AskedOrNot = Dichotomy(Asked,NotAsked,"AskedOrNot")

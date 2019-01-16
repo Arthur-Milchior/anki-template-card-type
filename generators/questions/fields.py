@@ -1,11 +1,11 @@
-from ..conditionals.branch import Branch
 from ..conditionals.questionOrAnswer import QuestionOrAnswer
 from ..conditionals.filledOrEmpty import Filled
 from ..generators import Gen, NotNormal
 from ..leaf import Field, Leaf
 from ...debug import debug, assertType
 from ..conditionals.askedOrNot import AskedOrNot
-from ..html import CLASS, br
+from ..html.html import CLASS
+from ..html.atom import br
 from ..leaf import Field
 from ..conditionals.numberOfField import AtLeastOneField
 
@@ -21,7 +21,7 @@ class LabeledField:
         else:
             self.field = field
         if isinstance(self.field,str):
-            self.field = Field(self.field)
+            self.field = Field(self.field, addClass=False)
         if self.label is None:
             self.label = self.field.field
         assert assertType(self.field, Field)
@@ -29,7 +29,9 @@ class LabeledField:
 
     def __eq__(self,other):
         return self.label == other.label and self.field == other.field
-            
+
+    def __repr__(self):
+        return f"""LabeledField({self.field},{self.label})"""
 
 class QuestionnedField(AskedOrNot):
     """Show the content of the field. Unless the field is asked and its the question, then show ???
@@ -44,7 +46,9 @@ class QuestionnedField(AskedOrNot):
                  field,
                  classes = None,
                  child=None,
-                  **kwargs):
+                 isMandatory = False,
+                 addClass = False,
+                 **kwargs):
         
         if isinstance(field,str):
             self.fieldName = field
@@ -53,18 +57,20 @@ class QuestionnedField(AskedOrNot):
             assert assertType(field,Field)
             self.field = field
             self.fieldName = field.field
-        self.child = Field(field) if child is None else child
+        self.child = Field(field,
+                           isMandatory=isMandatory,
+                           addClass = addClass) if child is None else child
         if classes is None:
             classes = [self.fieldName]
         if isinstance(classes,str):
             classes=[classes]
-        classes = ["Answer"]+classes
+        classes = ["Answer", "Emphasize"]+classes
         self.classes = classes
         self.asked = QuestionOrAnswer("???", CLASS(classes,self.child))
         #todo emphasize answerAsked
         super().__init__(self.fieldName,
                          self.asked,
-                         self.field,
+                         self.child,
                          **kwargs)
         
     # def __repr__(self):
@@ -81,7 +87,7 @@ class Label(QuestionOrAnswer):
             self.classes = [label]
         if isinstance(self.classes,str):
             self.classes=[self.classes]
-        self.classes=["Question"]+self.classes
+        self.classes=["Question","Emphasize"]+self.classes
         questionSide = AtLeastOneField(child = CLASS(self.classes,label),
                                        fields = fields,
                                        otherwise = label,
@@ -101,8 +107,10 @@ class DecoratedField(Filled):
                  prefix = None,
                  suffix = br,
                  toKeep = True,
-                 classes=None,
-                 child=None,
+                 classes = None,
+                 child = None,
+                 isMandatory = False,
+                 addClass = False,
                  **kwargs):
         """field -- a field object, or a string"""
         self.prefix=prefix
@@ -111,7 +119,7 @@ class DecoratedField(Filled):
         self.suffix=suffix
         self.field = field
         if isinstance(self.field,str):
-            self.field= Field(self.field)
+            self.field= Field(self.field, isMandatory = isMandatory, addClass = addClass)
         if label is None:
             self.label = self.field.field
         else:
@@ -121,8 +129,10 @@ class DecoratedField(Filled):
         else:
             self.classes=classes
         if self.child is None:
-            self.child = QuestionnedField(self.field,
-                                          classes=self.classes)
+            self.child = QuestionnedField(field = self.field,
+                                          classes = self.classes,
+                                          isMandatory = isMandatory,
+                                          addClass = addClass)
         labelGen = Label(label = self.label,
                          fields = [self.field.field],
                          classes = self.classes)

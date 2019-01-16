@@ -7,6 +7,7 @@ from .ensureGen import addTypeToGenerator
 from ..debug import debug, assertType, debugFun, ExceptionInverse, debugInit
 from bs4 import NavigableString
 from html import escape
+from .html.html import CLASS
 
 class Leaf(Gen):
     """
@@ -24,11 +25,12 @@ class Leaf(Gen):
     def clone(self, elements = []):
         assert elements == []
         return self
-    def _outerEq(self,other):
-        return self==other
+    
     def _firstDifference(self,other):
         return None
-    
+
+    def _innerEq(self,other):
+        return True
 
 emptyGen = None
 @thisClassIsClonable
@@ -63,7 +65,7 @@ class Empty(Leaf):
     def _applyTag(self, soup):
         return None
     
-    def __eq__(self,other):
+    def _outerEq(self,other):
         #debug("{self!r} == {other!r}",1)
         l = isinstance(other,Empty)
         #if l:
@@ -100,32 +102,45 @@ class Literal(Leaf):
     def _repr(self):
             return f"""Literal(text = "{self.text}",{self.params()})"""
     
-    def __eq__(self,other):
+    def _outerEq(self,other):
         if not isinstance(other,Literal):
             return False
         return self.text == other.text
     
     def _applyTag(self, soup):
         #debug("appending text {self.text} to {tag}")
-        return NavigableString(escape(self.text))
+        return NavigableString(self.text)
         #return self.text
 addTypeToGenerator(str,Literal)
 
 @thisClassIsClonable
 class Field(Leaf):
+    """Representation of a field. 
+    
+    keywords parameter:
+    field -- The name of the field
+    typ -- Whether "type:" should be prefixed. It has some special signification in anki
+    cloze -- Whether "cloze:" should be prefixed. It has some special signification in anki
+    isMandatory -- Show an error message if this field is used in a model where this field is not present. By default its false
+    addClass -- Whether the field's name should also be considered to be a CSS class to apply to the field. 
+"""
     def __init__(self,
                  field = None,
-                 toKeep = True,
-                 typ = None,
-                 cloze = None,
+                 typ = False,
+                 cloze = False,
                  state = WITHOUT_REDUNDANCY,
                  special = False,
+                 isMandatory = False,
+                 addClass = True,
+                 toKeep = True,
+                 classes = None,
                  **kwargs):
+        if special and isMandatory:
+            print(f"""Beware: you stated that a special field {field} is isMandatory, it makes no sens.""", file=sys.stderr)
+        self.isMandatory = isMandatory
+        self.addClass = addClass or (classes is not None)
+        self.classes = classes if (classes is not None) else field
         self.special = special
-        if typ is None:
-            typ = False
-        if cloze is None:
-            cloze = False
         self.typ = typ
         self.cloze = cloze
         if isinstance(field,Field):
@@ -141,6 +156,7 @@ class Field(Leaf):
         self.dealWithSpecial()
         super().__init__(state = state,
                          toKeep = toKeep,
+                         localMandatories = {self.field} if isMandatory else frozenset(),
                          **kwargs)
         
 
@@ -166,23 +182,37 @@ class Field(Leaf):
             if self.typ:
                 print(f"""Beware: you want to have "cloze:" before a special field {self.field}, this makes no sens.""", file=sys.stderr)
                 
-            
+    def _getNormalForm(self):
+        if self.addClass:
+            return CLASS(self.classes,
+                         Field(self.field,
+                               typ=self.typ,
+                               cloze=self.cloze,
+                               special=self.special,
+                               isMandatory=self.isMandatory,
+                               addClass=False))
+        else:
+            return self
         
         
     def __hash__(self):
         return hash(self.field)
 
-    def __eq__(self,other):
-        return isinstance(other,Field) and self.field == other.field
+    def _outerEq(self,other):
+        return isinstance(other,Field) and self.field == other.field and self.addClass == other.addClass and super()._outerEq(other)
     
     def _repr(self):
         t= f"""Field(field = "{self.field}","""
-        if self.typ:
+        if self.typ is not False:
             t+="\n"+genRepr(self.typ, label="type")+","
-        if self.cloze:
+        if self.cloze is not False:
             t+="\n"+genRepr(self.cloze, label="cloze")+","
-        if self.special:
+        if self.special is not False:
             t+="\n"+genRepr(self.special, label="special")+","
+        if self.isMandatory is not False:
+            t+="\n"+genRepr(self.isMandatory, label="isMandatory")+","
+        if self.addClass is not True:
+            t+="\n"+genRepr(self.addClass, label="addClass")+","
         t+=self.params()+")"
         return t
 
@@ -193,6 +223,7 @@ class Field(Leaf):
             return emptyGen
         else:
             return self
+        
     def _assumeFieldAbsent(field):
         if field == self.field:
             if self.special:
@@ -229,7 +260,7 @@ class Failure(Leaf):
     def _repr(self):
         return f"Failure({self.last_step})"
 
-    def __eq__(self,other):
+    def _outerEq(self,other):
         return isinstance(other,Leaf) and self.last_step==other.last_step
     #def _applyTag(self, soup):
     #this method is not defined. If it isacceptable to create a tag in this generator,then it is useless
@@ -288,8 +319,12 @@ class ToAsk(Leaf):
     def _repr(self):
         return f"ToAsk({self.questionsAsked})"
     
-    def __eq__(self,other):
+    def _outerEq(self,other):
         #For debugging purpose, we want to have an exact match, and not only on sets.
-        return isinstance(other,ToAsk) and self.questionsAsked==other.questionsAsked
+        return isinstance(other,ToAsk)
+
+    def _innerEq(self,other):
+        return True # self.questionsAsked==other.questionsAsked
+    
     def _applyTag(self, soup):
         return []

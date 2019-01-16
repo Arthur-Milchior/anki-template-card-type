@@ -2,7 +2,7 @@ from ..generators.imports import *
 from .general import header, footer
 
 
-definition_foo = TableFields(
+definition_ordinal = TableFields(
     fields = ["Definition", "Axiom"]
 )
 properties = TableFields(["Admissible",
@@ -17,4 +17,4 @@ properties = TableFields(["Admissible",
                           "Large countable",
 ])
 
-ordinal = [header, definition_foo, properties, footer]
+ordinal = [header, definition_ordinal, properties, footer]

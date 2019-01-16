@@ -1,9 +1,9 @@
-from .general import header, footer
+from .general import header, footer, typDic
 from ..generators.imports import *
 
 definition_adt = TableFields(
     name = "Adt_",
-    fields = [("Typ","Type"),
+    fields = [typDic,
               "Extends",
               "Invariant",
               "Initialization"
