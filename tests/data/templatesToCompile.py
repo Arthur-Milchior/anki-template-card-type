@@ -43,8 +43,8 @@ htmlQuestionCompiled = """<span asked="Question" generator="Question" template="
  <span class="Question Emphasize Question">
   Question
  </span> :
- <markofquestion/>
- <br/>
+ <markofquestion>
+ </markofquestion> <br/>
  {{/Question}}
 </span>"""
 
@@ -70,8 +70,8 @@ definitionQuestionList ="""<span asked="Definition" generator='ListElement([Deco
  <span class="Question Emphasize Definition">
   Definition
  </span> :
- <markofquestion/>
- <br/>
+ <markofquestion>
+ </markofquestion> <br/>
  {{/Definition}}
  {{#Definition2}}
  <span class="Definition2">
@@ -110,8 +110,8 @@ definitionQuestionEasy ="""<span asked="Definition" generator="TwoDefsEasy" temp
  <span class="Question Emphasize Definition">
   Definition
  </span> :
- <markofquestion/>
- <br/>
+ <markofquestion>
+ </markofquestion> <br/>
  {{/Definition}}
  {{#Definition2}}
  <span class="Definition2">
@@ -154,7 +154,8 @@ definitionQuestionTable ="""<span asked="Definition" generator="TableFields(['De
      Definition
     </span>
    </td>   <td>
-    <markofquestion/>
+    <markofquestion>
+    </markofquestion>
    </td>
   </tr>  {{/Definition}}
   {{#Definition2}}
@@ -206,7 +207,8 @@ definitionAnswerTable ="""<span template="Front Side">
 #  {{#Definition}}
 #  Definition
 #  :
-#  <markofquestion/>
+#  <markofquestion>
+#  </markofquestion>
 #  {{/Definition}}
 #  {{#Definition2}}
 #  Definition2
@@ -237,7 +239,8 @@ definitionQuestionHard ="""<span asked="Definition" generator="TwoDefsHard" temp
  <ol>
   {{#Definition}}
   <li>
-   <markofquestion/>
+   <markofquestion>
+   </markofquestion>
   </li>  {{/Definition}}
   {{#Definition2}}
   <li>
@@ -270,5 +273,6 @@ definitionAnswerHard ="""<span template="Front Side">
 </span>"""
 
 singleTest = "<test/>"
-questionMarks = "<markofquestion/>"
+questionMarks = """<markofquestion>
+ </markofquestion>"""
 

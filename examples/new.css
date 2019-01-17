@@ -26,6 +26,9 @@ td {
     padding-left: 1em;
     padding-right: 1em;
 }
+markofquestion:before{
+    content: "???"
+}
 table, td, tr, th {
     /*border-collapse: collapse;*/
     border: 1px solid black;

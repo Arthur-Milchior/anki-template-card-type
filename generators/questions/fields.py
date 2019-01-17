@@ -5,7 +5,7 @@ from ..leaf import Field, Leaf
 from ...debug import debug, assertType
 from ..conditionals.askedOrNot import AskedOrNot
 from ..html.html import CLASS
-from ..html.atom import br
+from ..html.atom import br, markOfQuestion
 from ..leaf import Field
 from ..conditionals.numberOfField import AtLeastOneField
 
@@ -58,7 +58,7 @@ class QuestionnedField(AskedOrNot):
                                isMandatory=isMandatory,
                                useClasses = False)
         
-        self.asked = QuestionOrAnswer("???",
+        self.asked = QuestionOrAnswer(markOfQuestion,
                                       CLASS(self.classesAsked,
                                             self.child))
         self.notAsked = CLASS(self.classes,
