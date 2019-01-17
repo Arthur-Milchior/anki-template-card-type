@@ -1,9 +1,12 @@
-from ..generators.imports import *
+from ..generators import *
 from .general import header, footer
 
 
 definition_ordinal = TableFields(
-    fields = ["Definition", "Axiom"]
+    fields = ["Definition",
+              {"field":"Axiom",
+               "classes":"Definition2"}
+              ]
 )
 properties = TableFields(["Admissible",
                           "Cofinality",

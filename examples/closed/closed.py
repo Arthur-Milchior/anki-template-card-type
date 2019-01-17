@@ -1,13 +1,14 @@
 from ..general import short_header, footer
-from ...generators.imports import *
+from ...generators import *
 
 label=[Field("Name", isMandatory = True)," is"]
+
 def no(i):
     filled=Filled(f"Not{i}",
                   "not ")
     alo=AtLeastOneField(fields=[f"Condition{i}",f"Case{i}",f"Cases","Conditions"],
                         asked=True,
-                        child="???",
+                        child=markOfQuestion,
                         otherwise=filled)
     return QuestionOrAnswer(alo,
                             filled)
@@ -22,7 +23,7 @@ def when(i):
     question=[Label("when",
                     fields=[f"Conditions",f"Condition{i}",f"Case{i}"],
                     classes=["Condition"]),
-              " ???"]
+              markOfQuestion]
     alo=AtLeastOneField(fields=[f"Conditions",f"Condition{i}",f"Case{i}"],
                         asked=True,
                         child=question,
@@ -31,12 +32,13 @@ def when(i):
                             df)
     
 def closedUnder(i):
-    return DecoratedField(field=f"Case{i}",
-                          label="closed under ",
-                          classes="Case",
-                          infix="",
-                          suffix="",
+    return DecoratedField(field = f"Case{i}",
+                          label = "closed under ",
+                          classes = "Case",
+                          infix = "",
+                          suffix = "",
                           isMandatory = True)
+
 def line(i):
     return [no(i),closedUnder(i),when(i)]
     

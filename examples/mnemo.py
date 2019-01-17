@@ -1,17 +1,25 @@
 from .general import header, footer
-from ..generators.imports import *
+from ..generators import *
 
 
 definition_mnemo = TableFields(
     name = "Mnemo",
     fields = [
-        "Personne",
-        "Action",
-        "Objet",
-        "Lieu",
-        "Habit",
-        "Musique",
-        "Nourriture"]
+        {"field": "Personne",
+         "classes":"Definition"},
+        {"field": "Action",
+         "classes":"Definition2"},
+        {"field": "Objet",
+         "classes":"Definition3"},
+        {"field": "Lieu",
+         "classes":"Definition4"},
+        {"field": "Habit",
+         "classes":"Definition5"},
+        {"field": "Musique",
+         "classes":"Definition6"},
+        {"field": "Nourriture",
+         "classes":"Definition7"},
+    ]
 )
 
 

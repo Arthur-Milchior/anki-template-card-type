@@ -7,7 +7,7 @@ from .statistical_distribution import statistical_distribution
 from .theory import theory
 from .topology import topology, topologyBody, topologyHead
 from .shortQuestions import french,french2, english,english2, abbreviation,abbreviation2,abbreviation3,etymology,etymology2, toAbbreviation, toAbbreviation2, represented, represented2
-from .general import namesNotationsDenotedBy, notations, names, header, footer, contextOrDeck
+from .general import *
 from .hacker import hacker
 from .mnemo import mnemo
 from .constant import constant, typedNumber

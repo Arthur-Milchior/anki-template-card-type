@@ -1,50 +1,75 @@
-from ..generators.imports import *
+from ..generators import *
 from .general import header, footer
 
+def tf(*arg,**kwargs):
+    return TableFields(*arg,defaultClasses = "Property",**kwargs)
 
-definition_topology = TableFields(
+definition_topology = tf(
     name = "Topology",
-    fields = ["Set", "Definition", "Definition2", "Opens", "Compactification of", "Completion of", "Base", "Base2", "Order", "Metric", "Prebase", "Prebase2"]
-)
-compactness= TableFields(name="Compactness",
-                         fields = ['A paracompact',
-                                   'Compact',
-                                   'Sequentially compact',
-                                   'Locally compact',
-                                   'Feebly compact',
-                                   'Limit point compact',
-                                   'Paracompact',
-                                   'Sigma-compact',
-                                   'Countably compact',
-                                   'Hemicompact',
-                                   'Mesocompact',
-                                   'Metacompact',
-                                   'Orthocompact',
-                                   'Pseudocompact',
-                                   'Realcompact',
-                                   'Supercompact',
-                                   'Freebly compact']
+    fields = ["Set",
+              "Definition",
+              "Definition2",
+              {"field": "Opens",
+               "classes":"Definition3"},
+              {"field": "Compactification of",
+               "classes":"Definition4"},
+              {"field": "Completion of",
+               "classes":"Definition5"},
+              {"field": "Base",
+               "classes":"Definition6"},
+              {"field": "Base2",
+               "classes":"Definition6"},
+              {"field": "Order",
+               "classes":"Definition7"},
+              {"field": "Metric",
+               "classes":"Definition8"},
+              {"field": "Prebase",
+               "classes":"Definition9"},
+              {"field": "Prebase2",
+               "classes":"Definition9"}
+    ]
 )
 
-bounded =TableFields(name="Bounded",
+compactness= tf(name="Compactness",
+                fields = ['A paracompact',
+                          'Compact',
+                          'Sequentially compact',
+                          'Locally compact',
+                          'Feebly compact',
+                          'Limit point compact',
+                          'Paracompact',
+                          'Sigma-compact',
+                          'Countably compact',
+                          'Hemicompact',
+                          'Mesocompact',
+                          'Metacompact',
+                          'Orthocompact',
+                          'Pseudocompact',
+                          'Realcompact',
+                          'Supercompact',
+                          'Freebly compact']
+)
+
+bounded =tf(name="Bounded",
             fields=[
                 'bounded',
                 'totally bounded'
             ]
 )
 
-points = TableFields(name="Points",
- fields=[
-'Limit points',
-'Isolated points',
-])
+points = tf(name="Points",
+            fields=[
+                'Limit points',
+                'Isolated points',
+            ])
 
-sets =TableFields(name="Sets",
+sets =tf(name="Sets",
             fields=[
                 'clopen',
                 'dense',
             ]
 )
+
 separationTable = [
     ['T0/Kolmogorov',None],
     ['T1/accessible/Tichonov/Fréchet topology','R0/Symmetric'],
@@ -71,11 +96,11 @@ for line in separationTable:
         if elt is not None:
             allSeparations.append(elt)
 
-separations= TableFields(
+separations= tf(
     name="Separation",
     fields=allSeparations)
 
-connexion = TableFields(name="Connexion",
+connexion = tf(name="Connexion",
             fields = [
                 'Connected',
                 'Arc connected',
@@ -92,13 +117,13 @@ connexion = TableFields(name="Connexion",
                 'Ultraconnected'
             ])
 
-group = TableFields(name="Group",
+group = tf(name="Group",
             fields=[
                 'Connected',
                 'Fundamental group',
             ])
 
-cardinal = TableFields(name="Cardinal",
+cardinal = tf(name="Cardinal",
             fields=[
                 'Cardinality',
                 'Locally finite',
@@ -109,7 +134,7 @@ cardinal = TableFields(name="Cardinal",
                 'Lindelof',
             ])
 
-others = TableFields(name="Other",
+others = tf(name="Other",
             fields=[
                 'Interior',
                 'Closure',

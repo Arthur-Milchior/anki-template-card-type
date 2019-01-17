@@ -1,4 +1,4 @@
-from ...generators.imports import *
+from ...generators import *
 #Core
 ## Leaf 
 ### Empty
@@ -10,9 +10,9 @@ literalFoo = Literal("foo")
 
 ### Field
 fieldFooClass = Field("foo")
-fieldFooClassless = Field("foo", addClass=False)
-fieldQuestion = Field("Question", addClass=False)
-fieldFoo_ = ensureGen(Field('foo', addClass=False))
+fieldFooClassless = Field("foo", useClasses=False)
+fieldQuestion = Field("Question", useClasses=False)
+fieldFoo_ = ensureGen(Field('foo', useClasses=False))
 
 ### ToAsk
 toask= ToAsk(["Definition","Definition2"])
@@ -54,18 +54,12 @@ absentAbsent = Absent(
     field = "Absent",
     child = "Absent is absent in the model")
 
-## LabeledFields:
-labeledFieldFromString = LabeledField("foo")
-labeledFieldFromField = LabeledField(Field("foo", addClass=False))
-labeledFieldFromStringLabel = LabeledField("foo","bar")
-labeledFieldFromFieldLabel = LabeledField(Field("foo", addClass=False),"bar")
-
 ## MultipleChildren
 ### List
 listEmptyInexistingField = ListElement([literalFoo, emptyGen, fieldFooClassless]) #foofo
 listEmptyExistingField = ListElement([literalFoo, emptyGen, fieldQuestion]) #fooQuestion
 singletonList = ensureGen([Field('foo')]) #fooList
-twoQuestionsListed = ListElement([DecoratedField('Definition1'),DecoratedField('Definition2')]) #similar to twoQuestionsListedAsFields
+twoQuestionsListed = ListElement([DecoratedField('Definition1', emphasize = False, useClasses = False),DecoratedField('Definition2', emphasize = False, useClasses = False)]) #similar to twoQuestionsListedAsFields
 
 ### Asked or Not
 asked = Asked(field = "asked", child = "is asked")
@@ -85,9 +79,9 @@ questionsRecursive = QuestionOrAnswer(question = QuestionOrAnswer(question = "qu
 parenthisedFoo = Parenthesis("foo")
 emptyParenthesis = Parenthesis(None)
 ### Dichotomy
-filledOrEmpty = FilledOrEmpty("Question",
-                              "Question is filled",
-                              "Question is empty")
+filledOrEmptyTest = FilledOrEmpty("Question",
+                                  "Question is filled",
+                                  "Question is empty")
 presentOrAbsentQuestion = PresentOrAbsent(
     "Question",
     "Question is present in the model",
@@ -96,19 +90,20 @@ presentOrAbsentAbsent = PresentOrAbsent(
     "Absent",
     "Absent is present in the model",
     "Absent is absent from the model")
-askedOrNot = AskedOrNot("askedOrNot",
-                        "Asked",
-                        "notAsked")
+askedOrNotTest = AskedOrNot("askedOrNot",
+                            "Asked",
+                            "notAsked")
 
 
 ##Label
-labelBarForFieldFoo = Label("bar",["foo"],["foo"])
-labelBarForFieldsFoos = Label("bar",["foos","foo","foo2"],["foos"])
+labelBarForFieldFooWithoutClass = Label("bar", ["foo"], ["Class name"], alwaysUseClasses = False)
+labelBarForFieldFoo = Label("bar",["foo"],["Class name"])
+labelBarForFieldsFoos = Label("bar",["foos","foo","foo2"],["Class name"], alwaysUseClasses = False)
 ## Hide
 hideTest = HideInSomeQuestions("hide field", "Content")
 ## Fields
-questionnedField =QuestionnedField('Question')
-decoratedField = DecoratedField('Question')
+questionnedField =QuestionnedField('Question', useClasses = False, emphasize = False)
+decoratedField = DecoratedField('Question', useClasses = False, emphasize = False)
 ## FromAndTo
 EnglishToFrench = FromAndTo("English"," in ","French"," is ","Français")
 
@@ -142,35 +137,44 @@ requiringInexistant = MultipleRequirement(child = (Literal("Foo")),
                                   requireFilled = frozenset({"absentfrommodel"}))
 
 ## Conditionals
-#branch = Branch(name="Question", questionAsked = "???", default = Field("Question", addClass=False))
+#branch = Branch(name="Question", questionAsked = markOfQuestion, default = Field("Question", useClasses=False))
 ## List Fields
 
 twoQuestionsAsTable = TableFields(['Definition', 'Name'],
                                   name="Definitions",
 
 )
+fieldDef = HTML("span",
+                  attrs = {'class': 'Definition'},
+                  child = Field(field = "Definition",
+                                     isMandatory = True,
+                                     useClasses = False,),)
 tableTwoLine1 = Filled(
     field = 'Definition',
     child = HTML(
         child = ListElement([
             HTML(
-                child = Literal(text = "Definition",),
+                child = HTML("span",
+                             attrs = {'class': 'Definition'},
+                             child = Literal(text = "Definition",),),
                 tag = 'td'),
-            HTML(
-                child = Field(field = "Definition", addClass=False,isMandatory=True),
-                tag = 'td')],),
+            HTML(child = fieldDef,
+                 tag = 'td')],),
         tag = 'tr'),)
+
 tableTwoLine1Answered = Filled(
     field = 'Definition',
     child = HTML(
         child = ListElement([
             HTML(
-                child = Literal(text = "Definition",),
+                child = HTML("span",
+                             attrs = {'class': 'Definition'},
+                             child = Literal(text = "Definition",),),
                 tag = 'td'),
             HTML(
                 child = CLASS(["Answer","Emphasize", "Definition"],
                               Field(field = "Definition",
-                                    addClass = False,
+                                    useClasses = False,
                                     isMandatory = True)),
                 tag = 'td')],),
         tag = 'tr'),)
@@ -179,13 +183,15 @@ tableTwoLine2Answered = Filled(
     child = HTML(
         child = ListElement([
             HTML(
-                child = Literal(text = "Name",),
+                child = HTML("span",
+                             attrs = {'class': 'Name'},
+                             child = Literal(text = "Name",),),
                 tag = 'td'),
             HTML(
                 child = CLASS(["Answer","Emphasize", "Name"],
                               Field(field = "Name",
                                     isMandatory=True,
-                                    addClass = False)),
+                                    useClasses = False)),
                 tag = 'td')],),
         tag = 'tr'),)
 tableTwoLine1Question = Filled(
@@ -196,7 +202,7 @@ tableTwoLine1Question = Filled(
                 child = CLASS(["Question","Emphasize", "Definition"],Literal(text = "Definition",)),
                 tag = 'td'),
             HTML(
-                child = Literal("???"),
+                child = markOfQuestion,
                 tag = 'td')],),
         tag = 'tr'),)
 tableTwoLine2Question = Filled(
@@ -207,7 +213,7 @@ tableTwoLine2Question = Filled(
                 child = CLASS(["Question","Emphasize", "Name"],Literal(text = "Name",)),
                 tag = 'td'),
             HTML(
-                child = Literal("???"),
+                child = markOfQuestion,
                 tag = 'td')],),
         tag = 'tr'),)
 tableTwoLine2 = Filled(
@@ -215,10 +221,16 @@ tableTwoLine2 = Filled(
     child = HTML(
         child = ListElement([
             HTML(
-                child = Literal(text = "Name",),
+                child = HTML("span",
+                             attrs = {'class': 'Name'},
+                             child = Literal(text = "Name",),),
                 tag = 'td'),
             HTML(
-                child = Field(field = "Name", addClass=False,isMandatory=True),
+                child = HTML("span",
+                             attrs = {'class': 'Name'},
+                             child = Field(field = "Name",
+                                           isMandatory = True,
+                                           useClasses = False,),),
                 tag = 'td')],),
         tag = 'tr'),)
 
@@ -268,21 +280,39 @@ tableTwoShownAnswerAll= ListElement([
 
 ### Table 3 columns
 fourQuestionsAsTable = TableFields(['Definition', 'Name'], name="Definitions",greater=2)
+literalDef = HTML("span",
+                  attrs = {'class': 'Definition'},
+                  child = Literal(text = "Definition",),)
+literalName = HTML("span",
+                   attrs = {'class': 'Name'},
+                   child = Literal(text = "Name",),)
+fieldName = HTML("span",
+                   attrs = {'class': 'Name'},
+                   child =Field(field = "Name",
+                                     isMandatory = True,
+                                     useClasses = False,),)
+fieldDef2 = HTML("span",
+                  attrs = {'class': 'Definition'},
+                  child = Field(field = "Definition2",
+                                     isMandatory = True,
+                                     useClasses = False,),)
+fieldName2 = HTML("span",
+                   attrs = {'class': 'Name'},
+                   child =Field(field = "Name2",
+                                     isMandatory = True,
+                                     useClasses = False,),)
+
 tableFourLine1 = ListElement([
   Filled(
     field = 'Definition2',
     child = HTML("tr",
       child = ListElement([
         HTML("td",
-          child = Literal(text = "Definition",),),
+          child = literalDef,),
         HTML("td",
-          child = Field(field = "Definition",
-            isMandatory = True,
-            addClass = False,),),
+          child = fieldDef,),
         HTML("td",
-          child = Field(field = "Definition2",
-            isMandatory = True,
-            addClass = False,),)],),),),
+          child = fieldDef2,)],),),),
   Empty(
     field = 'Definition2',
     child = Filled(
@@ -290,11 +320,9 @@ tableFourLine1 = ListElement([
       child = HTML("tr",
         child = ListElement([
           HTML("td",
-            child = Literal(text = "Definition",),),
+            child = literalDef,),
           HTML("td",
-            child = Field(field = "Definition",
-              isMandatory = True,
-              addClass = False,),)],),),),)],)
+            child = fieldDef,)],),),),)],)
 
 tableFourLine1Answered = ListElement([
     Filled(
@@ -302,17 +330,15 @@ tableFourLine1Answered = ListElement([
         child = HTML("tr",
                      child = ListElement([
                          HTML("td",
-                              child = Literal(text = "Definition",),),
+                              child = literalDef,),
                          HTML("td",
                               child = HTML("span",
                                            attrs = {'class': 'Answer Emphasize Definition'},
                                            child = Field(field = "Definition",
                                                          isMandatory = True,
-                                                         addClass = False,),),),
+                                                         useClasses = False,),),),
                          HTML("td",
-                              child = Field(field = "Definition2",
-                                            isMandatory = True,
-                                            addClass = False,),)],),),),
+                              child = fieldDef2,)],),),),
     Empty(
         field = 'Definition2',
         child = Filled(
@@ -320,13 +346,13 @@ tableFourLine1Answered = ListElement([
             child = HTML("tr",
                          child = ListElement([
                              HTML("td",
-                                  child = Literal(text = "Definition",),),
+                                  child = literalDef,),
                              HTML("td",
                                   child = HTML("span",
                                                attrs = {'class': 'Answer Emphasize Definition'},
                                                child = Field(field = "Definition",
-                                                             isMandatory = True,
-                                                             addClass = False,),),)],),),),)],)
+                                                         isMandatory = True,
+                                                         useClasses = False,),),)],),),),)],)
 
 tableFourLine1Answereds = ListElement([
     Filled(
@@ -334,19 +360,19 @@ tableFourLine1Answereds = ListElement([
         child = HTML("tr",
                      child = ListElement([
                          HTML("td",
-                              child = Literal(text = "Definition",),),
+                              child = literalDef,),
                          HTML("td",
                               child = HTML("span",
                                            attrs = {'class': 'Answer Emphasize Definition'},
                                            child = Field(field = "Definition",
                                                          isMandatory = True,
-                                                         addClass = False,),),),
+                                                         useClasses = False,),),),
                          HTML("td",
                               child = HTML("span",
-                                           attrs = {'class': 'Answer Emphasize Definition2'},
+                                           attrs = {'class': 'Answer Emphasize Definition'},
                                            child = Field(field = "Definition2",
                                                          isMandatory = True,
-                                                         addClass = False,),),)],),),),
+                                                         useClasses = False,),),)],),),),
     Empty(
         field = 'Definition2',
         child = Filled(
@@ -354,51 +380,52 @@ tableFourLine1Answereds = ListElement([
             child = HTML("tr",
                          child = ListElement([
                              HTML("td",
-                                  child = Literal(text = "Definition",),),
+                                  child = literalDef,),
                              HTML("td",
                                   child = HTML("span",
                                                attrs = {'class': 'Answer Emphasize Definition'},
                                                child = Field(field = "Definition",
                                                              isMandatory = True,
-                                                             addClass = False,),),)],),),),)],)
+                                                             useClasses = False,),),)],),),),)],)
 
 tableFourLine2Answered = Filled(
     field = 'Name',
     child = HTML(
         child = ListElement([
             HTML(
-                child = Literal(text = "Name",),
+                child = literalName,
                 tag = 'td'),
             HTML(
                 child = CLASS(["Answer","Emphasize", "Name"],
                               Field(field = "Name",
                                     isMandatory=True,
-                                    addClass = False)),
+                                    useClasses = False)),
                 tag = 'td'),
             HTML(
-                child = Field(field = "Name2", addClass=False,isMandatory=True),
+                child = fieldName2,
                 tag = 'td'),
         ],),
         tag = 'tr'),)
+
 tableFourLine2Answereds = ListElement([
   Filled(
     field = 'Name2',
     child = HTML("tr",
       child = ListElement([
         HTML("td",
-          child = Literal(text = "Name",),),
+          child = literalName,),
         HTML("td",
           child = HTML("span",
             attrs = {'class': 'Answer Emphasize Name'},
             child = Field(field = "Name",
               isMandatory = True,
-              addClass = False,),),),
+              useClasses = False,),),),
         HTML("td",
           child = HTML("span",
-            attrs = {'class': 'Answer Emphasize Name2'},
+            attrs = {'class': 'Answer Emphasize Name'},
             child = Field(field = "Name2",
               isMandatory = True,
-              addClass = False,),),)],),),),
+              useClasses = False,),),)],),),),
   Empty(
     field = 'Name2',
     child = Filled(
@@ -406,13 +433,13 @@ tableFourLine2Answereds = ListElement([
       child = HTML("tr",
         child = ListElement([
           HTML("td",
-            child = Literal(text = "Name",),),
+            child = literalName,),
           HTML("td",
             child = HTML("span",
               attrs = {'class': 'Answer Emphasize Name'},
               child = Field(field = "Name",
                 isMandatory = True,
-                addClass = False,),),)],),),),)],)
+                useClasses = False,),),)],),),),)],)
 
 tableFourLine1Question = ListElement([
   Filled(
@@ -424,11 +451,9 @@ tableFourLine1Question = ListElement([
             attrs = {'class': 'Question Emphasize Definition'},
             child = Literal(text = "Definition",),),),
         HTML("td",
-          child = Literal(text = "???",),),
+          child = markOfQuestion,),
         HTML("td",
-          child = Field(field = "Definition2",
-            isMandatory = True,
-            addClass = False,),)],),),),
+          child = fieldDef2,)],),),),
   Empty(
     field = 'Definition2',
     child = Filled(
@@ -440,7 +465,7 @@ tableFourLine1Question = ListElement([
               attrs = {'class': 'Question Emphasize Definition'},
               child = Literal(text = "Definition",),),),
           HTML("td",
-            child = Literal(text = "???",),)],),),),)],)
+            child = markOfQuestion,)],),),),)],)
 
 tableFourLine1Questions = ListElement([
     Filled(
@@ -452,9 +477,9 @@ tableFourLine1Questions = ListElement([
                                            attrs = {'class': 'Question Emphasize Definition'},
                                            child = Literal(text = "Definition",),),),
                          HTML("td",
-                              child = Literal(text = "???",),),
+                              child = markOfQuestion,),
                          HTML("td",
-                              child = Literal(text = "???",),)],),),),
+                              child = markOfQuestion,)],),),),
     Empty(
         field = 'Definition2',
         child = Filled(
@@ -466,22 +491,22 @@ tableFourLine1Questions = ListElement([
                                                attrs = {'class': 'Question Emphasize Definition'},
                                                child = Literal(text = "Definition",),),),
                              HTML("td",
-                                  child = Literal(text = "???",),),
+                                  child = markOfQuestion,),
                              HTML("td",
-                                  child = Literal(text = "???",),)],),),),)],)
+                                  child = markOfQuestion,)],),),),)],)
 
 tableFourLine2Question = Filled(
     field = 'Name',
     child = HTML(
         child = ListElement([
             HTML(
-                child = CLASS(["Question","Emphasize", "Name"],Literal(text = "Name",)),
+                child = CLASS(["Question","Emphasize", "Name"],literalName),
                 tag = 'td'),
             HTML(
-                child = Literal("???"),
+                child = markOfQuestion,
                 tag = 'td'),
             HTML(
-                child = Field(field = "Name2", addClass=False,isMandatory=True),
+                child = fieldName2,
                 tag = 'td')
         ]),
         tag = 'tr'
@@ -497,9 +522,9 @@ tableFourLine2Questions = ListElement([
             attrs = {'class': 'Question Emphasize Name'},
             child = Literal(text = "Name",),),),
         HTML("td",
-          child = Literal(text = "???",),),
+          child = markOfQuestion,),
         HTML("td",
-          child = Literal(text = "???",),)],),),),
+          child = markOfQuestion,)],),),),
   Empty(
     field = 'Name2',
     child = Filled(
@@ -511,9 +536,9 @@ tableFourLine2Questions = ListElement([
               attrs = {'class': 'Question Emphasize Name'},
               child = Literal(text = "Name",),),),
           HTML("td",
-            child = Literal(text = "???",),),
+            child = markOfQuestion,),
           HTML("td",
-            child = Literal(text = "???",),)],),),),)],)
+            child = markOfQuestion,)],),),),)],)
 
 tableFourLine2 = ListElement([
   Filled(
@@ -521,15 +546,11 @@ tableFourLine2 = ListElement([
     child = HTML("tr",
       child = ListElement([
         HTML("td",
-          child = Literal(text = "Name",),),
+          child = literalName,),
         HTML("td",
-          child = Field(field = "Name",
-            isMandatory = True,
-            addClass = False,),),
+          child = fieldName,),
         HTML("td",
-          child = Field(field = "Name2",
-            isMandatory = True,
-            addClass = False,),)],),),),
+          child = fieldName2,)],),),),
   Empty(
     field = 'Name2',
     child = Filled(
@@ -537,11 +558,9 @@ tableFourLine2 = ListElement([
       child = HTML("tr",
         child = ListElement([
           HTML("td",
-            child = Literal(text = "Name",),),
+            child = literalName,),
           HTML("td",
-            child = Field(field = "Name",
-              isMandatory = True,
-              addClass = False,),)],),),),)],)
+            child = fieldName,)],),),),)],)
 
 tableFourShown= ListElement(
     [HTML(
@@ -593,42 +612,46 @@ twoQuestionsNumbered = NumberedFields('Definition', 2)
 twoQuestionsNumberedLine1 = Filled(
     field = 'Definition',
     child = HTML("li",
-                 child =Field(isMandatory=True, addClass=False,field = "Definition",),),)
+                 child =fieldDef,),)
 twoQuestionsNumberedLine1Question = Filled(
     field = 'Definition',
     child = HTML("li",
-                 child =Literal("???",),),)
+                 child =markOfQuestion,),)
 twoQuestionsNumberedLine2Question = Filled(
     field = 'Definition2',
     child = HTML("li",
-                 child =Literal("???",),),)
+                 child =markOfQuestion,),)
 twoQuestionsNumberedLine1Answer = Filled(
     field = 'Definition',
     child = HTML("li",
-                 child =CLASS(["Answer","Emphasize","Definition"],Field(isMandatory=True, addClass=False,field = "Definition",),),))
+                 child =CLASS(["Answer","Emphasize","Definition"],
+                              Field(isMandatory=True, useClasses=False,field = "Definition",),),))
 twoQuestionsNumberedLine2Answer = Filled(
     field = 'Definition2',
     child = HTML("li",
-                 child =CLASS(["Answer","Emphasize","Definition"],Field(isMandatory=True, addClass=False,field = "Definition2",),),))
+                 child =CLASS(["Answer","Emphasize","Definition"],Field(isMandatory=True, useClasses=False,field = "Definition2",),),))
 twoQuestionsNumberedLine2 = Filled(
     field = 'Definition2',
     child = HTML("li",
-                 child =Field(isMandatory=True, addClass=False,field = "Definition2",),),)
+                 child = fieldDef2,),)
 
+labelNormal= HTML("span",
+  attrs = {'class': 'Definition'},
+  child = Literal(text = "Definitions",),)
 twoQuestionsNumberedShown = ListElement([
     ListElement([
-  Literal(text = "Definitions",),
-  Literal(text = ": ",),
-    HTML("ol",
-         child = ListElement([
-             twoQuestionsNumberedLine1,
-             twoQuestionsNumberedLine2
-         ],),)],),
+        labelNormal,
+        Literal(text = ": ",),
+        HTML("ol",
+             child = ListElement([
+                 twoQuestionsNumberedLine1,
+                 twoQuestionsNumberedLine2
+             ],),)],),
     ToAsk({'Definition': set(), 'Definition2': set()})])
-labelQuestion=CLASS(["Question","Emphasize", "Definitions"],
+labelQuestion=CLASS(["Question","Emphasize", "Definition"],
                     Literal(text = "Definitions",)
                     )
-labelNormal= Literal(text = "Definitions",)
+
 twoQuestionsNumberedShown1Question = ListElement([
     ListElement([
         labelQuestion,
@@ -655,19 +678,17 @@ twoQuestionsNumberedAskDefinitionMandatory = Filled(
     child = ListElement([
         ListElement([
             HTML("span",
-                 attrs = {'class': 'Question Emphasize Definitions'},
+                 attrs = {'class': 'Question Emphasize Definition'},
                  child = Literal(text = "Definitions",),),
             Literal(text = ": ",),
             HTML("ol",
                  child = ListElement([
                      HTML("li",
-                          child = Literal(text = "???",),),
+                          child = markOfQuestion,),
                      Filled(
                          field = 'Definition2',
                          child = HTML("li",
-                                      child = Field(field = "Definition2",
-                                                    addClass=False,
-                                                    isMandatory=True),),)],),)],),
+                                      child = fieldDef2,),)],),)],),
         ToAsk({'Definition': {None}, 'Definition2': set()})]))
 
 twoQuestionsNumberedAllAsked = ListElement([

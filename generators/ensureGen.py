@@ -1,5 +1,6 @@
 from ..debug import debug, debugFun
 import types
+import sys
 typeToGenerator= dict()
 
 def addTypeToGenerator(type,generator):
@@ -27,7 +28,7 @@ def ensureGen(element, locals_ = None):
             debug("{element} has not type {typ}")
             pass
     if ret is None:
-        debug("{element} has type {type(element)} which we can not consider")
+        print(f"{element} has type {type(element)} which we can not consider", file=sys.stderr)
         assert False
     return ret
 

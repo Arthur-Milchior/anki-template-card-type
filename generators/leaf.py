@@ -6,7 +6,6 @@ from .generators import Gen, genRepr, thisClassIsClonable
 from .ensureGen import addTypeToGenerator
 from ..debug import debug, assertType, debugFun, ExceptionInverse, debugInit
 from bs4 import NavigableString
-from html import escape
 from .html.html import CLASS
 
 class Leaf(Gen):
@@ -122,23 +121,23 @@ class Field(Leaf):
     typ -- Whether "type:" should be prefixed. It has some special signification in anki
     cloze -- Whether "cloze:" should be prefixed. It has some special signification in anki
     isMandatory -- Show an error message if this field is used in a model where this field is not present. By default its false
-    addClass -- Whether the field's name should also be considered to be a CSS class to apply to the field. 
+    useClasses -- Whether some class should be applied to the field
 """
     def __init__(self,
-                 field = None,
+                 field,
                  typ = False,
                  cloze = False,
                  state = WITHOUT_REDUNDANCY,
                  special = False,
                  isMandatory = False,
-                 addClass = True,
+                 useClasses = True,
                  toKeep = True,
                  classes = None,
                  **kwargs):
         if special and isMandatory:
             print(f"""Beware: you stated that a special field {field} is isMandatory, it makes no sens.""", file=sys.stderr)
         self.isMandatory = isMandatory
-        self.addClass = addClass or (classes is not None)
+        self.useClasses = useClasses or (classes is not None)
         self.classes = classes if (classes is not None) else field
         self.special = special
         self.typ = typ
@@ -183,14 +182,14 @@ class Field(Leaf):
                 print(f"""Beware: you want to have "cloze:" before a special field {self.field}, this makes no sens.""", file=sys.stderr)
                 
     def _getNormalForm(self):
-        if self.addClass:
+        if self.useClasses:
             return CLASS(self.classes,
                          Field(self.field,
                                typ=self.typ,
                                cloze=self.cloze,
                                special=self.special,
                                isMandatory=self.isMandatory,
-                               addClass=False))
+                               useClasses=False))
         else:
             return self
         
@@ -199,7 +198,7 @@ class Field(Leaf):
         return hash(self.field)
 
     def _outerEq(self,other):
-        return isinstance(other,Field) and self.field == other.field and self.addClass == other.addClass and super()._outerEq(other)
+        return isinstance(other,Field) and self.field == other.field and self.useClasses == other.useClasses and super()._outerEq(other)
     
     def _repr(self):
         t= f"""Field(field = "{self.field}","""
@@ -211,8 +210,8 @@ class Field(Leaf):
             t+="\n"+genRepr(self.special, label="special")+","
         if self.isMandatory is not False:
             t+="\n"+genRepr(self.isMandatory, label="isMandatory")+","
-        if self.addClass is not True:
-            t+="\n"+genRepr(self.addClass, label="addClass")+","
+        if self.useClasses is not True:
+            t+="\n"+genRepr(self.useClasses, label="useClasses")+","
         t+=self.params()+")"
         return t
 

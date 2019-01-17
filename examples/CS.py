@@ -1,15 +1,20 @@
-from ..generators.imports import *
-from .general import header, footer, typDic
-name_ = [{"field":"Instruction",
-          "classes":"Notation"},
-         "Variable",
-         {"field":"Shortcut",
-          "classes":["Abbreviation","Shortcut"]},
-         "Abbreviation",
-         "Library",
-         {"field":"Program",
-          "classes":"Library"},
-         "Where to use it"]
+from ..generators import *
+from .general.head import header
+from .general.foot import footer
+from .general.typ import typDic
+
+name_ = [
+    {"field":"Instruction",
+     "classes":"Notation"},
+    {"field":"Variable",
+     "classes":"Notation"},
+    {"field":"Shortcut",
+     "classes":["Abbreviation","Shortcut"]},
+    "Abbreviation",
+    "Library",
+    {"field":"Program",
+     "classes":"Library"},
+    "Where to use it"]
 name = TableFields(name_,
                    isMandatory=False,
                    name="CS name",

@@ -1,6 +1,6 @@
 from ..generators import Gen, genRepr, MultipleChildren, SingleChild, NotNormal
 from ..leaf import emptyGen, Field
-from ..list import ListElement
+from ..listGen import ListElement
 from ...debug import assertType
 import sys
 from ...utils import checkField
@@ -63,6 +63,6 @@ def Dichotomy(positiveClass,negativeClass,name=""):
             neg = negativeClass(self.field,
                                 self.negativeCase,
                                 isMandatory=self.isMandatory)
-            super().__init__([pos, neg])
+            super().__init__(*args,[pos, neg], **kwargs)
     Foo.__name__ = name
     return Foo

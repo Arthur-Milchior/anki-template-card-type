@@ -1,4 +1,4 @@
-from ..data.imports import *
+from ..data import *
 from ..functions import prettifyGen
 from ...debug import assertEqual
 

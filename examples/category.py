@@ -1,15 +1,22 @@
-from ..generators.imports import *
+from ..generators import *
 from .general import header, footer
 
 definition_ordinal = TableFields(
     name = "Definition",
-    fields = ["Objects", "Arrows", "Compositions"]
+    fields = [
+        {"field": "Objects",
+         "classes":"Definition"},
+        {"field": "Arrows",
+         "classes":"Definition2"},
+        {"field": "Compositions",
+         "classes":"Definition3"},
+    ]
 )
 def relatedFields(fields):
     assert assertType(relatedFields, list)
     return [{"field" : field,
                "hideInSomeQuestion": s - {field}} for field in fields]
-properties = TableFields(
+properties_ = TableFields(
     [
         ["Arrow from initial", "Arrow to initial", "Arrow from terminal", "Arrow to terminal"],
         ["Mono", "Epi", "Iso", "Bimorphism","Split epi",
@@ -53,6 +60,8 @@ properties = TableFields(
         "Topos",
         "Zero morphism",
         "Has zero morphisms",
-])
+    ],
+    defaultClasses = "Property")
 
+properties = HideInSomeQuestions(["Arrows","Objects","Compositions", "Definition"],properties_,)
 category = [header, definition_ordinal, properties, footer]

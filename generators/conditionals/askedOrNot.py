@@ -1,7 +1,7 @@
 from .meta import FieldChild, Dichotomy
 from ..generators import thisClassIsClonable, Gen, genRepr
 from ...debug import debugFun, debug, debugOnlyThisMethod, debugInit,debugOnlyThisInit
-from ..list import ListElement
+from ..listGen import ListElement
 from ...utils import standardContainer
 
 @thisClassIsClonable

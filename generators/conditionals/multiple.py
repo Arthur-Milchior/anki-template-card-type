@@ -23,6 +23,7 @@ class MultipleRequirement(SingleChild, NotNormal):
     requirements -- the map of set to use if the other value is not explicitly given.
     """
     def __init__(self,
+                 *args,
                  requirements = None,
                  
                  requireFilled = None,
@@ -60,8 +61,10 @@ class MultipleRequirement(SingleChild, NotNormal):
         if inconsistent:
             raise Inconsistent()
             state = EMPTY
-        super().__init__(state = state,
-                         **kwargs)
+        super().__init__(
+            *args,
+            state = state,
+            **kwargs)
 
     @debugFun
     def _getNormalForm(self):

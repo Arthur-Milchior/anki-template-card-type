@@ -1,5 +1,8 @@
-from ...generators.imports import *
-from ..general import header, footer, typDic
+from ...generators import *
+from ..general.head import header
+from ..general.foot import footer
+from ..general.typ import typDic
+
 def FOE(*args,**kwargs):
     return FilledOrEmpty(*args, isMandatory=True, **kwargs)
 ringCom1 = FOE('/',
@@ -213,19 +216,32 @@ algebra_name = FOE('+',
 algebra_name_formatted = [HTML("h1", child = algebra_name),hr]
 
 inner_function = TableFields(
-    ["+",
-     "0",
-     "-",
-     "*",
-     "1",
-     "/",
-     "\\",
-     "×",
-     "⋀",
-     "⋁",
-     "→",
-     "¬",
-     "◁",
+    [{"field":"+",
+      "classes":"Definition"},
+    {"field":    "0",
+     "classes":"Definition2"},
+    {"field":    "-",
+     "classes":"Definition3"},
+    {"field":    "*",
+     "classes":"Definition4"},
+    {"field":    "1",
+     "classes":"Definition5"},
+    {"field":    "/",
+     "classes":"Definition6"},
+    {"field":    "\\",
+     "classes":"Definition"},
+    {"field":    "×",
+     "classes":"Definition7"},
+    {"field":    "⋀",
+     "classes":"Definition8"},
+    {"field":    "⋁",
+     "classes":"Definition9"},
+    {"field":    "→",
+     "classes":"Definition"},
+    {"field":    "¬",
+     "classes":"Definition4"},
+    {"field":    "◁",
+     "classes":"Definition5"},
     ]
 )
 outer_function =TableFields(

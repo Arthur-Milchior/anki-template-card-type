@@ -1,6 +1,6 @@
 # List of templates which must be equals
 from ...debug import assertEqual, startDebug
-from ..data.imports import *
+from ..data import *
 from ..functions import *
 # Core
 ## Leaf
@@ -33,10 +33,10 @@ assert assertEqual(fieldFoo_, fieldFooClassless)
 assert fieldFooClassless  !=  Literal("test")
 assert fieldFooClassless !=  Literal("{{foo}}")
 assert fieldFooClassless != fieldFooClass
-assert assertEqual(fieldFooClassless, Field('foo',addClass=False))
+assert assertEqual(fieldFooClassless, Field('foo',useClasses=False))
 assert assertEqual(fieldFooClassless, fieldFooClassless.getNormalForm())
 assert assertEqual(fieldFooClassless, fieldFooClassless.getWithoutRedundance())
-assert assertEqual(compileGen(fieldFooClass, fields={"foo"}), CLASS("foo",Field("foo",addClass=False)))
+assert assertEqual(compileGen(fieldFooClass, fields={"foo"}), CLASS("foo",Field("foo",useClasses=False)))
 assert assertEqual(fieldFooClass, fieldFooClass.getWithoutRedundance())
 assert not fieldFooClassless.isEmpty()
 assert fieldFooClassless.toKeep
@@ -177,35 +177,46 @@ assert assertEqual(compileGen(parenthisedFoo),
 # assert assertEqual(compileGen(emptyParenthesis),
 #                    emptyGen) TODO when tokeep is precise
 ## Dichotomy
-assert assertEqual(compileGen(filledOrEmpty),
+assert assertEqual(compileGen(filledOrEmptyTest),
                    ListElement([Filled(field = "Question", child = Literal(text = "Question is filled", ), ), Empty(field = "Question", child = Literal(text = "Question is empty", ), )], ))
 
 assert assertEqual(compileGen(presentOrAbsentQuestion),Literal("Question is present in the model"))
 assert assertEqual(compileGen(presentOrAbsentAbsent),Literal("Absent is absent from the model"))
 
 ### Asked or Not
-assert assertEqual(compileGen(askedOrNot, asked = frozenset({"askedOrNot"})),Literal("Asked"))
-assert assertEqual(compileGen(askedOrNot, asked = frozenset()),Literal(text = "notAsked", ))
-
-## LabeledFields:
-assert assertEqual(labeledFieldFromString,labeledFieldFromField)
-assert assertEqual(labeledFieldFromStringLabel,labeledFieldFromFieldLabel)
+assert assertEqual(compileGen(askedOrNotTest, asked = frozenset({"askedOrNot"})),Literal("Asked"))
+assert assertEqual(compileGen(askedOrNotTest, asked = frozenset()),Literal(text = "notAsked", ))
 
 ## Label:
-assert assertEqual(compileGen(labelBarForFieldFoo,
+assert assertEqual(compileGen(labelBarForFieldFooWithoutClass,
                               isQuestion=False),
                    Literal("bar"))
-assert assertEqual(compileGen(labelBarForFieldFoo,
+assert assertEqual(compileGen(labelBarForFieldFooWithoutClass,
                               asked = {"foo"},
                               isQuestion=False),
                    Literal("bar"))
+assert assertEqual(compileGen(labelBarForFieldFooWithoutClass,
+                              asked = {"foo"},
+                              isQuestion=True),
+                   CLASS(["Question","Emphasize", "Class_name"],Literal("bar")))
+assert assertEqual(compileGen(labelBarForFieldFooWithoutClass,
+                              isQuestion = True),
+                   Literal("bar"))
+
+assert assertEqual(compileGen(labelBarForFieldFoo,
+                              isQuestion=False),
+                   CLASS(["Class_name"],Literal("bar")))
+assert assertEqual(compileGen(labelBarForFieldFoo,
+                              asked = {"foo"},
+                              isQuestion=False),
+                   CLASS(["Class_name"],Literal("bar")))
 assert assertEqual(compileGen(labelBarForFieldFoo,
                               asked = {"foo"},
                               isQuestion=True),
-                   CLASS(["Question","Emphasize", "foo"],Literal("bar")))
+                   CLASS(["Question","Emphasize", "Class_name"],Literal("bar")))
 assert assertEqual(compileGen(labelBarForFieldFoo,
                               isQuestion = True),
-                   Literal("bar"))
+                   CLASS(["Class_name"],Literal("bar")))
 
 assert assertEqual(compileGen(labelBarForFieldsFoos),
                    Literal("bar"))
@@ -219,7 +230,7 @@ assert assertEqual(compileGen(labelBarForFieldsFoos,
 assert assertEqual(compileGen(labelBarForFieldsFoos,
                               asked = {"foo"},
                               isQuestion=True),
-                   CLASS(["Question","Emphasize","foos"],Literal("bar")))
+                   CLASS(["Question","Emphasize","Class_name"],Literal("bar")))
 
 ## Hide
 assert assertEqual(compileGen(hideTest, asked = frozenset(), isQuestion = True), 
@@ -233,25 +244,27 @@ assert assertEqual(compileGen(hideTest, asked = frozenset({"hide field"}), isQue
 
 ## Fields
 assert assertEqual(compileGen(questionnedField, asked = frozenset({"Question"})), 
-                   Literal("???"))
+                   markOfQuestion)
 assert assertEqual(compileGen(questionnedField, asked = frozenset()), 
-                   Field("Question",addClass=False))
+                   Field("Question", useClasses=False))
 assert assertEqual(compileGen(questionnedField, isQuestion = False),
-                   Field("Question",addClass=False))
+                   Field("Question", useClasses=False))
 assert assertEqual(
     compileGen(
         decoratedField,
         asked = frozenset({"Question"})),
     Filled(field = "Question",
            child = ListElement([
-               CLASS(["Question","Emphasize", "Question"],Literal("Question")), Literal(": "), Literal("???"), br]
+               #CLASS(["Question","Emphasize", "Question"],
+               Literal("Question")#)
+               , Literal(": "), markOfQuestion, br]
            )))
 assert assertEqual(compileGen(decoratedField, asked = frozenset()), 
                    Filled(field = "Question",
                           child = ListElement([
                               Literal("Question"),
                               Literal(": "),
-                              Field("Question",addClass=False),
+                              Field("Question",useClasses=False),
                               br]
                           )))
 assert assertEqual(compileGen(decoratedField, isQuestion = False),
@@ -259,7 +272,7 @@ assert assertEqual(compileGen(decoratedField, isQuestion = False),
                           child = ListElement([
                               Literal("Question"),
                               Literal(": "),
-                              Field("Question",addClass=False),
+                              Field("Question",useClasses=False),
                               br]
                           )))
 ## FromAndTo
@@ -270,7 +283,7 @@ assert assertEqual(compileGen(decoratedField, isQuestion = False),
 #                                                            Literal(" in ")]),
 #                                               Literal("French"),
 #                                               Literal(" is "),
-#                                               Field("Français",addClass=False),
+#                                               Field("Français",useClasses=False),
 #                                               br]
 #                                  )
 #                           )
@@ -280,14 +293,15 @@ assert assertEqual(compileGen(EnglishToFrench, fields={"Français","English"}),
                    Filled("Français",
                           Filled("English",
                                  ListElement([ListElement([HTML("span",
-  attrs = {'class': 'English'},
-  child = Field(field = "English",
-    addClass = False,),),
+                                                                attrs = {'class': 'English'},
+                                                                child = Field(field = "English",
+                                                                              useClasses = False,),),
                                                            Literal(" in ")]),
                                               CLASS(["Question","Emphasize","Français"],
-                                                    Literal("French")),
+                                                    Literal("French"))
+                                              ,
                                               Literal(" is "),
-                                              Literal("???"),
+                                              markOfQuestion,
                                               br]
                                  )
                           )
@@ -299,12 +313,14 @@ assert assertEqual(compileGen(EnglishToFrench, fields={"Français","English"},is
                                  ListElement([ListElement([HTML("span",
   attrs = {'class': 'English'},
   child = Field(field = "English",
-    addClass = False,),),
+    useClasses = False,),),
                                                            Literal(" in ")]),
-                                              Literal("French"),
+                                              HTML("span",
+                                                   attrs = {'class': 'Français'},
+                                                   child = Literal(text = "French",),),
                                               Literal(" is "),
                                               CLASS(["Answer","Emphasize","Français"],
-                                                    Field("Français",addClass=False)
+                                                    Field("Français",useClasses=False)
                                               ),
                                               br]
                                  )
@@ -400,20 +416,20 @@ assert assertEqual(compileGen(requiringInexistant),emptyGen)
 ## List Fields
 
 # assert assertEqual(compileGen(twoQuestionsAsList, asked =frozenset()),
-#                    compileGen([["Definition", ": ", Field("Definition",addClass=False)],["Definition2", ": ", Field("Definition2",addClass=False)]]))
+#                    compileGen([["Definition", ": ", Field("Definition",useClasses=False)],["Definition2", ": ", Field("Definition2",useClasses=False)]]))
 # assert assertEqual(compileGen(twoQuestionsAsList, asked ={"Definition"}, isQuestion = False),
-#                    compileGen([["Definition", ": ", Field("Definition",addClass=False)],["Definition2", ": ", Field("Definition2",addClass=False)]]))
+#                    compileGen([["Definition", ": ", Field("Definition",useClasses=False)],["Definition2", ": ", Field("Definition2",useClasses=False)]]))
 # assert assertEqual(compileGen(twoQuestionsAsList, asked ={"Definition"}),
-#                    compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Field("Definition2",addClass=False)]]))
+#                    compileGen([["Definition", ": ", markOfQuestion],["Definition2", ": ", Field("Definition2",useClasses=False)]]))
 
 # assert assertEqual(compileGen(twoQuestionsAsNamedList, asked =frozenset()),
-#                    compileGen([["Definition", ": ", Field("Definition",addClass=False)],["Definition2", ": ", Field("Definition2",addClass=False)]]))
+#                    compileGen([["Definition", ": ", Field("Definition",useClasses=False)],["Definition2", ": ", Field("Definition2",useClasses=False)]]))
 # assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"Definition"}, isQuestion = False),
-#                    compileGen([["Definition", ": ", Field("Definition",addClass=False)],["Definition2", ": ", Field("Definition2",addClass=False)]]))
+#                    compileGen([["Definition", ": ", Field("Definition",useClasses=False)],["Definition2", ": ", Field("Definition2",useClasses=False)]]))
 # assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"Definition"}),
-#                    compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Field("Definition2",addClass=False)]]))
+#                    compileGen([["Definition", ": ", markOfQuestion],["Definition2", ": ", Field("Definition2",useClasses=False)]]))
 # assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"ListName"}),
-#                    compileGen([["Definition", ": ", Literal("???")],["Definition2", ": ", Literal("???")]]))
+#                    compileGen([["Definition", ": ", markOfQuestion],["Definition2", ": ", markOfQuestion]]))
 
 assert assertEqual(
     compileGen(

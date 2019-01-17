@@ -325,8 +325,8 @@ class Gen:
     
     @memoize()
     @ensureGenAndSetState(WITHOUT_REDUNDANCY)
-    #@emptyToEmpty
     @debugFun
+    @debugOnlyThisMethod
     def getWithoutRedundance(self):
         """Remove redundant, like {{#foo}}{{#foo}}, {{#foo}}{{^foo}}.
         Similarly, Question/Answer inside Question/Answer. And

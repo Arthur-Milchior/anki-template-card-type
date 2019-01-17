@@ -1,12 +1,13 @@
 from .general import header, footer
-from ..generators.imports import *
+from ..generators import *
 
 answers = PotentiallyNumberedFields("Answer",
                                     7,
                                     label = Field("Question"),
                                     infix = None,
-                                    suffix = hr)
+                                    suffix = hr,
+                                    classes = "Notation")
                                     
 question = [Filled("Question",
-                   [header, answers, DecoratedField("Construction", suffix=hr), footer]),
+                   [header, answers, DecoratedField("Construction", suffix=hr, classes = "DenotedBy"), footer]),
             hr]

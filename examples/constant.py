@@ -1,11 +1,11 @@
 from .general import short_header, footer
-from ..generators.imports import *
+from ..generators import *
 
-number=[QuestionnedField("Significative digit"),
+number=[QuestionnedField("Significative digit", classes= "Definition"),
         Filled("Exponant",
                [Filled("Significative digit","."),
-                FilledOrEmpty("Basis",QuestionnedField("Basis"),"10"),
-                SUP(QuestionnedField("Exponant"))
+                FilledOrEmpty("Basis",QuestionnedField("Basis", classes= "Definition2"),"10"),
+                SUP(QuestionnedField("Exponant", classes= "Definition3"))
                ]
         )]
 
@@ -29,7 +29,8 @@ definition = TableFields(
      "Etymology",
      "French",
      "DenotedBy",
-     "Represents"],
+     {"field":"Represents",
+      "classes":"Intuition"}],
     greater = 2,
     name = "Definition",
     suffix=hr

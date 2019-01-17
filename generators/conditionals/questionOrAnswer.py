@@ -1,7 +1,7 @@
 from .meta import FieldChild
 from ..generators import thisClassIsClonable, SingleChild
 from ...debug import debugFun, debug
-from ..list import ListElement
+from ..listGen import ListElement
 
 @thisClassIsClonable
 class Question(SingleChild):
@@ -13,7 +13,7 @@ class Question(SingleChild):
     def _applyTag(self, *args, **kwargs):
         raise ExceptionInverse("At this stage, Question must be removed")
     def _getWithoutRedundance(self):
-        return self.cloneSingle(self.getChild().assumeQuestion())
+        return self.cloneSingle(self.getChild().assumeQuestion().getWithoutRedundance())
     
 @thisClassIsClonable
 class Answer(SingleChild):
@@ -26,7 +26,7 @@ class Answer(SingleChild):
     def _applyTag(self, *args, **kwargs):
         raise ExceptionInverse("At this stage, Answer must be removed")
     def _getWithoutRedundance(self):
-        return self.cloneSingle(self.getChild().assumeAnswer())
+        return self.cloneSingle(self.getChild().assumeAnswer().getWithoutRedundance())
     
 class QuestionOrAnswer(ListElement):
     """The class which expands differently in function of the question/answer side."""

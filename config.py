@@ -1,6 +1,7 @@
 import aqt
 from aqt import mw
-from .imports import *
+from .generators import *
+from .user_files import *
 
 objects = dict()
 def newConf(config):

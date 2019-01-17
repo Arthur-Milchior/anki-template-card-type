@@ -1,4 +1,4 @@
-from ..data.imports import *
+from ..data import *
 from ..functions import TestHTML
 from ..data.templatesToCompile import *
 
@@ -34,11 +34,11 @@ TestHTML(htmlFront, definitionAnswerEasy, FrontHtml = definitionTemplateEasy, ob
 # TestHTML(definitionTemplateMiddle, definitionQuestionMiddle, objects = testObjects, isQuestion = True)
 # TestHTML(htmlFront, definitionAnswerMiddle, FrontHtml = definitionTemplate, objects = testObjects, isQuestion = False)
 
-TestHTML(definitionTemplateHard, definitionQuestionHard, objects = testObjects, isQuestion = True)
-TestHTML(htmlFront, definitionAnswerHard, FrontHtml = definitionTemplateHard, objects = testObjects, isQuestion = False)
-
 TestHTML(definitionTemplateTable, definitionQuestionTable, objects = testObjects, isQuestion = True)
 TestHTML(htmlFront, definitionAnswerTable, FrontHtml = definitionTemplateTable, objects = testObjects, isQuestion = False)
+
+TestHTML(definitionTemplateHard, definitionQuestionHard, objects = testObjects, isQuestion = True)
+TestHTML(htmlFront, definitionAnswerHard, FrontHtml = definitionTemplateHard, objects = testObjects, isQuestion = False)
 
 
 TestHTML(chooseHtml, chooseHtml1,objects={"toaskForHtml":toaskForHtml})

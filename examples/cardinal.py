@@ -1,4 +1,4 @@
-from ..generators.imports import *
+from ..generators import *
 from .general import header, footer
 from .definition.definition import definitions
 

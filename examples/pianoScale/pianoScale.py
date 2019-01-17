@@ -1,4 +1,4 @@
-from ...generators.imports import *
+from ...generators import *
 
 def pianoScale(hand="right", nbOctave = 1,back=False,increase=True):
     hand = Image(f"_{hand}_hand.png")

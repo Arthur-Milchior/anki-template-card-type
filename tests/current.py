@@ -2,12 +2,12 @@ from .functions import testEachStep, compileGen, genToSoup, genToTags, prettifyG
 from bs4 import BeautifulSoup
 from html import escape
 from copy import deepcopy
-from ..generators.imports import *
+from ..generators import *
 from ..debug import startDebug, endDebug, debug, assertEqual
-from .data.imports import *
+from .data import *
 from ..templates.soupAndHtml import templateFromSoup, soupFromTemplate
 from ..templates.templates import tagsToEdit, compile_
-from ..user_files.imports import *
+from ..user_files import *
 
 # tmp = '\n <span name="test" template="conf"/>\n'
 # soup = soupFromTemplate(tmp)
@@ -65,7 +65,7 @@ startDebug()
 #print(cascadeBeforeTemplate.template(asked={"cascaded"}))
 
 endDebug()
-# compileGen(DecoratedField("Question"), asked =frozenset("Question"),   toPrint=True)
+#compileGen(examples, isQuestion=False, fields = {"Example", "Example2", "Example3"},asked =frozenset({"Question"}),   toPrint=True)
 
 
 # compileGen(

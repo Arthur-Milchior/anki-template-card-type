@@ -1,10 +1,6 @@
 from .general import header, footer
-from ..generators.imports import *
+from ..generators import *
 
-definition_programmingLanguage = TableFields(
-    name = "ProgrammingLanguage",
-    fields = []
-)
 properties = TableFields([
     "Creator",
     "Storage management",

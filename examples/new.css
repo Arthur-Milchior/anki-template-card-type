@@ -1,28 +1,6 @@
-td {
-padding-left: 1em;
-padding-right: 1em;
-}
-table {
-    border-collapse: collapse;
-}
-table td, table th {
-    border: 1px solid black;
-}
-table tr:first-child td ,table tr:first-child th {
-    border-top: 0;
-}
-table tr:last-child td {
-    border-bottom: 0;
-}
-table tr td:first-child,
-table tr th:first-child {
-    border-left: 0;
-}
-table tr td:last-child,
-table tr th:last-child {
-    border-right: 0;
-}
-
+/**********
+Anki basic
+************/
 .card {
  font-family: arial;
  text-align: smaller;
@@ -35,24 +13,27 @@ table tr th:last-child {
   display: none;
 }
   
-.lines {/* lyrics */
- text-align: greater;
- margin-smaller: 30px;
- text-indent: -30px;
-}
-
 .cloze {
  font-weight: bold;
  color: blue;
 }
 
-.title {/* todo: ça sert à quoi*/
- text-align: center;
- font-size: small;
+
+/**********
+General note type
+************/
+td {
+    padding-left: 1em;
+    padding-right: 1em;
+}
+table, td, tr, th {
+    /*border-collapse: collapse;*/
+    border: 1px solid black;
 }
 
-.indent {/* todo: ça sert à quoi*/
- margin-smaller: 60px;
+.Name, .Notation {
+  font-size: 1.5em; margin: .67em 0 ;
+  font-family: Georgia;
 }
 
 
@@ -60,85 +41,25 @@ table tr th:last-child {
  font-size:12px;
 }
 
-.Emphasize.Name, .Emphasize.Personne{
-    background-color: pink;
-}
+/**********
+Particular note type
+************/
+@font-face { font-family: braille; src: url('_braille.ttf'); }
+@font-face { font-family: dotsies; src: url('_dotsies.ttf'); }
 
-.Emphasize.Notation,  .Emphasize.Answer, .Emphasize.Question, .Emphasize.Unison, .Emphasize.Musique, .Emphasize.Where_to_use_it {
-    background-color: yellow;
-}
-
-
-.Emphasize.DenotedBy, .Emphasize.Nth, .Emphasize.Interest, .Emphasize.Quality, .Emphasize.Action  {
-    background-color: SpringGreen ;
-}
-
-.Emphasize.Counterexample, .Emphasize.Example, .Emphasize.Objet {
-    background-color: silver ;
-}
-
-
-.Emphasize.Known_for, .Emphasize.Role, .Emphasize.definition, .Emphasize.Description, .Emphasize.Third, .Emphasize.Equation, .Emphasize.nourriture, .Emphasize.Density_function, .Emphasize.Time_complexity, .Emphasize.Side, .Emphasize.Axiom, .Emphasize.Zero_morphism, .Emphasize.Has_zero_morphism{
- background-color: cyan;
-}
-
-.Emphasize.Hypothesis, .Emphasize.Nth_element, .Emphasize.Cumulative_function, .Emphasize.Space_complexity, .Emphasize.Extends, .Emphasize.Terminal,  .Emphasize.Arrow_from_terminal,  .Emphasize.Arrow_to_terminal {
- background-color: violet;
-}
-
-.Emphasize.base, .Emphasize.Nth_value, .Emphasize.Lieu, .Emphasize.Mean, .Emphasize.Effect, .Emphasize.Initial,  .Emphasize.Arrow_from_initial,  .Emphasize.Arrow_to_initial {
- background-color: powderBlue;
-}
-
-.Emphasize.Assuming, .Emphasize.Fifth, .Emphasize.Asymptotically, .Emphasize.Habit, .Emphasize.Median, .Emphasize.Implementation, .Emphasize.Pushout{
- background-color: magenta;
-}
-
-.Emphasize.Type, .Emphasize.Interval, .Emphasize.Generating_function1, .Emphasize.Mode, .Emphasize.Invariant, .Emphasize.Pullback{
-  background-color: red;
-}
-
-.Emphasize.Standard_deviation, .Emphasize.Coequalizer {
-   background-color: Gainsboro ;
-}
-.Emphasize.Skewness, .Emphasize.Equalizer, .Emphasize.Etymology{
-   background-color: Thistle;
-}
-.Emphasize.Kurtosis, , .Emphasize.Split_epi {
-   background-color: Snow;
-}
-.Emphasize.Nth_moment, .Emphasize.Categorical, .Emphasize.Split_mono {
-   background-color: SeaShell;
-}
-.Emphasize.Generating_function2, .Emphasize.Closed, .Emphasize.Iso, .Emphasize.Construction {
-   background-color: paleTurquoise;
-}
-.Emphasize.Potential_or_credit, .Emphasize.Abbreviation,.Emphasize.Vocabulary, .Emphasize.Mono, .Emphasize.Epi, .Emphasize.Library,.Emphasize.Intuition, .Emphasize.Represents {
-   background-color: gold;
-}
-
-.Unison, .3rd, .5th, .Nth {
+.Guitar_chord {
   font-family: "Courier New";
   font-size:20px;
+  text-align: center;
 }
 
-.Emphasize{
-        font-size:25px
+.lines {/* lyrics */
+    text-align: greater;
+    margin-smaller: 30px;
+    text-indent: -30px;
 }
 
-
-.lines {
- text-align: smaller;
- margin-right: 30px;
- text-indent: -30px;
-}
-
-.Name, .Note, .Notation, .Personne {
-  font-size: 1.5em; margin: .67em 0 ;
-  font-family: Georgia;
-}
-
-.Where_to_use_it, .Library, .Counterexample, .Example, .Objet {
+.Where_to_use_it, .Library, {
   font-family: lucida console;
 }
 
@@ -146,9 +67,68 @@ table tr th:last-child {
   font-family: Courier New;
 }
 
-.Chord_name {
-  text-align: center;
+
+/**********
+Emphasize
+************/
+.Emphasize{
+        font-size:25px
+}
+.Emphasize.Name{
+    background-color: pink;
 }
 
-@font-face { font-family: braille; src: url('_braille.ttf'); }
-@font-face { font-family: dotsies; src: url('_dotsies.ttf'); }
+.Emphasize.Notation {
+    background-color: yellow;
+}
+
+
+.Emphasize.DenotedBy {
+    background-color: SpringGreen ;
+}
+
+.Emphasize.Counterexample, .Emphasize.Example {
+    background-color: silver ;
+}
+
+.Emphasize.Etymology{
+   background-color: Thistle;
+}
+
+.Emphasize.Abbreviation{
+ background-color: cyan;
+}
+
+.Emphasize.Intuition {
+   background-color: gold;
+}
+
+.Emphasize.Assuming{
+ background-color: magenta;
+}
+
+.Emphasize.Type{
+  background-color: red;
+}
+
+.Emphasize.Definition {
+ background-color: violet;
+}
+
+.Emphasize.Definition2,.Emphasize.Definition7 {
+ background-color: powderBlue;
+}
+
+.Emphasize.Definition3, .Emphasize.Definition8 {
+   background-color: Gainsboro ;
+}
+.Emphasize.Definition4, .Emphasize.Definition9 {
+   background-color: Snow;
+}
+.Emphasize.Definition5, .Emphasize.Definition10 {
+   background-color: SeaShell;
+}
+.Emphasize.Definition6, .Emphasize.Definition11 {
+   background-color: paleTurquoise;
+}
+

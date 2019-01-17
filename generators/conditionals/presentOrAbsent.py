@@ -1,7 +1,7 @@
 from .meta import FieldChild, Dichotomy
 from ..generators import thisClassIsClonable
 from ...debug import debugFun, debug
-from ..list import ListElement
+from ..listGen import ListElement
 
 @thisClassIsClonable
 class Absent(FieldChild):

@@ -21,7 +21,8 @@ class FromAndTo(NotNormal):
         super().__init__()
         
     def getNormalForm(self):
-        prefix=[Field(self.questionField, classes = self.classes),
+        prefix=[Field(self.questionField,
+                      classes = self.classes),
                 self.fieldToQuestion]
         df= DecoratedField(prefix = prefix,
                            label = self.actualQuestion,
@@ -34,3 +35,4 @@ class FromAndTo(NotNormal):
                  Filled(self.questionField,
                         l))
         return f.getNormalForm().assumeAsked(self.answer).getNormalForm()
+

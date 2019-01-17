@@ -37,3 +37,5 @@ hr = HTMLAtom("hr")
 class Image(HTMLAtom):
     def __init__(self,url):
         super().__init__("img", attrs = {"src":url})
+        
+markOfQuestion = HTMLAtom("markofquestion")

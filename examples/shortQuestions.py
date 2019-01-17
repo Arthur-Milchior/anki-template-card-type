@@ -1,4 +1,4 @@
-from ..generators.imports import *
+from ..generators import *
 from .general import contextOrDeck, short_header
 
 def _question(questionFieldPrefix, fieldToQuestion, actualQuestion, questionToAnswer, answerPrefix):
@@ -20,7 +20,7 @@ def _language(question, answer, language):
 _french= _language("Name","French","French")
 _english= _language("French","Name","English")
 _toAbbreviation=_question("Name", "'s ", "abbreviation", " is ", "Abbreviation")
-_represented=_question('Represents', ' ', 'represents', ' ', 'Name')
+_represented=_question('Represents', ' ', 'is represented by', ' ', 'Name')
 
 french = _french()
 french2=_french("2")

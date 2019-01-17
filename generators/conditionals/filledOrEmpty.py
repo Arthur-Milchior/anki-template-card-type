@@ -1,10 +1,10 @@
 import bs4
 from ..generators import thisClassIsClonable
-from ...debug import debugFun, debug
+from ...debug import debugFun, debug, debugOnlyThisMethod
 from .meta import FieldChild, Dichotomy
 from ..generators import addTypeToGenerator
 from ..leaf import emptyGen
-from ..list import ListElement
+from ..listGen import ListElement
 
 @thisClassIsClonable
 class Empty(FieldChild):
@@ -48,10 +48,10 @@ class Empty(FieldChild):
 class Filled(FieldChild):
     """The class which expands differently in function of the question/answer side."""
     def _assumeFieldFilled(self, field):
-        if self.field == field:
-            return self.getChild().assumeFieldFilled(field)
-        else:
-            return self.cloneSingle(self.getChild().assumeFieldFilled(field))
+      if self.field == field:
+          return self.getChild().assumeFieldFilled(field)
+      else:
+          return self.cloneSingle(self.getChild().assumeFieldFilled(field))
         
     def _assumeFieldEmpty(self, field):
         if self.field == field:

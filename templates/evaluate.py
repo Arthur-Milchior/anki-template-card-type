@@ -1,7 +1,6 @@
 import sys
 from ..utils import standardContainer
 from ..debug import assertType
-from ..imports import *
 from ..debug import ExceptionInverse
 from . import templates
 from ..config import evaluate

@@ -1,3 +1,3 @@
 from .general import header, footer
-from ..generators.imports import *
+from ..generators import *
 toaskForTests= ToAsk(["Definition","Definition2"])

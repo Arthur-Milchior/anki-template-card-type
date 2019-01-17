@@ -1,18 +1,18 @@
-from ..generators.imports import *
+from ..generators import *
 
 name = CLASS(["Name","Chord name"],
-             [QuestionnedField("Base", mandatory=True),
-              QuestionnedField("Quality", mandatory=True),
-              QuestionnedField("Inverval", mandatory=True),
-              Filled("Over",["/",QuestionnedField("Over", mandatory=True)]
+             [QuestionnedField("Base", isMandatory=True, classes = "Definition"),
+              QuestionnedField("Quality", isMandatory=True, classes = "Definition2"),
+              QuestionnedField("Inverval", isMandatory=True, classes ="Definition4"),
+              Filled("Over",["/",QuestionnedField("Over", isMandatory=True)]
               )])
 
 def color(name):
     def aux(i):
-        return QuestionOrAnswer(QuestionnedField(f"{name}{i}", mandatory=True),
+        return QuestionOrAnswer(QuestionnedField(f"{name}{i}", isMandatory=True),
                                 FilledOrEmpty(f"{name} color{i}",
-                                              QuestionnedField(f"{name} color{i}", mandatory=True),
-                                              QuestionnedField(f"{name}{i}", mandatory=True)))
+                                              QuestionnedField(f"{name} color{i}", isMandatory=True),
+                                              QuestionnedField(f"{name}{i}", isMandatory=True)))
     return aux
 diagram = color("Diagram")
 partition = color("Partition")
@@ -25,11 +25,16 @@ table = TableFields(
         {"function":partition,
          "field": "Partition",
          "filledFields":"Partition"},
-        ["Unison",
-          "3rd",
-          "5th",
-          "Nth"],
-    ],
+        [
+            {"field": "Unison",
+             "classes":["Definition", "Guitar chord"]},
+            {"field": "3rd",
+             "classes":["Definition2", "Guitar chord"]},
+            {"field": "5th",
+             "classes":["Definition3", "Guitar chord"]},
+            {"field": "Nth",
+             "classes":["Definition4", "Guitar chord"]},
+        ]],
     greater=5,
     isMandatory=True)
 

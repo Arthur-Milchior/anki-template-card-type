@@ -1,4 +1,4 @@
-from ..data.imports import *
+from ..data import *
 from ...editTemplate import compileModel
 from ...debug import assertEqual
 

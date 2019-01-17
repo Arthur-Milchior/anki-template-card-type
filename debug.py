@@ -58,13 +58,13 @@ def debugOnlyThisMethod(fun):
 def assertEqual(left, right):
     if left == right:
         return True
-    print(f"""\n\nReceived\n«{left}»\nwhich is distinct from expected\n«{right}»\n""")
+    print(f"""\n\nReceived\n\"\"\"{left}\"\"\"\nwhich is distinct from expected\n\"\"\"{right}\"\"\"\n""")
     if hasattr(left,"firstDifference"):
         if hasattr(right,"firstDifference"):
             pair = left.firstDifference(right)
             if isinstance(pair,tuple):
                 left_dif,right_dif=pair
-                print(f"""\n\nThe first difference is\n«{left_dif}»\nand\n«{right_dif}»\n""")
+                print(f"""\n\nThe first difference is\n\"\"\"{left_dif}\"\"\"\nand\n\"\"\"{right_dif}\"\"\"\n""")
             elif isinstance(pair,None):
                 print("Strangely, firstDifference find no difference")
             else:

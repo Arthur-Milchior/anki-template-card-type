@@ -1,5 +1,5 @@
 from ..general import header, footer
-from ...generators.imports import *
+from ...generators import *
 
 
 """{{Smaller to greater}} if field else "implies" """
@@ -8,7 +8,7 @@ foe=FilledOrEmpty("Smaller to greater",
                   "implies")
 qf=QuestionnedField(field = "Smaller to greater",
                     child = foe,
-                    classes = "Notation")
+                    classes = "Definition")
 increaseRelation = Parenthesis(left = " ",
                               right = " ",
                                child = qf)
@@ -22,7 +22,7 @@ foe = FilledOrEmpty("Greater to smaller",
                     foe)
 qf = QuestionnedField(field = "Greater to smaller",
                       child = foe,
-                      classes = "Notation")
+                      classes = "Definition")
 decreaseRelation = Parenthesis(left = " ",
                                right = " ",
                                child = qf)
@@ -36,7 +36,7 @@ def connexion(nb,side,default = "and"):
                                child = FilledOrEmpty(f"Connect {side}{nb}",
                                                    {f"Connect {side}{nb}"},
                                                    default)),
-                   QuestionnedField(f"{side}{nb+1}",classes="Side")])
+                   QuestionnedField(f"{side}{nb+1}",classes="Definition2")])
 
 def bigSide(side):
     """side0 connect0 side1 connect1 side2 connect2 side3"""
@@ -110,10 +110,13 @@ decreasing_ = [
 def longLine(line):
     line = [header,
             AskedOrNot("Definition",
-                       QuestionOrAnswer("???",
+                       QuestionOrAnswer(markOfQuestion,
                                         line),
                        line),
             hr,
+            DecoratedField("Construction",
+                           classes = "Definition3",
+                           suffix=hr),
             footer]
     return AtLeastOneField(asked = True,
                            fields = listOfSideFieldNames,

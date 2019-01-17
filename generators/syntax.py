@@ -1,5 +1,5 @@
 from .generators import SingleChild
-from .list import ListElement
+from .listGen import ListElement
 
 class Parenthesis(SingleChild):
     """A generator, with parenthesis around them."""

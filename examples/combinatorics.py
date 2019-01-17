@@ -16,9 +16,9 @@ numeric = TableFields(["Nth value",
                         "clasess":["Abbreviation"]},
                        "Asymptotically",
                        {"field":"OGF",
-                        "clasess":["Generating_function1"]},
+                        "clasess":["Definition"]},
                        {"field":"EGF",
-                        "clasess":["Generating_function2"]},
+                        "clasess":["Definition2"]},
                        "Asymptotically"
 ],
                       name="Numeric"
@@ -28,8 +28,10 @@ symbolic = TableFields(["Name",
                         "French"
                         "Notation",
                         "Abbreviation"
-                        "Equation",
-                        "Nth element"],
+                        {"field":"Equation",
+                         "classes":"Definition"},
+                        {"field":"Nth element",
+                         "classes":"Nth"}],
                        greater=2,
                        name="Symbolic")
 

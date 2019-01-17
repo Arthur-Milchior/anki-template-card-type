@@ -1,6 +1,6 @@
 from .models import *
 from .jsons import testObjects
-from ...generators.imports import *
+from ...generators import *
 
 noTagHtml = "foo1"
 
@@ -43,7 +43,7 @@ htmlQuestionCompiled = """<span asked="Question" generator="Question" template="
  <span class="Question Emphasize Question">
   Question
  </span> :
- ???
+ <markofquestion/>
  <br/>
  {{/Question}}
 </span>"""
@@ -53,8 +53,9 @@ df =DecoratedField('Question')
 htmlAnswerCompiled = """<span template="Front Side">
  <span asked="Question" generator="Question" template="conf">
   {{#Question}}
-  Question
-  :
+  <span class="Question">
+   Question
+  </span>  :
   <span class="Answer Emphasize Question">
    {{Question}}
   </span>  <br/>
@@ -69,30 +70,36 @@ definitionQuestionList ="""<span asked="Definition" generator='ListElement([Deco
  <span class="Question Emphasize Definition">
   Definition
  </span> :
- ???
+ <markofquestion/>
  <br/>
  {{/Definition}}
  {{#Definition2}}
- Definition2
- :
- {{Definition2}}
- <br/>
+ <span class="Definition2">
+  Definition2
+ </span> :
+ <span class="Definition2">
+  {{Definition2}}
+ </span> <br/>
  {{/Definition2}}
 </span>"""
+
 definitionAnswerList ="""<span template="Front Side">
  <span asked="Definition" generator='ListElement([DecoratedField("Definition"),DecoratedField("Definition2")])' template="eval">
   {{#Definition}}
-  Definition
-  :
+  <span class="Definition">
+   Definition
+  </span>  :
   <span class="Answer Emphasize Definition">
    {{Definition}}
   </span>  <br/>
   {{/Definition}}
   {{#Definition2}}
-  Definition2
-  :
-  {{Definition2}}
-  <br/>
+  <span class="Definition2">
+   Definition2
+  </span>  :
+  <span class="Definition2">
+   {{Definition2}}
+  </span>  <br/>
   {{/Definition2}}
  </span>
 </span>"""
@@ -103,33 +110,39 @@ definitionQuestionEasy ="""<span asked="Definition" generator="TwoDefsEasy" temp
  <span class="Question Emphasize Definition">
   Definition
  </span> :
- ???
+ <markofquestion/>
  <br/>
  {{/Definition}}
  {{#Definition2}}
- Definition2
- :
- {{Definition2}}
- <br/>
+ <span class="Definition2">
+  Definition2
+ </span> :
+ <span class="Definition2">
+  {{Definition2}}
+ </span> <br/>
  {{/Definition2}}
 </span>"""
 definitionAnswerEasy ="""<span template="Front Side">
  <span asked="Definition" generator="TwoDefsEasy" template="eval">
   {{#Definition}}
-  Definition
-  :
+  <span class="Definition">
+   Definition
+  </span>  :
   <span class="Answer Emphasize Definition">
    {{Definition}}
   </span>  <br/>
   {{/Definition}}
   {{#Definition2}}
-  Definition2
-  :
-  {{Definition2}}
-  <br/>
+  <span class="Definition2">
+   Definition2
+  </span>  :
+  <span class="Definition2">
+   {{Definition2}}
+  </span>  <br/>
   {{/Definition2}}
  </span>
 </span>"""
+
 
 definitionTemplateTable ="""<span asked="Definition" generator="TableFields(['Definition', 'Definition2'])" template="eval"/>"""
 definitionQuestionTable ="""<span asked="Definition" generator="TableFields(['Definition', 'Definition2'])" template="eval">
@@ -141,15 +154,19 @@ definitionQuestionTable ="""<span asked="Definition" generator="TableFields(['De
      Definition
     </span>
    </td>   <td>
-    ???
+    <markofquestion/>
    </td>
   </tr>  {{/Definition}}
   {{#Definition2}}
   <tr>
    <td>
-    Definition2
+    <span class="Definition2">
+     Definition2
+    </span>
    </td>   <td>
-    {{Definition2}}
+    <span class="Definition2">
+     {{Definition2}}
+    </span>
    </td>
   </tr>  {{/Definition2}}
  </table>
@@ -160,7 +177,9 @@ definitionAnswerTable ="""<span template="Front Side">
    {{#Definition}}
    <tr>
     <td>
-     Definition
+     <span class="Definition">
+      Definition
+     </span>
     </td>    <td>
      <span class="Answer Emphasize Definition">
       {{Definition}}
@@ -170,21 +189,24 @@ definitionAnswerTable ="""<span template="Front Side">
    {{#Definition2}}
    <tr>
     <td>
-     Definition2
+     <span class="Definition2">
+      Definition2
+     </span>
     </td>    <td>
-     {{Definition2}}
+     <span class="Definition2">
+      {{Definition2}}
+     </span>
     </td>
    </tr>   {{/Definition2}}
   </table>
  </span>
 </span>"""
-
 # definitionTemplateMiddle ="""<span asked="Definition" generator="TwoDefsMiddle" template="eval"/>"""
 # definitionQuestionMiddle ="""<span asked="Definition" generator="TwoDefsMiddle" template="eval">
 #  {{#Definition}}
 #  Definition
 #  :
-#  ???
+#  <markofquestion/>
 #  {{/Definition}}
 #  {{#Definition2}}
 #  Definition2
@@ -209,24 +231,27 @@ definitionAnswerTable ="""<span template="Front Side">
 
 definitionTemplateHard ="""<span asked="Definition" generator="TwoDefsHard" template="eval"/>"""
 definitionQuestionHard ="""<span asked="Definition" generator="TwoDefsHard" template="eval">
- <span class="Question Emphasize Definitions">
+ <span class="Question Emphasize Definition">
   Definitions
  </span> :
  <ol>
   {{#Definition}}
   <li>
-   ???
+   <markofquestion/>
   </li>  {{/Definition}}
   {{#Definition2}}
   <li>
-   {{Definition2}}
+   <span class="Definition">
+    {{Definition2}}
+   </span>
   </li>  {{/Definition2}}
  </ol>
 </span>"""
 definitionAnswerHard ="""<span template="Front Side">
  <span asked="Definition" generator="TwoDefsHard" template="eval">
-  Definitions
-  :
+  <span class="Definition">
+   Definitions
+  </span>  :
   <ol>
    {{#Definition}}
    <li>
@@ -236,12 +261,14 @@ definitionAnswerHard ="""<span template="Front Side">
    </li>   {{/Definition}}
    {{#Definition2}}
    <li>
-    {{Definition2}}
+    <span class="Definition">
+     {{Definition2}}
+    </span>
    </li>   {{/Definition2}}
   </ol>
  </span>
 </span>"""
 
 singleTest = "<test/>"
-questionMarks = "???"
+questionMarks = "<markofquestion/>"
 

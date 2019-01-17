@@ -1,7 +1,7 @@
 import bs4
 from ...debug import debugFun, debugInit, debug, assertType, assertEqual
 from ..generators import thisClassIsClonable, Gen, genRepr, SingleChild
-from ..list import ListElement
+from ..listGen import ListElement
 
 
 @thisClassIsClonable
@@ -62,30 +62,25 @@ class Table(HTML):
         form is an Empty object.
         
         content -- a list of lines. 
-        If the line is a list, TD is applied to its elements. Otherwise, it is added directly as is. """
+        If the line is a list, TD is applied to its elements and TD to the line.
+        Otherwise, it is added directly as is. """
         table = []
         for content_ in content:
-            debug("Considering {content_}")
             if isinstance(content_, list):
                 line = []
                 for content__ in content_:
-                    debug("Considering {content__}")
                     td = HTML(tag = "td",
                               attrs = tdAttrs,
                               child = content__)
                     debug("adding td {td}") 
                     line.append(td)
                 line = ListElement(elements = line)
+                line = TR(line, attrs=trAttrs)
             else:
-                line=td
-            tr = HTML(tag = "tr",
-                      attrs = trAttrs,
-                      child = line)
-            debug("adding tr {tr}") 
-            table.append(tr)
+                line=content_
+            table.append(line)
         if caption:
             table= [CAPTION(caption)]+table
-        debug("super on {table}") 
         super().__init__("table",
                          child = ListElement(
                              elements = table),
@@ -137,8 +132,15 @@ class UL(_LIST):
 
 class CLASS(HTML):
     def __init__(self, classes, *args, attrs = {}, **kwargs):
-        if isinstance(classes,str):
-            classes=[classes]
-        classes= " ".join([classe.replace(" ","_") for classe in classes])
-        new_attrs = {**attrs, "class":classes}
+        self.classes = classes
+        if isinstance(self.classes,str):
+            self.classes=[self.classes]
+        self.classes= " ".join([classe.replace(" ","_") for classe in self.classes])
+        new_attrs = {**attrs, "class":self.classes}
         super().__init__("span", *args, attrs = new_attrs, **kwargs)
+
+    def _getNormalForm(self):
+        if not self.classes:
+            return self.getChild().getNormalForm()
+        else:
+            return super()._getNormalForm()
