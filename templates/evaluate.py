@@ -1,6 +1,7 @@
 import sys
 from ..utils import standardContainer
 from ..debug import assertType
+from ..generators.constants import TAG
 from ..debug import ExceptionInverse
 from . import templates
 from ..config import evaluate
@@ -102,8 +103,10 @@ def compile_(tag, soup, *, isQuestion = True, model = None, objects = dict(), in
                                hide = hide,
                                hideQuestions = hideQuestions,
                                mandatory = mandatory,
-                               modelName = modelName)
+                               modelName = modelName,
+                               goal = TAG)
         tag.contents = new_tags
+
 
 def compile_eval(*args, **kwargs):
     """Do the compilation, assuming the string is a Python object"""

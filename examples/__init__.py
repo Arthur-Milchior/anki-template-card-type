@@ -12,7 +12,7 @@ from .hacker import hacker
 from .mnemo import mnemo
 from .constant import constant, typedNumber
 from .definition.definition import definition
-from .question import question
+from .question import questionGen
 from .face.face import face
 from .LW import lw
 from .CS import algorithm, variable,commandLine, instruction,dataStructure,problem,noteType

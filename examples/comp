@@ -1,0 +1,10 @@
+Topology: check the answer is rewritten
+Theory too (in toNotation/toName
+Beware: the generator Filled(
+  field = 'Distributive',
+  child = Literal(text = "Boolean algebra",),) request the field(s) {'Distributive'} which is/are absent from your model.
+Beware: the generator Filled(
+  field = 'Modular',
+  child = Literal(text = "Orthomodular lattice",),) request the field(s) {'Modular'} which is/are absent from your model.
+  
+

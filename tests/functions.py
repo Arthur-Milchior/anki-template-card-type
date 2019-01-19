@@ -5,7 +5,7 @@ from ..generators.constants import *
 from ..generators.generators import modelToFields
 from ..templates.soupAndHtml import soupFromTemplate, templateFromSoup
 from ..generators.ensureGen import ensureGen
-from ..templates.templates import tagsToEdit, compile_
+from ..templates.templates import  compile_
 
 
 class TestHTML:
@@ -19,8 +19,6 @@ class TestHTML:
 
     # def test(self):
         soup = soupFromTemplate(self.source)
-        if self.numberOfTagToEdit is not None:
-            assert self.numberOfTagToEdit == len(tagsToEdit(soup))
         #debug("""TestHTML: kwargs is {self.kwargs}""")
         compile_(soup, soup = soup, model = model,recompile=True, **self.kwargs)
         assert assertEqual(templateFromSoup(soup, prettify = True),self.compiled)
@@ -57,7 +55,7 @@ def prettifyGen(*args, **kwargs):
     soup = genToSoup(*args, **kwargs)
     return templateFromSoup(soup)
  
-def compileGen(*args, goal = TEMPLATE_APPLIED, **kwargs):
+def compileGen(*args, goal = LAST_GEN_STEP, **kwargs):
     return testEachStep(*args, goal = goal, **kwargs)
  
 def genToTags(*args, **kwargs):

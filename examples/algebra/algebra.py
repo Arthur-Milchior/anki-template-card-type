@@ -35,7 +35,7 @@ ringCom1 = FOE('/',
                )
 )
 
-ring1 = FOE('commutative',
+ring1 = FOE('Commutative',
             'RingCom1',
             FOE('/',
                 "Division ring",
@@ -75,6 +75,15 @@ ring_like =Empty('Not associative',
 )
 
 times_only = FOE('Not associative',
+                 FOE('/',
+                     FOE('\\',
+                         FOE('0',
+                             'Loop',
+                             'Quasigroup'),
+                         'Right division but no left division, while no associativity ?'
+                     ),
+                     'Magma'
+                 ),
                  [FOE('1',
                       FOE('/',
                           FOE('Commutative',
@@ -92,16 +101,7 @@ times_only = FOE('Not associative',
                       )
                  ),
                   Filled('0',
-                         ' with zero')],
-                 FOE('/',
-                     FOE('\\',
-                         FOE('0',
-                             'Loop',
-                             'Quasigroup'),
-                         'Right division but no left division, while no associativity ?'
-                     ),
-                     'Magma'
-                 )
+                         ' with zero')]
 )
 
 plus_only = Empty('Not associative',
@@ -137,11 +137,11 @@ outer = FOE('*',
              'associative algebra',
              Filled('Commutative',
                     ' commutative'),
-             Filled('Ring-based', ' over a ring')
+             Filled('Ring-base', ' over a ring')
             ],
             FOE('Set',
                 'Group-based',
-                FOE('Ring-based',
+                FOE('Ring-base',
                     FOE('Graduation',
                         'Graduated module',
                         'Module'
@@ -216,34 +216,58 @@ algebra_name = FOE('+',
 algebra_name_formatted = [HTML("h1", child = algebra_name),hr]
 
 inner_function = TableFields(
-    [{"field":"+",
-      "classes":"Definition"},
-    {"field":    "0",
-     "classes":"Definition2"},
-    {"field":    "-",
-     "classes":"Definition3"},
-    {"field":    "*",
-     "classes":"Definition4"},
-    {"field":    "1",
-     "classes":"Definition5"},
-    {"field":    "/",
-     "classes":"Definition6"},
-    {"field":    "\\",
-     "classes":"Definition"},
-    {"field":    "×",
-     "classes":"Definition7"},
-    {"field":    "⋀",
-     "classes":"Definition8"},
-    {"field":    "⋁",
-     "classes":"Definition9"},
-    {"field":    "→",
-     "classes":"Definition"},
-    {"field":    "¬",
-     "classes":"Definition4"},
-    {"field":    "◁",
-     "classes":"Definition5"},
-    ]
+    [
+        {"field":"Ring-base",
+         "label": "Base",
+         "classes": "Definition6"},
+        {"field":"Field-base",
+         "label": "Base",
+         "classes": "Definition6"},
+        {"field":"+",
+         "classes":"Definition"},
+        {"field":    "0",
+         "classes":"Definition2"},
+        {"field":    "-",
+         "classes":"Definition3"},
+        {"field":    "*",
+         "classes":"Definition4"},
+        {"field":    "1",
+         "classes":"Definition5"},
+        {"field":    "/",
+         "classes":"Definition6"},
+        {"field":    "\\",
+         "classes":"Definition"},
+        {"field":    "×",
+         "classes":"Definition7"},
+        {"field":    "⋀",
+         "classes":"Definition8"},
+        {"field":    "⋁",
+         "classes":"Definition9"},
+        {"field":    "→",
+         "classes":"Definition"},
+        {"field":    "¬",
+         "classes":"Definition4"},
+        {"field":    "◁",
+         "classes":"Definition5"},
+    ],
+    name = "Explicit definition",
+    suffix = hr
 )
+
+presentation = ("Relation",
+                PotentiallyNumberedFields(label = Cascade("Relations",
+                                                          QuestionnedField("Generating family"),
+                                                          {"Generating family"}),
+                                          greater = 5,
+                                          fieldPrefix = "Relation",
+                                          suffix = hr))
+definition = Cascade("Definitions",
+                     [presentation,
+                      inner_function],
+                     {"Relations", "Explicit definition"})
+                      
+            
+                
 outer_function =TableFields(
     ["Graduation",
      "Norm",
@@ -259,8 +283,6 @@ properties = TableFields(
      "Commutative",
      "Not associative",
      "Right-distributive",
-     "Ring-base",
-     "Field-base",
      "Complete",
      "Idempotent",
      "Base",
@@ -272,6 +294,9 @@ properties = TableFields(
      "Generating family",
      "Inner product",
      "Cover",
+     "Minimals",
+     "Maximals",
+     "Well-founded"
     ]
 )
 

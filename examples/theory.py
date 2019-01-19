@@ -24,6 +24,6 @@ definition_theory = Cascade("Definition",
                                             suffix=hr),
                              extends,
                              axioms],
-                             cascade = ["Vocabulary","Extendss","Axioms"])
+                             cascade = {"Vocabulary","Extendss","Axioms"})
 
 theory = [header, definition_theory, models, properties, footer]

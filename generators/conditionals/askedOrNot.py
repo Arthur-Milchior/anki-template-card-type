@@ -1,6 +1,6 @@
 from .meta import FieldChild, Dichotomy
 from ..generators import thisClassIsClonable, Gen, genRepr
-from ...debug import debugFun, debug, debugOnlyThisMethod, debugInit,debugOnlyThisInit
+from ...debug import debugFun, debug, debugOnlyThisMethod, debugInit,debugOnlyThisInit, assertType
 from ..listGen import ListElement
 from ...utils import standardContainer
 
@@ -13,12 +13,13 @@ class Asked(FieldChild):
     def _getWithoutRedundance(self):
         return self.cloneSingle(self.getChild().getWithoutRedundance().assumeAsked(self.field))
 
-    def _assumeAsked(self, field, modelName):
-        if self.field == field:
-            child = self.getChild().assumeAsked(field, modelName)
+    def _assumeAsked(self, fields, modelName, changeState):
+        if self.field in fields:
+            child = self.getChild().assumeAsked(fields, modelName, changeState)
             return child
         else:
-            return self.cloneSingle(self.getChild().assumeAsked(field,modelName))
+            return self.cloneSingle(self.getChild().assumeAsked(fields, modelName, changeState))
+        
     def _assumeNotAsked(self, field):
         if self.field == field:
             return None
@@ -28,8 +29,8 @@ class Asked(FieldChild):
     def _noMoreAsk(self):
         return None
         
-    def _applyTag(self, *args, **kwargs):
-        raise ExceptionInverse("Asked._applyTag should not exists")
+    def _createHtml(self, *args, **kwargs):
+        raise ExceptionInverse("Asked._createHtml should not exists")
 
     
 @thisClassIsClonable
@@ -47,20 +48,21 @@ class NotAsked(FieldChild):
     def _noMoreAsk(self):
         return self.getChild().noMoreAsk()
 
-    def _assumeAsked(self, field,modelName):
-        if self.field == field:
+    def _assumeAsked(self, fields, modelName, changeState):
+        if self.field in fields:
             return None
         else:
-            return self.cloneSingle(self.getChild().assumeAsked(field,modelName))
+            return self.cloneSingle(self.getChild().assumeAsked(fields, modelName, changeState))
         
-    def _applyTag(self, *args, **kwargs):
-        raise ExceptionInverse("NotAsked._applyTag should not exists")
+    def _createHtml(self, *args, **kwargs):
+        raise ExceptionInverse("NotAsked._createHtml should not exists")
 
 @thisClassIsClonable
 class Cascade(FieldChild):
     @debugInit
     #@debugOnlyThisInit
     def __init__(self, field, child, cascade, **kwargs):
+        assert assertType(cascade, set)
         self.cascade = cascade
         assert isinstance(field,str)
         assert standardContainer(cascade)
@@ -87,17 +89,14 @@ class Cascade(FieldChild):
             child = child,
             cascade = self.cascade)
         
-    def _applyTag(self, *args, **kwargs):
-        raise ExceptionInverse("NotAsked._applyTag should not exists")
+    def _createHtml(self, *args, **kwargs):
+        raise ExceptionInverse("NotAsked._createHtml should not exists")
 
-    def _assumeAsked(self,field,modelName):
-        if self.field == field:
-            child = self.getChild().assumeAsked(field,modelName)
-            for cascaded in self.cascade:
-                child = child.assumeAsked(cascaded,modelName)
-            return child
+    def _assumeAsked(self, fields, modelName, changeState):
+        if self.field in fields:
+            return self.getChild().assumeAsked(fields|self.cascade, modelName, changeState)
         else:
-            return self.cloneSingle(self.getChild().assumeAsked(field,modelName))
+            return self.cloneSingle(self.getChild().assumeAsked(fields, modelName, changeState))
 
     def _assumeNotAsked(self,field):
         if self.field == field:

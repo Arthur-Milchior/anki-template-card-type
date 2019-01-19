@@ -24,15 +24,15 @@ def getFunctionFromKind(kind):
     return r
 
 
-def tagsToEdit(tag):
-    """List of tag having a "template" attribute with a non-empty value."""
-    #debug("tagsToEdit({tag})",1)
-    assert assertType(tag, [bs4.element.Tag, bs4.BeautifulSoup])
-    ret = tag.find_all(template = (lambda x: x))
-    if tag.attrs.get("template"):
-        ret.insert(0,self)
-    #debug("{ret}",-1)
-    return ret
+# def tagsToEdit(tag):
+#     """List of tag having a "template" attribute with a non-empty value."""
+#     #debug("tagsToEdit({tag})",1)
+#     assert assertType(tag, [bs4.element.Tag, bs4.BeautifulSoup])
+#     ret = tag.find_all(template = (lambda x: x))
+#     if tag.attrs.get("template"):
+#         ret.insert(0,self)
+#     #debug("{ret}",-1)
+#     return ret
 
 def getKind(tag):
     """The kind of template from this tag."""
@@ -49,14 +49,15 @@ def compile_(tag, soup, recompile=False, **kwargs):
 
     """
     assert soup is not None
+    if isinstance(tag, bs4.element.NavigableString):
+        return
     assert assertType(tag, [bs4.element.Tag, bs4.BeautifulSoup])
-    for tag_ in tagsToEdit(tag):
-        if tag_.contents and not recompile:
-            continue
-        else:
-            tag_.contents = []
-            getModule(tag_).compile_(tag = tag_, soup = soup,  **kwargs)
-
+    if "template" in tag.attrs:
+        if not tag.contents or recompile:
+            tag.contents = []
+            getModule(tag).compile_(tag = tag, soup = soup,  **kwargs)
+    for child in tag.children:
+        compile_(child, soup, recompile, **kwargs)
 
 def clean(soup):
     for tag_ in tagsToEdit(soup):

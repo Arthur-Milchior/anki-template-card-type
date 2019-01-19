@@ -23,6 +23,12 @@ automata = [
              "classes":"Definition7"},
             {"field": "Labels",
              "classes":"Definition8"},
+            {"field": "Actions",
+             "classes":"Definition6"},
+            {"field": "Edges",
+             "classes":"Definition6"},
+            {"field": "Labeling function",
+             "classes":"Definition8"},
             {"field": "Clock number",
              "classes":"Definition9"}]),
     footer

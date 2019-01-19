@@ -6,7 +6,7 @@ from ...generators import *
 labelDef= FilledOrEmpty("Conjdef",
                         Cascade("Definitions",
                                 [QuestionnedField("Conjdef",["Conjdef"]),": "],
-                                ["Conjdef"]),
+                                {"Conjdef"}),
                         Filled ("Definition2",
                                 "Equivalently: "))
 

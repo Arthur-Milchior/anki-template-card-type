@@ -4,7 +4,6 @@ from .ensureGen import ensureGen, addTypeToGenerator
 from .constants import *
 import bs4
 import sys
-#from ..templates.soupAndHtml import templateFromSoup
 
 
 def thisClassIsClonable(cl):
@@ -68,7 +67,8 @@ def ensureGenAndSetState(state):
 
 def ensureReturnGen(f):
     def aux_ensureReturnGen(self, *args, **kwargs):
-        return self._ensureGen(f(self, *args, **kwargs))
+        ret = f(self, *args, **kwargs)
+        return self._ensureGen(ret)
     aux_ensureReturnGen.__name__ = f"ensureReturnGen_of_{f.__name__}"
     aux_ensureReturnGen.__qualname__ = f"ensureReturnGen_of_{f.__qualname__}"
     return aux_ensureReturnGen
@@ -124,7 +124,7 @@ class Gen:
                  state = BASIC,
                  locals_ = None,
     ):
-        assert isinstance(localMandatories,set) or assertType(localMandatories,frozenset) 
+        assert assertType(localMandatories,[set,frozenset])
         self.locals_ = locals_
         self.toKeep = toKeep
         self.state = state
@@ -189,7 +189,7 @@ class Gen:
 {space}state = {self.getState()}"""
 
     def _outerEq(self, other):
-        return self.getLocalMandatories() == other.getLocalMandatories()
+        return isinstance(other,Gen) and self.getLocalMandatories() == other.getLocalMandatories()
 
     def __eq__(self,other):
         return self._outerEq(other) and self._innerEq(other)
@@ -219,21 +219,21 @@ class Gen:
     def isEmpty(self):
         return self.isAtLeast(EMPTY)
 
-    #@debugFun
-    def isNormal(self):
-        return self.isAtLeast(NORMAL)
+    # #@debugFun
+    # def isNormal(self):
+    #     return self.isAtLeast(NORMAL)
     
-    #@debugFun
-    def isWithoutRedundancy(self):
-        return self.isAtLeast(WITHOUT_REDUNDANCY)
+    # #@debugFun
+    # def isWithoutRedundancy(self):
+    #     return self.isAtLeast(WITHOUT_REDUNDANCY)
 
-    @debugFun
-    def isModelApplied(self):
-        return self.isAtLeast(MODEL_APPLIED)
+    # @debugFun
+    # def isModelApplied(self):
+    #     return self.isAtLeast(MODEL_APPLIED)
     
-    @debugFun
-    def isTemplateApplied(self):
-        return self.isAtLeast(TEMPLATE_APPLIED)
+    # @debugFun
+    # def isTemplateApplied(self):
+    #     return self.isAtLeast(TEMPLATE_APPLIED)
 
     
     #@debugFun
@@ -370,6 +370,8 @@ class Gen:
         requireInModel/requireAbsentOfModel requirement. It contains
         no Field(foo), or Filled(foo), if foo does not belong to the model.
         """
+        if isinstance(fields,str):
+            fields = {fields}
         missing = self.getLocalMandatories() - fields
         if missing:
             print(f"""Beware: the generator {self} request the field(s) {missing} which is/are absent from your model.""", file=sys.stderr)                    
@@ -377,41 +379,19 @@ class Gen:
     @debugFun
     def _restrictToModel(self,fields):
         return self.callOnChildren(method = "restrictToModel", fields = fields)
-
-    @memoize((lambda asked, hide:(asked,hide)))
-    #@ensureGenAndSetState(TEMPLATE_APPLIED) done in NoMoreAsk
-    #@emptyToEmpty
-    @debugFun
-    def template(self, asked = frozenset(), hide = frozenset(), mandatory = frozenset(),modelName=None):
-        """A copy of self where every Asked(foo) or NotAsked(foo), with foo in
-        hide, is hidden. And everything in asked is asked. Everything else
-        is not hidden.
-        """
-        step = self
-        if mandatory:
-            step = step.addMustBeFilled(mandatory)
-        return step._template(asked = asked, hide = hide, modelName=modelName)
     
+    @ensureGenAndSetState(MANDATORY)
+    @ensureReturnGen
     @debugFun
-    def _template(self, asked = frozenset(), hide = frozenset(),modelName=None):
-        assert standardContainer(asked)
-        assert standardContainer(hide)
-        current = self
-        for name in hide:
-            current = current.removeName(name)
-        for name in asked:
-            current = current.assumeAsked(name,modelName=modelName)
-        return current.noMoreAsk()
-    
-    @debugFun
-    def addMustBeFilled(self, mandatory):
+    def mandatory(self, fields):
         """Self, where the display only occurs if each fields of mandatory are be filled"""
-        current = self
-        for field in mandatory:
-            current = current.assumeFieldFilled(field)
-        for field in mandatory:
+        if isinstance(fields,str):
+            fields = {fields} 
+        current = self.assumeFieldFilled(fields, setMandatoryState = True)
+        for field in fields:
             #EnsureGen of a tuple create a FilledObject.
             current = self._ensureGen((field,current))
+            current.setState(MANDATORY)
         return current
 
     @ensureReturnGen
@@ -420,7 +400,7 @@ class Gen:
         """Ensure that ensureGen is called on each element recursively."""
         self.callOnChildren(method = "force")
 
-    @ensureGenAndSetState(TEMPLATE_APPLIED)
+    @ensureGenAndSetState(ASKED)
     @ensureReturnGen
     @debugFun
     def noMoreAsk(self):
@@ -433,13 +413,19 @@ class Gen:
     #@emptyToEmpty
     @ensureReturnGen
     @debugFun
-    def assumeFieldFilled(self, field):
-        """Remove Empty(field,foo) and Absent(field,foo), replace Filled(field,foo) by foo"""
-        return self._assumeFieldFilled(field)
+    def assumeFieldFilled(self, fields, setMandatoryState = False):
+        """Remove Empty(field,foo) and Absent(field,foo), replace Filled(field,foo) by foo, for each field in fields"""
+        ret = self._assumeFieldFilled(fields, setMandatoryState)
+        if isinstance(fields, str):
+            fields = {fields}
+        if setMandatoryState:
+            ret = self._ensureGen(ret)
+            ret.setState(MANDATORY)
+        return ret
     
     @debugFun
-    def _assumeFieldFilled(self, field):
-        return self.callOnChildren("assumeFieldFilled", field = field)
+    def _assumeFieldFilled(self, fields, setMandatoryState):
+        return self.callOnChildren("assumeFieldFilled", fields = fields, setMandatoryState = setMandatoryState)
     
     #@emptyToEmpty
     @ensureReturnGen
@@ -505,13 +491,23 @@ class Gen:
     #@emptyToEmpty
     @ensureReturnGen
     @debugFun
-    def assumeAsked(self, name,modelName=None):
-        """Assume that name is asked. Thus remove
-        notAsked(name,foo). Replace Asked(name,foo) by foo"""
-        return self._assumeAsked(name,modelName)
+    def assumeAsked(self, fields, modelName=None, changeState = False):
+        """
+        Assume that name is asked. Thus remove notAsked(name,foo). Replace
+        Asked(name,foo) by foo. Recall that this name was asked in
+        this model. Change the state to ASKED if changeState is True.
+        """
+        if isinstance(fields,str):
+            fields = {fields}
+        ret = self._assumeAsked(fields,modelName, changeState)
+        ret = self._ensureGen(ret)
+        if changeState:
+            ret.setState(ASKED)
+        return ret
+    
     @debugFun
-    def _assumeAsked(self, name,modelName):
-        return self.callOnChildren("assumeAsked", name,modelName)
+    def _assumeAsked(self, fields, modelName, changeState):
+        return self.callOnChildren("assumeAsked", fields, modelName, changeState)
         
     #@emptyToEmpty
     @ensureReturnGen
@@ -527,24 +523,30 @@ class Gen:
     #@emptyToEmpty
     @ensureReturnGen
     @debugFun
-    def removeName(self, name):
+    def removeName(self, fields, changeState = False):
         """remove each instance of Asked(name,foo) and NotAsked(name,Foo)"""
-        return self._removeName(name)
+        if isinstance(fields,str):
+            fields = {fields}
+        ret = self._removeName(fields, changeState)
+        ret = self._ensureGen(ret)
+        if changeState:
+            ret.setState(HIDE)
+        return ret
     @debugFun
-    def _removeName(self, name):
-        return self.callOnChildren("removeName", name)
+    def _removeName(self, fields, changeState):
+        return self.callOnChildren("removeName", fields, changeState)
 
     #################
     # Consider the end of compilation
         
     @debugFun
-    def applyTag(self, soup):
+    def createHtml(self, soup):
         """A list of BeautifulSoup object representing this
         generator. 
         """
         self.ensureSingleStep(TAG)
         assert soup is not None
-        new_tag = self._applyTag(soup)
+        new_tag = self._createHtml(soup)
         if new_tag is None:
             ret = []
         elif isinstance(new_tag, list):
@@ -567,6 +569,18 @@ class Gen:
             s+=child.getQuestions()
         return s
     @debugFun
+    def getName(self):
+        return self._getName()
+
+    @debugFun
+    def _getName(self):
+        for child in self.getChildren():
+            n = child.getName()
+            if n is not None:
+                return n
+        return None
+    
+    @debugFun
     def getQuestionToAsk(self,model):
         return self._getQuestionToAsk(model)
 
@@ -579,11 +593,11 @@ class Gen:
         return None
 
     @debugFun
-    def _applyTag(self, soup):
+    def _createHtml(self, soup):
         """A (list of) BeautifulSoup object representing this
         generator. Or None
         """
-        raise ExceptionInverse(f"""_applyTag in gen for: "{self}".""")
+        raise ExceptionInverse(f"""_createHtml in gen for: "{self}".""")
 
     @debugFun
     def compile(self,
@@ -596,7 +610,8 @@ class Gen:
                 hide = None,
                 hideQuestions = None,
                 toPrint = False,
-                modelName=None,
+                modelName = None,
+                template = None
     ):
         """Compile as much as possible given the informations. Or up to goal."""
         if goal is None:
@@ -606,8 +621,12 @@ class Gen:
                 goal = QUESTION_ANSWER
             elif asked is not None or hide is not None or mandatory is not None:
                 goal = MODEL_APPLIED
-            if soup is None:
-                goal = TEMPLATE_APPLIED
+            elif hide is None:
+                goal = HIDE
+            elif asked is None:
+                goal = ASKED
+            elif mandatory is None:
+                goal = MANDATORY
             else :
                 goal = TAG
                 
@@ -642,27 +661,41 @@ class Gen:
         if goal == MODEL_APPLIED:
             return modelRestriction
         
-        if asked is None:
-            asked = frozenset()
         if hide is None:
             hide = frozenset()
-        assert standardContainer(asked)
         assert standardContainer(hide)
+        hidden = modelRestriction.removeName(hide, True)
+        if goal == HIDE:
+            return hidden
+        
+        if asked is None:
+            asked = frozenset()
+        assert standardContainer(asked)
+        askedGen = hidden.assumeAsked(asked, modelName, True).noMoreAsk()
+        if goal == ASKED:
+            return askedGen
+        
         if mandatory is None:
             mandatory = frozenset()
         missingFields=mandatory-fields
         if missingFields:
             raise Exception(f"{missingFields} are mandatory but not in the model.")
-        templateRestriction = modelRestriction.template(asked = asked,
-                                                        hide = hide,
-                                                        mandatory = mandatory,
-                                                        modelName = modelName)
+        mandatoried = askedGen.mandatory(mandatory)
         if toPrint: print(f"""\nWith template(asked = {asked}, hide = {hide}, mandatory = {mandatory}, modelName = {modelName}) applied, "{templateRestriction}".""")
-        if goal == TEMPLATE_APPLIED:
-            return templateRestriction
+        if goal == MANDATORY:
+            return mandatoried
 
+        if template:
+            name = mandatoried.getName()
+            template["name"] = name
+        
         assert soup is not None
-        resultTags = templateRestriction.applyTag(soup = soup)
+        try:
+            resultTags = mandatoried.createHtml(soup = soup)
+        except Exception:
+            print(f"mandatoried is {mandatoried}")
+            raise
+        str(resultTags)
         if goal == TAG:
             return resultTags
         
@@ -734,7 +767,7 @@ class NotNormal(Gen):
     #     raise ExceptionInverse(f"getWithoutRedundance from not normal")
     # def assumeFieldInSet(self, *args, **kwargs):
     #     raise ExceptionInverse(f"assumeFieldInSet from not normal")
-    def _assumeFieldFilled(self, field):
+    def _assumeFieldFilled(self, field, setMandatoryState):
         raise ExceptionInverse(f"_assumeFieldFilled from not normal:{self}")
     def _assumeFieldEmpty(self, field):
         raise ExceptionInverse(f"_assumeFieldEmpty from not normal:{self}")
@@ -748,12 +781,14 @@ class NotNormal(Gen):
 
     def _getQuestions(self):
         raise ExceptionInverse(f"_getQuestions from not normal:{self}")
+    def _getName(self):
+        raise ExceptionInverse(f"_getQuestions from not normal:{self}")
     # def _assumeFieldInSet(self, *args, **kwargs):
     #     raise ExceptionInverse(f"_assumeFieldInSet from not normal")
     def _assumeQuestion(self, *args, **kwargs):
         raise ExceptionInverse(f"_assumeQuestion from not normal:{self}")
-    def _applyTag(self, *args, **kwargs):
-        raise ExceptionInverse(f"_applyTag from not normal:{self}")
+    def _createHtml(self, *args, **kwargs):
+        raise ExceptionInverse(f"_createHtml from not normal:{self}")
     def _restrictToModel(self, *args, **kwargs):
         raise ExceptionInverse(f"_restrictToModel from not normal:{self}")
     

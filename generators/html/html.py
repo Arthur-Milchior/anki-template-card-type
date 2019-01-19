@@ -42,9 +42,9 @@ class HTML(SingleChild):
         return isinstance(other,HTML) and self.tag == other.tag and self.attrs == other.attrs and super()._outerEq(other)
 
     @debugFun
-    def _applyTag(self, soup):
+    def _createHtml(self, soup):
         newtag = soup.new_tag(self.tag, **self.attrs)
-        children = self.getChild().applyTag(soup)
+        children = self.getChild().createHtml(soup)
         assert assertType(children, list)
         for child_tag in children:
             if not (isinstance(child_tag, bs4.element.NavigableString) or isinstance(child_tag, bs4.element.Tag)):

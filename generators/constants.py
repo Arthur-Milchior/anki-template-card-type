@@ -16,33 +16,13 @@ class Step:
     
     #@debugFun
     def nextStep(self):
-        ret = {
-            BASIC: NORMAL,
-            NORMAL: WITHOUT_REDUNDANCY,
-            WITHOUT_REDUNDANCY: QUESTION_ANSWER,
-            QUESTION_ANSWER: MODEL_APPLIED,
-            MODEL_APPLIED: TEMPLATE_APPLIED,
-            TEMPLATE_APPLIED: TAG,
-        }.get(self)
-        if ret is None:
-            raise ExceptionInverse(f"""Next step of {self} does not exists.""")
-        return ret
+        return posToStep[stepToPos[self]+1]
 
     def __hash__(self):
         return self.step
     
-    def previousStep(step):
-        ret = {
-            TAG: TEMPLATE_APPLIED,
-            TEMPLATE_APPLIED: MODEL_APPLIED,
-            MODEL_APPLIED: QUESTION_ANSWER,
-            QUESTION_ANSWER: WITHOUT_REDUNDANCY,
-            WITHOUT_REDUNDANCY: NORMAL,
-            NORMAL: BASIC,
-        }.get(step)
-        if ret is None:
-            raise ExceptionInverse(f"""Previous step of {step} does not exists.""")
-        return ret
+    def previousStep(self):
+        return posToStep[stepToPos[self]-1]
     
     def union(self, other):
         return max(self,other)
@@ -57,7 +37,15 @@ NORMAL = Step(1, "NORMAL")
 WITHOUT_REDUNDANCY = Step(2, "WITHOUT_REDUNDANCY")
 QUESTION_ANSWER = Step(3, "QUESTION_ANSWER")
 MODEL_APPLIED = Step(4, "MODEL_APPLIED")
-TEMPLATE_APPLIED = Step(5, "TEMPLATE_APPLIED")
-QUESTIONS = Step(6, "QUESTIONS")
-TAG = Step(7, "TAG")#used for debugging
-EMPTY = Step(10, "EMPTY")
+HIDE = Step(5, "HIDE")
+ASKED = Step(6, "ASKED")
+MANDATORY = Step(7, "MANDATORY")
+#QUESTIONS = Step(8, "QUESTIONS")
+LAST_GEN_STEP = MANDATORY
+
+TAG = Step(8, "TAG")#used for debugging
+EMPTY = Step(100, "EMPTY")
+l = [BASIC,NORMAL, WITHOUT_REDUNDANCY, QUESTION_ANSWER, MODEL_APPLIED, HIDE, ASKED, MANDATORY#, QUESTIONS
+     , TAG]
+posToStep = {i:l[i] for i in range(len(l))}
+stepToPos = {l[i]:i for i in range(len(l))}

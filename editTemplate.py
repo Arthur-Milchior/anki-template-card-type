@@ -14,8 +14,6 @@ from .templates.soupAndHtml import templateFromSoup, soupFromTemplate
 from .templates.templates import clean, compile_
 
 
-    
-
 def _templateTagAddText(templateTag,soup,
                         isQuestion,
                         model,
@@ -29,9 +27,6 @@ def _templateTagAddText(templateTag,soup,
             return
         else:
             templateTag.contents = []
-
-
-
 
     
 
@@ -83,7 +78,6 @@ def compileModel(model, objects = objects, action = "Template",  prettify = True
             else:
                 assert action in {"Template","ReTemplate"}
                 frontHtml=templateObject[questionKey]
-                print(f"Considering {action} on model {model['name']}, template {templateObject['name']}, Question side")
                 try:
                     questionSoup, questionText = processIfRequired(templateObject, questionKey, action = action, isQuestion = True, model = model, objects = objects, prettify = prettify)
                     if questionText:
@@ -94,7 +88,6 @@ def compileModel(model, objects = objects, action = "Template",  prettify = True
                     traceback.print_exc(file=sys.stderr)
                     print("\n\n\n")
                     break
-                print(f"Considering {action} on model {model['name']}, template {templateObject['name']}, answer side")
                 try:
                     answerSoup, answerText = processIfRequired(templateObject, answerKey, action = action, isQuestion = False, model = model, objects = objects, FrontHtml = frontHtml, prettify = prettify)
                     if answerText: 

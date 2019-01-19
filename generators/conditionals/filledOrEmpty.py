@@ -1,6 +1,7 @@
 import bs4
+from ..constants import MANDATORY
 from ..generators import thisClassIsClonable
-from ...debug import debugFun, debug, debugOnlyThisMethod
+from ...debug import debugFun, debug, debugOnlyThisMethod, assertType
 from .meta import FieldChild, Dichotomy
 from ..generators import addTypeToGenerator
 from ..leaf import emptyGen
@@ -9,11 +10,11 @@ from ..listGen import ListElement
 @thisClassIsClonable
 class Empty(FieldChild):
     """The class which expands differently in function of the question/answer side."""
-    def _assumeFieldFilled(self, field):
-        if self.field == field:
+    def _assumeFieldFilled(self, fields, setMandatoryState):
+        if self.field in fields:
             return emptyGen
         else:
-            return self.cloneSingle(self.getChild().assumeFieldFilled(field))
+            return self.cloneSingle(self.getChild().assumeFieldFilled(fields, setMandatoryState))
         
     def _assumeFieldEmpty(self, field):
         if self.field == field:
@@ -38,20 +39,22 @@ class Empty(FieldChild):
         child =child.assumeFieldEmpty(self.field)
         return self.cloneSingle(child)
 
-    def _applyTag(self, soup):
+    def _createHtml(self, soup):
+        childHtml = self.getChild().createHtml(soup)
+        assert assertType(childHtml,list)
         return ([bs4.NavigableString(f"{{{{^{self.field}}}}}")]+
-                self.child.applyTag(soup)+
+                childHtml+
                 [bs4.NavigableString(f"{{{{/{self.field}}}}}")])
 
         
 @thisClassIsClonable
 class Filled(FieldChild):
     """The class which expands differently in function of the question/answer side."""
-    def _assumeFieldFilled(self, field):
-      if self.field == field:
-          return self.getChild().assumeFieldFilled(field)
+    def _assumeFieldFilled(self, fields, setMandatoryState):
+      if self.field in fields:
+          return self.getChild().assumeFieldFilled(fields, setMandatoryState)
       else:
-          return self.cloneSingle(self.getChild().assumeFieldFilled(field))
+          return self.cloneSingle(self.getChild().assumeFieldFilled(fields, setMandatoryState))
         
     def _assumeFieldEmpty(self, field):
         if self.field == field:
@@ -67,7 +70,7 @@ class Filled(FieldChild):
          
     def _getWithoutRedundance(self):
         child = self.getChild().getWithoutRedundance()
-        child = child.assumeFieldFilled(self.field)
+        child = child.assumeFieldFilled(self.field, setMandatoryState = False)
         return self.cloneSingle(child)
         
     @debugFun
@@ -78,9 +81,11 @@ class Filled(FieldChild):
         else:
             return self.cloneSingle(self.getChild().restrictToModel(fields))
         
-    def _applyTag(self, soup):
+    def _createHtml(self, soup):
+        child = self.getChild().createHtml(soup)
+        assert assertType(child,list)
         return ([bs4.NavigableString(f"{{{{#{self.field}}}}}")]+
-                self.child.applyTag(soup)+
+                child+
                 [bs4.NavigableString(f"{{{{/{self.field}}}}}")])
 
 def tupleToFilled(tup):

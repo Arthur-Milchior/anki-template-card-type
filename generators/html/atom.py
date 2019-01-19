@@ -10,6 +10,9 @@ class HTMLAtom(Leaf):
                  attrs={},
                  **kwargs):
         assert assertType(tag,str)
+        for key in attrs:
+            assert assertType(key,str)
+            assert assertType(attrs[key],str)
         self.tag = tag
         self.attrs = attrs
         super().__init__(**kwargs)
@@ -29,9 +32,11 @@ class HTMLAtom(Leaf):
         return isinstance(other,HTMLAtom) and self.tag == other.tag and self.attrs == other.attrs
 
     @debugFun
-    def _applyTag(self, soup):
+    def _createHtml(self, soup):
         newtag = soup.new_tag(self.tag, **self.attrs)
         return newtag
+
+    
 br = HTMLAtom("br")
 hr = HTMLAtom("hr")
 class Image(HTMLAtom):

@@ -10,7 +10,7 @@ class Question(SingleChild):
         return self.getChild().assumeQuestion(changeStep = changeStep)
     def _assumeAnswer(self, changeStep = False):
         return None
-    def _applyTag(self, *args, **kwargs):
+    def _createHtml(self, *args, **kwargs):
         raise ExceptionInverse("At this stage, Question must be removed")
     def _getWithoutRedundance(self):
         return self.cloneSingle(self.getChild().assumeQuestion().getWithoutRedundance())
@@ -23,7 +23,7 @@ class Answer(SingleChild):
         return None
     def _assumeAnswer(self, changeStep = False):
         return self.getChild().assumeAnswer(changeStep = changeStep)
-    def _applyTag(self, *args, **kwargs):
+    def _createHtml(self, *args, **kwargs):
         raise ExceptionInverse("At this stage, Answer must be removed")
     def _getWithoutRedundance(self):
         return self.cloneSingle(self.getChild().assumeAnswer().getWithoutRedundance())

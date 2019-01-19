@@ -19,7 +19,7 @@ def _name_extra(i=""):
 def localFun(i=""):
     return {"child":LI([QuestionnedField(f"Name{i}",classes=["Name"]),
                         NotAsked(f"Name{i}",_name_extra(i))]),
-            "questions":f"Name{i}",
+            "questions":{f"Name{i}"},
             "filledFields":[f"Name{i}"]}
 
 _names = ["Names: ",
@@ -35,7 +35,7 @@ name_s= Filled("Name",
                                                _names,
                                                singleName),
                            field="Names",
-                           cascade=["Name","Name2","Name3","Name4"]),
+                           cascade={"Name","Name2","Name3","Name4"}),
                    hr])
 names = ("Name2",[short_header,_names, footer])
 

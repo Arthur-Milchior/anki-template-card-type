@@ -9,7 +9,8 @@ from ..ensureGen import ensureGen
 from ..generators import NotNormal, Gen, genRepr
 from ..html.html import TR, TD, HTML, LI, Table
 from ..html.atom import br
-from ..leaf import Field, ToAsk
+from ..leaf import Field
+from ..nonprinting import ToAsk
 from ..listGen import MultipleChildren, ListElement
 from .fields import QuestionnedField, Label, DecoratedField
 
@@ -43,7 +44,7 @@ class ListFields(ListElement):
         self.globalSep = globalSep or (lambda x:None)
         elements = []
         seen = []
-        toCascade = []
+        toCascade = set()
         for field in self.originalFields:
             #print(f"Considering field {field}")
             if seen:
@@ -74,7 +75,7 @@ class ListFields(ListElement):
             if hideFields:
                 processedField = HideInSomeQuestions(hideFields,processedField)
             elements.append(processedField)
-            toCascade += toCascadeLocal
+            toCascade |= toCascadeLocal
             
         ret = self.globalFun(elements)
         ret = [self.prefix,ret,self.suffix]
@@ -177,16 +178,21 @@ class TableFields(ListFields):
             # The whole line
             tr = TR(child = trChild,
                     attrs = trAttrs) 
-            defaultSet = [f"""{fieldInputDic["field"]}{i}""" for i in [""]+list(range(2,self.greater+1))]
+            defaultList = [f"""{fieldInputDic["field"]}{i}""" for i in [""]+list(range(2,self.greater+1))]
+            defaultSet = set(defaultList)
             return {"child": tr,
                     "questions": fieldInputDic.get("questions",defaultSet),
-                    "filledFields": fieldInputDic.get("filledFields",defaultSet),
+                    "filledFields": fieldInputDic.get("filledFields",defaultList),
                     "hideInSomeQuestion": fieldInputDic.get("hideInSomeQuestion",frozenset())}
         @debugFun
         def globalFun(lines):
             ret=Table(lines, attrs = attrs, caption=label, trAttrs = trAttrs, tdAttrs=tdAttrs)
             return ret
-        super().__init__(self.fields, localFun = localFun, globalFun = globalFun, name = name,**kwargs)
+        super().__init__(self.fields,
+                         localFun = localFun,
+                         globalFun = globalFun,
+                         name = name,
+                         **kwargs)
 
     def _repr(self):
         t= f"""TableFields({self.fields},"""
@@ -303,7 +309,7 @@ no other elements are present, and show only the first element."""
                           nf,
                           qu)
         super().__init__(child=foe,
-                         cascade=[fieldPrefix],
+                         cascade={fieldPrefix},
                          field=fieldPrefix+"s",
                          **kwargs)
 

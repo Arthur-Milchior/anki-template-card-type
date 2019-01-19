@@ -65,11 +65,13 @@ twoQuestionsListed = ListElement([DecoratedField('Definition1', emphasize = Fals
 asked = Asked(field = "asked", child = "is asked")
 notAsked = NotAsked(field = "asked", child = "is not asked")
 cascadeUseless = Cascade(field ="asked",
-                         cascade = ["cascaded"],
+                         cascade = {"cascaded"},
                          child = AskedOrNot("asked",
                                             "Asked is asked",
                                             "Asked is not asked"))
-cascade = Cascade(field ="asked", cascade = ["cascaded"], child = AskedOrNot("cascaded", "Cascaded is asked","Cascaded is not asked"))
+cascade = Cascade(field ="asked",
+                  cascade = {"cascaded"},
+                  child = AskedOrNot("cascaded", "Cascaded is asked","Cascaded is not asked"))
 
 ### QuestionOrAnswer
 qoa = QuestionOrAnswer(question = "question side", answer = "answer side")
@@ -117,7 +119,8 @@ twoOfTwo = AtLeastTwoFields(child = "At least two",
 atLeastTwoQuestion = AtLeastTwoFields(child = "At least two",
                                     fields = (["Question", "Question2", "Question3"]))
 atLeastTwoDefinition = AtLeastTwoFields(child = "At least two",
-                                    fields = (["Definition", "Definition2", "Definition3"]))
+                                        fields = (["Definition4", "Definition2", "Definition3"]),
+                                        asked = frozenset())
 
 ### Requirement
 requireQuestion =Filled(field = "Question",

@@ -36,8 +36,6 @@ def templateFromSoup(soup, prettify = True):
         #text = soup.prettify()
     else:
         debug("Using str")
-        return str(soup)
-    #     text = str(soup)
     #     debug("""soup as text is "{text}".""")
     # assert prettify or "\n" not in text
     # text= removeEnclose(text)

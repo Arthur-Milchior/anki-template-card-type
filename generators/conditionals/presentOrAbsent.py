@@ -25,11 +25,11 @@ class Absent(FieldChild):
         else:
             return emptyGen
         
-    def _assumeFieldFilled(self, field):
-        if self.field == field:
+    def _assumeFieldFilled(self, fields, setMandatoryState):
+        if self.field in fields:
             return emptyGen
         else:
-            return self.assumeFieldFilled(field)
+            return self.assumeFieldFilled(fields, setMandatoryState)
          
     def _getWithoutRedundance(self):
         child = self.getChild().getWithoutRedundance()
@@ -44,7 +44,7 @@ class Absent(FieldChild):
             return self.getChild().restrictToModel(fields)
         
 
-    def _applyTag(self, soup):
+    def _createHtml(self, soup):
         assert False
 
 @thisClassIsClonable
@@ -74,7 +74,7 @@ class Present(FieldChild):
         else:
             return None
         
-    def _applyTag(self, soup):
+    def _createHtml(self, soup):
         assert False
 # class PresentOrAbsent(ListElement):
 #     def __init__(self, field, presentCase = None, absentCase = None,  **kwargs):

@@ -15,17 +15,18 @@ class FieldChild(SingleChild):
             field = field.field
         checkField(field)
         self.field = field
-        assert assertType (self.field, str)
         super().__init__(child,
                          localMandatories = {field} if isMandatory else frozenset(),
                          **kwargs)
+        assert assertType (self.field, str)
         
-    def _removeName(self, field):
-        checkField(field)
-        if self.field == field:
+    def _removeName(self, fields, changeState):
+        for field in fields:
+            checkField(field)
+        if self.field in fields:
             return None
         else:
-            return self.cloneSingle(self.getChild().removeName(field))
+            return self.cloneSingle(self.getChild().removeName(fields, changeState))
         
     def _cloneSingle(self, child):
         return self.classToClone(

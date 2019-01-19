@@ -81,10 +81,10 @@ class ListElement(MultipleChildren):
         return self.elements
 
     @debugFun
-    def _applyTag(self, *args, **kwargs):
+    def _createHtml(self, *args, **kwargs):
         l = []
         for child in self.elements:
-            l+= child.applyTag(*args, **kwargs)
+            l+= child.createHtml(*args, **kwargs)
         return l
             
 addTypeToGenerator(list,ListElement)

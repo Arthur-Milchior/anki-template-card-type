@@ -6,18 +6,19 @@ from ..generators import *
 from ..debug import startDebug, endDebug, debug, assertEqual
 from .data import *
 from ..templates.soupAndHtml import templateFromSoup, soupFromTemplate
-from ..templates.templates import tagsToEdit, compile_
+from ..templates.templates import  compile_
 from ..user_files import *
 
 # tmp = '\n <span name="test" template="conf"/>\n'
 # soup = soupFromTemplate(tmp)
-# tags = tagsToEdit(soup)
 # print (f"tags are {tags}")
 
 #print(prettifyGen(NumberedFields('Definition', 2),toPrint=True))
 labelDef=[Label("Definition",["Definition"]),
           FilledOrEmpty("Conjdef",
-                      Cascade("Definitions",[QuestionnedField("Conjdef",["Conjdef"]),": "],["Conjdef"]),
+                      Cascade("Definitions",
+                              [QuestionnedField("Conjdef",["Conjdef"]),": "],
+                              {"Conjdef"}),
                       Filled ("Definition2","Equivalently: "))
 ]
 definitions = NumberedFields(fieldPrefix="Definition",

@@ -52,7 +52,7 @@ def bigSide(side):
                       l,
                       CLASS("Error",f"Error, {side}0 is empty"))
     return Cascade(field=f"{side}s",
-                   cascade=[f"{side}{i}" for i in range(4)],
+                   cascade={f"{side}{i}" for i in range(4)},
                    child= foe)
 greater = bigSide("Greater")
 smaller = bigSide("Smaller")

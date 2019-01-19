@@ -7,6 +7,6 @@ _namesNotationsDenotedBy = Cascade(child=[name_s,
                                           _notations,
                                           DecoratedField('Representation',suffix=hr),
                                           DecoratedField('Denoted by',suffix=hr)],
-                                   cascade = ["Names","Notations","Representation","Denotedy by"],
+                                   cascade = {"Names","Notations","Representation","Denotedy by"},
                                    field="NamesNotationsDenotedBy")
 namesNotationsDenotedBy = [short_header,_namesNotationsDenotedBy,footer]

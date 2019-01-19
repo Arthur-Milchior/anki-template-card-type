@@ -11,6 +11,7 @@ def runBrowser(browser, action, note):
         return runBrowserNote(browser,action)
     else:
         return runBrowserCard(browser,action)
+    
 def runBrowserNote(browser, action):
     mw.checkpoint("Change template on notes")
     mw.progress.start()
@@ -52,7 +53,7 @@ def setupMenu(browser):
     a = QAction("ReTemplate Card", browser)
     a.triggered.connect(lambda : runBrowser(browser,"ReTemplate",False))
     browser.form.menuEdit.addAction(a)
-    a.setShortcut(QKeySequence("Ctrl+T"))
+    a.setShortcut(QKeySequence("Ctrl+Shift+T"))
     
     a = QAction("Template Note", browser)
     a.setShortcut(QKeySequence("Ctrl+Alt+T"))
