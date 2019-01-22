@@ -11,6 +11,5 @@ except:
     st = "\n".join(reversed(str(traceback.format_exc()).split("\n")))
     print(st)
     os._exit(1)
-    
-from . import browser
 
+from . import browser

@@ -15,7 +15,7 @@ def endDebug():
     global shouldDebug
     shouldDebug = False
     print("Debug ended")
-    
+
 indentation = 0
 def debug(text, indentToAdd=0, force = False, level =1):
     if not shouldDebug and not force:
