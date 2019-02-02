@@ -13,7 +13,6 @@ from ..user_files import *
 # soup = soupFromTemplate(tmp)
 # print (f"tags are {tags}")
 
-#print(prettifyGen(NumberedFields('Definition', 2),toPrint=True))
 labelDef=[Label("Definition",["Definition"]),
           FilledOrEmpty("Conjdef",
                       Cascade("Definitions",
@@ -50,10 +49,107 @@ ex=('Example',
 na=NotAsked(
       field = 'asked',
       child = Literal(text = "Asked is not asked",),)
-# compileGen(na, asked=frozenset(),toPrint=True)
+labelDef= FilledOrEmpty("Conjdef",
+                        Cascade("Definitions",
+                                QuestionnedField("Conjdef",["Conjdef"]),
+                                {"Conjdef"}),
+                        Filled ("Definition2",
+                                "Equivalently"))
+definitions = ("Definition",
+               [NumberedFields(fieldPrefix = "Definition",
+                                          greater = 3,
+                                          label = labelDef,
+                                          #infix = ""
+ ),
+                hr])
+label = Label(label = labelDef,
+      fields =["Definitions","Definition1","Definition2"],
+      classes = "test class")
+alo = AtLeastOneField(child = CLASS(["Definitions","Definition1","Definition2"],labelDef),
+                      fields = ["Definitions"],
+                      asked = True,
+                      otherwise = labelDef)
+# compileGen(
+#     NotAsked(
+#         field = 'Definitions',
+#         child = Cascade(
+#             field = 'Definitions',
+#             cascade = {'Conjdef'},
+#             child =NotAsked(
+#                 field = 'Conjdef',
+#                 child = Field(field = "Conjdef",
+#                               useClasses = False,
+#                 ),
+#             ),
+#         )
+#     ),
+#     fields=frozenset({"Conjdef","Definition","Definition2","Definition3"}),toPrint=True)
 # print("""
+#raise Exception
 
-
+"""ListElement([
+  Asked(
+    field = 'Definitions',
+    child = HTML("span",
+      attrs = {'class': 'Definitions Definition1 Definition2'},
+      child = ListElement([
+        Filled(
+          field = 'Conjdef',
+          child = Cascade(
+            field = 'Definitions',
+            cascade = {'Conjdef'},
+            child = ListElement([
+              Asked(
+                field = 'Conjdef',
+                child = ListElement([
+                  Question(
+                    child = HTMLAtom("markofquestion",),),
+                  Answer(
+                    child = HTML("span",
+                      attrs = {'class': 'Answer Emphasize Conjdef'},
+                      child = Field(field = "Conjdef",
+                        useClasses = False,),),)],),),
+              NotAsked(
+                field = 'Conjdef',
+                child = HTML("span",
+                  attrs = {'class': 'Conjdef'},
+                  child = Field(field = "Conjdef",
+                    useClasses = False,),),)],),),),
+        Empty(
+          field = 'Conjdef',
+          child = Filled(
+            field = 'Definition2',
+            child = Literal(text = "Equivalently",),),)],),),),
+  NotAsked(
+    field = 'Definitions',
+    child = ListElement([
+      Filled(
+        field = 'Conjdef',
+        child = Cascade(
+          field = 'Definitions',
+          cascade = {'Conjdef'},
+          child = ListElement([
+            Asked(
+              field = 'Conjdef',
+              child = ListElement([
+                Question(
+                  child = HTMLAtom("markofquestion",),),
+                Answer(
+                  child = HTML("span",
+                    attrs = {'class': 'Answer Emphasize Conjdef'},
+                    child = Field(field = "Conjdef",
+                      useClasses = False,),),)],),),
+            NotAsked(
+              field = 'Conjdef',
+              child = HTML("span",
+                attrs = {'class': 'Conjdef'},
+                child = Field(field = "Conjdef",
+                  useClasses = False,),),)],),),),
+      Empty(
+        field = 'Conjdef',
+        child = Filled(
+          field = 'Definition2',
+          child = Literal(text = "Equivalently",),),)],),)],)"""
 
 
 

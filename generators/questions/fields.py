@@ -17,7 +17,7 @@ class QuestionnedField(AskedOrNot):
 
     field is either a field name, or a Field object. It becomes the name of the Branch.
     """
-    
+
     def __init__(self,
                  field,
                  classes = None,
@@ -39,7 +39,7 @@ class QuestionnedField(AskedOrNot):
             assert assertType(field,Field)
             self.field = field
             self.fieldName = field.field
-            
+
         # Setting the class
         self.classes = classes
         if self.classes is None:
@@ -50,25 +50,25 @@ class QuestionnedField(AskedOrNot):
             self.classes = []
         self.emphasize = ["Answer", "Emphasize"] if emphasize else []
         self.classesAsked = self.emphasize + self.classes
-        
+
         # Setting the child
         self.child = child
         if self.child is None:
             self.child = Field(field,
                                isMandatory=isMandatory,
                                useClasses = False)
-        
+
         self.asked = QuestionOrAnswer(markOfQuestion,
                                       CLASS(self.classesAsked,
                                             self.child))
         self.notAsked = CLASS(self.classes,
                               self.child)
-        
+
         super().__init__(self.fieldName,
                          self.asked,
                          self.notAsked,
                          **kwargs)
-        
+
     # def __repr__(self):
     #     return f"""QuestionnedField({self.field}, {self.questionAsked}, {self.default})."""
 
@@ -87,7 +87,7 @@ class Label(QuestionOrAnswer):
                  alwaysUseClasses = True):
         # Classes
         self.classes = classes
-        if self.classes is None:
+        if self.classes is None and isinstance(label,str) :
                 self.classes = [label]
         if isinstance(self.classes,str):
             self.classes=[self.classes]
@@ -99,13 +99,13 @@ class Label(QuestionOrAnswer):
             notEmphasized = CLASS(self.classes,label)
         else:
             notEmphasized = label
-        
+
         questionSide = AtLeastOneField(child = emphasized,
                                        fields = fields,
                                        otherwise = notEmphasized,
                                        asked = True)
         super().__init__(questionSide,notEmphasized)
-        
+
 class DecoratedField(Filled):
     """A questionned field, preceded by some way to ask the question.
     If there is no question, nothing is printed.
@@ -155,7 +155,7 @@ class DecoratedField(Filled):
                              classes = self.classes)
         else:
             labelGen = self.label
-            
+
         super().__init__(field = self.field.field,
                          child = [
                              self.prefix,
