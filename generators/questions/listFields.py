@@ -136,6 +136,7 @@ class TableFields(ListFields):
         tdLabelAttrs = {**tdLabelAttrs,** tdAttrs}
         tdFieldAttrs = {**tdFieldAttrs,** tdAttrs}
         def localFun(fieldInputDic):
+            ret = dict()
             # Ensuring the input is a dic
             if isinstance(fieldInputDic,str):
                 fieldInputDic = {"field":fieldInputDic}
@@ -163,27 +164,43 @@ class TableFields(ListFields):
 
             # The fields
             def tdField(i=""):
+                fieldName_ = f"{fieldName}{i}"
                 if "function" in fieldInputDic:
                     child = fieldInputDic["function"](i)
                 else:
-                    child = None
-                questionnedField = QuestionnedField(f"{fieldName}{i}",
+                    child = Field(fieldName_,
+                                  isMandatory=isMandatory,
+                                  useClasses = False)
+                if "emptyCase" in fieldInputDic:
+                    child = FilledOrEmpty(fieldName_,
+                                          child,
+                                          fieldInputDic["emptyCase"])
+                questionnedField = QuestionnedField(fieldName_,
+                                                    child = child,
                                                     isMandatory = isMandatory,
                                                     useClasses = useClasses,
-                                                    child = child,
                                                     classes = classes)
                 return TD(child = questionnedField, attrs = tdFieldAttrs)
             trChild = [tdLabel,tdField()]+[tdField(i) for i in range(2,self.greater+1)]
 
             # The whole line
-            tr = TR(child = trChild,
-                    attrs = trAttrs)
+            ret["child"] = TR(child = trChild,
+                              attrs = trAttrs)
             defaultList = [f"""{fieldInputDic["field"]}{i}""" for i in [""]+list(range(2,self.greater+1))]
             defaultSet = set(defaultList)
-            return {"child": tr,
-                    "questions": fieldInputDic.get("questions",defaultSet),
-                    "filledFields": fieldInputDic.get("filledFields",defaultList),
-                    "hideInSomeQuestion": fieldInputDic.get("hideInSomeQuestion",frozenset())}
+            ret["questions"]= fieldInputDic.get("questions",defaultSet)
+
+            # filledFields
+            if "filledFields" in fieldInputDic:
+                ret["filledFields"] = fieldInputDic["filledFields"]
+            elif "emptyCase" in fieldInputDic:
+                ret["filledFields"] = []
+            else:
+                ret["filledFields"] = defaultList
+
+            ret["hideInSomeQuestion"] = fieldInputDic.get("hideInSomeQuestion",frozenset())
+            return ret
+
         @debugFun
         def globalFun(lines):
             ret=Table(lines, attrs = attrs, caption=label, trAttrs = trAttrs, tdAttrs=tdAttrs)

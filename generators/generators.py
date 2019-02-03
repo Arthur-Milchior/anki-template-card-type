@@ -11,6 +11,12 @@ def thisClassIsClonable(cl):
     return cl
 
 def memoize(computeKey = (lambda:None)):
+    """Decorator:
+
+    It adds a dictionnary "versions" to self.
+    versions[function_name][computeKey(*args,**kwargs)] memoize the outputs of function_name on (*args,**kwargs).
+    If computeKey returns the same value for many input, the function is computted a single time.
+    """
     CURRENTLY_COMPUTED = ("CURRENTLY COMPUTED",)
     def actualArobase(fun):
         if not optimize:
@@ -23,9 +29,10 @@ def memoize(computeKey = (lambda:None)):
             if fname not in self.versions:
                 self.versions[fname] = dict()
             key = computeKey(*args, **kwargs)
+            debug(f"Key is {key}")
             if key not in self.versions:
                 debug("Computation is done explicitly")
-                self.versions[fname][key] = ("CURRENTLY COMPUTED",)
+                self.versions[fname][key] = CURRENTLY_COMPUTED
                 self.versions[fname][key] = fun(self, *args, **kwargs)
             else:
                 if self.versions[fname][key] == CURRENTLY_COMPUTED:
@@ -380,6 +387,7 @@ class Gen:
     def _restrictToModel(self,fields):
         return self.callOnChildren(method = "restrictToModel", fields = fields)
 
+    @memoize(lambda fields: fields)
     @ensureGenAndSetState(MANDATORY)
     @ensureReturnGen
     @debugFun
@@ -394,12 +402,14 @@ class Gen:
             current.setState(MANDATORY)
         return current
 
+    @memoize()
     @ensureReturnGen
     @debugFun
     def force(self):
         """Ensure that ensureGen is called on each element recursively."""
         self.callOnChildren(method = "force")
 
+    @memoize()
     @ensureGenAndSetState(ASKED)
     @ensureReturnGen
     @debugFun
@@ -458,6 +468,7 @@ class Gen:
         return self.callOnChildren("assumeFieldAbsent", field = field)
 
     #@emptyToEmpty
+    @memoize((lambda changeStep = False:None))
     @ensureReturnGen
     @debugFun
     def assumeQuestion(self, changeStep = False):
@@ -474,6 +485,7 @@ class Gen:
         return self.callOnChildren("assumeQuestion", changeStep = changeStep)
 
     #@emptyToEmpty
+    @memoize((lambda changeStep = False:None))
     @ensureReturnGen
     @debugFun
     def assumeAnswer(self, changeStep = False):
@@ -489,6 +501,7 @@ class Gen:
         return self.callOnChildren("assumeAnswer", changeStep = changeStep)
 
     #@emptyToEmpty
+    @memoize((lambda fields, modelName=None, changeState = False:fields))
     @ensureReturnGen
     @debugFun
     def assumeAsked(self, fields, modelName=None, changeState = False):
@@ -498,7 +511,7 @@ class Gen:
         this model. Change the state to ASKED if changeState is True.
         """
         if isinstance(fields,str):
-            fields = {fields}
+            fields = frozenset({fields})
         ret = self._assumeAsked(fields,modelName, changeState)
         ret = self._ensureGen(ret)
         if changeState:
@@ -521,6 +534,7 @@ class Gen:
         return self.callOnChildren("assumeNotAsked", name)
 
     #@emptyToEmpty
+    @memoize((lambda fields, changeState=False:fields))
     @ensureReturnGen
     @debugFun
     def removeName(self, fields, changeState = False):
@@ -539,6 +553,7 @@ class Gen:
     #################
     # Consider the end of compilation
 
+    @memoize((lambda soup:None))
     @debugFun
     def createHtml(self, soup):
         """A list of BeautifulSoup object representing this
@@ -599,6 +614,19 @@ class Gen:
         """
         raise ExceptionInverse(f"""_createHtml in gen for: "{self}".""")
 
+    @memoize((lambda
+              soup = None,
+              goal = None,
+              fields = None,
+              isQuestion = None,
+              asked = None,
+              mandatory = None,
+              hide = None,
+              hideQuestions = None,
+              toPrint = False,
+              modelName = None,
+              template = None:
+              (goal,fields,isQuestion,asked,mandatory,hide,hideQuestions)))
     @debugFun
     def compile(self,
                 soup = None,

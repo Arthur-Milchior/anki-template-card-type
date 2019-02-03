@@ -28,7 +28,7 @@ assert literalTest != literalFoo
 stringFoo = ensureGen("foo")
 assert assertEqual(stringFoo, literalFoo)
 
-### Field 
+### Field
 assert assertEqual(fieldFoo_, fieldFooClassless)
 assert fieldFooClassless  !=  Literal("test")
 assert fieldFooClassless !=  Literal("{{foo}}")
@@ -36,7 +36,7 @@ assert fieldFooClassless != fieldFooClass
 assert assertEqual(fieldFooClassless, Field('foo',useClasses=False))
 assert assertEqual(fieldFooClassless, fieldFooClassless.getNormalForm())
 assert assertEqual(fieldFooClassless, fieldFooClassless.getWithoutRedundance())
-assert assertEqual(compileGen(fieldFooClass, fields={"foo"}), CLASS("foo",Field("foo",useClasses=False)))
+assert assertEqual(compileGen(fieldFooClass, fields=frozenset({"foo"})), CLASS("foo",Field("foo",useClasses=False)))
 assert assertEqual(fieldFooClass, fieldFooClass.getWithoutRedundance())
 assert not fieldFooClassless.isEmpty()
 assert fieldFooClassless.toKeep
@@ -192,11 +192,11 @@ assert assertEqual(compileGen(labelBarForFieldFooWithoutClass,
                               isQuestion=False),
                    Literal("bar"))
 assert assertEqual(compileGen(labelBarForFieldFooWithoutClass,
-                              asked = {"foo"},
+                              asked = frozenset({"foo"}),
                               isQuestion=False),
                    Literal("bar"))
 assert assertEqual(compileGen(labelBarForFieldFooWithoutClass,
-                              asked = {"foo"},
+                              asked = frozenset({"foo"}),
                               isQuestion=True),
                    CLASS(["Question","Emphasize", "Class_name"],Literal("bar")))
 assert assertEqual(compileGen(labelBarForFieldFooWithoutClass,
@@ -207,11 +207,11 @@ assert assertEqual(compileGen(labelBarForFieldFoo,
                               isQuestion=False),
                    CLASS(["Class_name"],Literal("bar")))
 assert assertEqual(compileGen(labelBarForFieldFoo,
-                              asked = {"foo"},
+                              asked = frozenset({"foo"}),
                               isQuestion=False),
                    CLASS(["Class_name"],Literal("bar")))
 assert assertEqual(compileGen(labelBarForFieldFoo,
-                              asked = {"foo"},
+                              asked = frozenset({"foo"}),
                               isQuestion=True),
                    CLASS(["Question","Emphasize", "Class_name"],Literal("bar")))
 assert assertEqual(compileGen(labelBarForFieldFoo,
@@ -224,28 +224,28 @@ assert assertEqual(compileGen(labelBarForFieldsFoos,
                               isQuestion=False),
                    Literal("bar"))
 assert assertEqual(compileGen(labelBarForFieldsFoos,
-                              asked = {"foo"},
+                              asked = frozenset({"foo"}),
                               isQuestion=False),
                    Literal("bar"))
 assert assertEqual(compileGen(labelBarForFieldsFoos,
-                              asked = {"foo"},
+                              asked = frozenset({"foo"}),
                               isQuestion=True),
                    CLASS(["Question","Emphasize","Class_name"],Literal("bar")))
 
 ## Hide
-assert assertEqual(compileGen(hideTest, asked = frozenset(), isQuestion = True), 
+assert assertEqual(compileGen(hideTest, asked = frozenset(), isQuestion = True),
                    Literal("Content"))
-assert assertEqual(compileGen(hideTest, asked = frozenset({"hide field"}), isQuestion = True), 
+assert assertEqual(compileGen(hideTest, asked = frozenset({"hide field"}), isQuestion = True),
                    emptyGen)
-assert assertEqual(compileGen(hideTest, asked = frozenset(), isQuestion = False), 
+assert assertEqual(compileGen(hideTest, asked = frozenset(), isQuestion = False),
                    Literal("Content"))
-assert assertEqual(compileGen(hideTest, asked = frozenset({"hide field"}), isQuestion = False), 
+assert assertEqual(compileGen(hideTest, asked = frozenset({"hide field"}), isQuestion = False),
                    Literal("Content"))
 
 ## Fields
-assert assertEqual(compileGen(questionnedField, asked = frozenset({"Question"})), 
+assert assertEqual(compileGen(questionnedField, asked = frozenset({"Question"})),
                    markOfQuestion)
-assert assertEqual(compileGen(questionnedField, asked = frozenset()), 
+assert assertEqual(compileGen(questionnedField, asked = frozenset()),
                    Field("Question", useClasses=False))
 assert assertEqual(compileGen(questionnedField, isQuestion = False),
                    Field("Question", useClasses=False))
@@ -259,7 +259,7 @@ assert assertEqual(
                Literal("Question")#)
                , Literal(": "), markOfQuestion, br]
            )))
-assert assertEqual(compileGen(decoratedField, asked = frozenset()), 
+assert assertEqual(compileGen(decoratedField, asked = frozenset()),
                    Filled(field = "Question",
                           child = ListElement([
                               Literal("Question"),
@@ -276,7 +276,7 @@ assert assertEqual(compileGen(decoratedField, isQuestion = False),
                               br]
                           )))
 ## FromAndTo
-# assert assertEqual(compileGen(frenchToEnglish, fields={"Français","English"}),
+# assert assertEqual(compileGen(frenchToEnglish, fields=frozenset({"Français","English"})),
 #                    Filled("English",
 #                           Filled("Français",
 #                                  ListElement([ListElement([Field("English"),
@@ -289,7 +289,7 @@ assert assertEqual(compileGen(decoratedField, isQuestion = False),
 #                           )
 #                    )
 # )
-assert assertEqual(compileGen(EnglishToFrench, fields={"Français","English"}),
+assert assertEqual(compileGen(EnglishToFrench, fields=frozenset({"Français","English"})),
                    Filled("Français",
                           Filled("English",
                                  ListElement([ListElement([HTML("span",
@@ -307,7 +307,7 @@ assert assertEqual(compileGen(EnglishToFrench, fields={"Français","English"}),
                           )
                    )
 )
-assert assertEqual(compileGen(EnglishToFrench, fields={"Français","English"},isQuestion = False),
+assert assertEqual(compileGen(EnglishToFrench, fields=frozenset({"Français","English"}),isQuestion = False),
                    Filled("Français",
                           Filled("English",
                                  ListElement([ListElement([HTML("span",
@@ -358,7 +358,7 @@ assert assertEqual(atLeastOneDefinition.getNormalForm(),
     )],
 ))
 
-assert assertEqual(compileGen(atLeastTwoDefinition, fields = {"Definition4","Definition2","Definition3"}),
+assert assertEqual(compileGen(atLeastTwoDefinition, fields = frozenset({"Definition4","Definition2","Definition3"})),
 ListElement([
   Filled(
     field = 'Definition3',
@@ -408,50 +408,50 @@ assert assertEqual(compileGen(requiringInexistant),emptyGen)
 
 # assert assertEqual(compileGen(twoQuestionsAsList, asked =frozenset()),
 #                    compileGen([["Definition", ": ", Field("Definition",useClasses=False)],["Definition2", ": ", Field("Definition2",useClasses=False)]]))
-# assert assertEqual(compileGen(twoQuestionsAsList, asked ={"Definition"}, isQuestion = False),
+# assert assertEqual(compileGen(twoQuestionsAsList, asked =frozenset({"Definition"}), isQuestion = False),
 #                    compileGen([["Definition", ": ", Field("Definition",useClasses=False)],["Definition2", ": ", Field("Definition2",useClasses=False)]]))
-# assert assertEqual(compileGen(twoQuestionsAsList, asked ={"Definition"}),
+# assert assertEqual(compileGen(twoQuestionsAsList, asked =frozenset({"Definition"})),
 #                    compileGen([["Definition", ": ", markOfQuestion],["Definition2", ": ", Field("Definition2",useClasses=False)]]))
 
 # assert assertEqual(compileGen(twoQuestionsAsNamedList, asked =frozenset()),
 #                    compileGen([["Definition", ": ", Field("Definition",useClasses=False)],["Definition2", ": ", Field("Definition2",useClasses=False)]]))
-# assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"Definition"}, isQuestion = False),
+# assert assertEqual(compileGen(twoQuestionsAsNamedList, asked =frozenset({"Definition"}), isQuestion = False),
 #                    compileGen([["Definition", ": ", Field("Definition",useClasses=False)],["Definition2", ": ", Field("Definition2",useClasses=False)]]))
-# assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"Definition"}),
+# assert assertEqual(compileGen(twoQuestionsAsNamedList, asked =frozenset({"Definition"})),
 #                    compileGen([["Definition", ": ", markOfQuestion],["Definition2", ": ", Field("Definition2",useClasses=False)]]))
-# assert assertEqual(compileGen(twoQuestionsAsNamedList, asked ={"ListName"}),
+# assert assertEqual(compileGen(twoQuestionsAsNamedList, asked =frozenset({"ListName"})),
 #                    compileGen([["Definition", ": ", markOfQuestion],["Definition2", ": ", markOfQuestion]]))
 
 assert assertEqual(
     compileGen(
         twoQuestionsAsTable,
         asked =frozenset(),
-        fields={"Definition","Definition2", "Name","Name2"}
+        fields=frozenset({"Definition","Definition2", "Name","Name2"})
     ),
     tableTwoShown
 )
-                   
+
 assert assertEqual(
     compileGen(
         twoQuestionsAsTable,
         asked =frozenset({"Definition"}),
         isQuestion = False,
-        fields={"Definition","Definition2", "Name","Name2"}
+        fields=frozenset({"Definition","Definition2", "Name","Name2"})
     ),
     tableTwoShownAnswer1
 )
-                   
+
 assert assertEqual(compileGen(twoQuestionsAsTable,
                               asked =frozenset({"Definition"}),
-                              fields={"Definition","Definition2", "Name","Name2"}),
+                              fields=frozenset({"Definition","Definition2", "Name","Name2"})),
                    tableTwoShownQuestion1)
 assert assertEqual(compileGen(twoQuestionsAsTable,
                               asked =frozenset({"Definitions"}),
-                              fields={"Definition","Definition2", "Name","Name2"}),
+                              fields=frozenset({"Definition","Definition2", "Name","Name2"})),
                    tableTwoShownQuestionAll)
 assert assertEqual(compileGen(twoQuestionsAsTable,
                               asked =frozenset({"Definitions"}),
-                              fields={"Definition","Definition2", "Name","Name2"},
+                              fields=frozenset({"Definition","Definition2", "Name","Name2"}),
                               isQuestion = False),
                    tableTwoShownAnswerAll)
 
@@ -460,36 +460,36 @@ assert assertEqual(
     compileGen(
         fourQuestionsAsTable,
         asked =frozenset(),
-        fields={"Definition","Definition2", "Name","Name2"}
+        fields=frozenset({"Definition","Definition2", "Name","Name2"})
     ),
     tableFourShown
 )
-                   
+
 assert assertEqual(
     compileGen(
         fourQuestionsAsTable,
         asked =frozenset({"Definition"}),
         isQuestion = False,
-        fields={"Definition","Definition2", "Name","Name2"},
+        fields=frozenset({"Definition","Definition2", "Name","Name2"}),
     ),
     tableFourShownAnswer1
 )
-                   
+
 assert assertEqual(
     compileGen(
         fourQuestionsAsTable,
-        fields={"Definition","Definition2", "Name","Name2"},
+        fields=frozenset({"Definition","Definition2", "Name","Name2"}),
         asked =frozenset({"Definition"})),
     tableFourShownQuestion1)
 
 assert assertEqual(
     compileGen(fourQuestionsAsTable,
-               fields={"Definition","Definition2","Name","Name2"},
+               fields=frozenset({"Definition","Definition2","Name","Name2"}),
                asked = frozenset({"Definitions"})),
     tableFourShownQuestionAll)
 
 assert assertEqual(compileGen(fourQuestionsAsTable,
-                              fields={"Definition","Definition2", "Name", "Name2"},
+                              fields=frozenset({"Definition","Definition2", "Name", "Name2"}),
                               asked = frozenset({"Definitions"}),
                               isQuestion = False),
                    tableFourShownAnswerAll)

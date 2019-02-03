@@ -37,8 +37,8 @@ def _tagGetParams(tag):
 def tagGetParamsConfig(tag, objects):
     """
     Return everything required from the tag to add its object in it.
-    The object is extracted from objects. None is returned otherwise. 
-    
+    The object is extracted from objects. None is returned otherwise.
+
     add objectabsent to tag if this generator is absent from Objects.
     Remove objectabsent if an object with this generator is present
     """
@@ -94,8 +94,8 @@ def compile_(tag, soup, *, isQuestion = True, model = None, objects = dict(), in
         (obj, asked, hide, hideQuestions, mandatory, choose) = params
         obj=obj.getNormalForm()
         if choose is not None and not asked:
-            asked=[obj.getQuestionToAsk(modelName)]
-            tag["askedmandatory"]=asked[0]
+            tag["askedmandatory"]=obj.getQuestionToAsk(modelName)
+            asked = frozenset({tag["askedmandatory"]})
         new_tags = obj.compile(soup = soup,
                                fields = fields,
                                isQuestion = isQuestion,
@@ -117,8 +117,8 @@ def compile_config(*args, **kwargs):
     configuration"""
     compile_(*args, inConfig=True, **kwargs)
 
-    
-    
+
+
 def clean(tag):
     """Remove objectAbsent"""
     tag.clear()
