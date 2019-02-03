@@ -95,7 +95,7 @@ class TableFields(ListFields):
                  name=None,
                  attrs = dict(),
                  trAttrs = dict(),
-                 tdLabelAttrs= dict(),
+                 tdLabelAttrs = dict(),
                  tdFieldAttrs = dict(),
                  tdAttrs = dict(),
                  greater = 1,
@@ -237,8 +237,8 @@ class NumberedFields(ListFields):
         self.attrs =attrs
         self.liAttrs= liAttrs
         self.unordered=unordered
-        self.label = label if label is not None else f"{fieldPrefix}s"
-        self.name = self.fieldPrefix+"s"
+        self.plural = f"{fieldPrefix}s"
+        self.label = label if label is not None else self.plural
         assert(isinstance(fieldPrefix, str))
         assert(isinstance(greater, int))
         self.suffixes = [str(i) for i in range(smaller,greater+1)]
@@ -270,7 +270,7 @@ class NumberedFields(ListFields):
                 return [labelGen, ": ", HTML(tag = "ul" if unordered else "ol",child = lines, attrs = attrs)]
         
         super().__init__(fields = self.suffixes,
-                         name = self.name,
+                         name = self.plural,
                          localFun = localFun,
                          globalFun = globalFun,
                          **kwargs)
@@ -305,6 +305,9 @@ no other elements are present, and show only the first element."""
                             prefix = prefix,
                             suffix = suffix,
                             isMandatory = isMandatory)
+        qu = Cascade(field = f"{fieldPrefix}s",
+                     child = qu,
+                     cascade = {fieldPrefix})
         foe=FilledOrEmpty(f"""{fieldPrefix}2""",
                           nf,
                           qu)

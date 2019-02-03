@@ -261,20 +261,22 @@ presentation = ("Relation",
                                           greater = 5,
                                           fieldPrefix = "Relation",
                                           suffix = hr))
-definition = Cascade("Definitions",
-                     [presentation,
-                      inner_function],
-                     {"Relations", "Explicit definition"})
-                      
-            
-                
-outer_function =TableFields(
+outer_function = TableFields(
     ["Graduation",
      "Norm",
      "Euclidean function",
      "Quadratic form",
-    ]
+    ],
+    name = "Explicit definition"
 )
+definition = Cascade("Definitions",
+                     [presentation,
+                      inner_function,
+                      outer_function],
+                     {"Relations", "Explicit definition"})
+                      
+            
+                
 properties = TableFields(
     ["Principal ideal",
      "Integral",
@@ -300,4 +302,4 @@ properties = TableFields(
     ]
 )
 
-algebra = [header, algebra_name_formatted, inner_function, outer_function, properties, footer]
+algebra = [header, algebra_name_formatted, definition, properties, footer]

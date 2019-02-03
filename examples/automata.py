@@ -17,7 +17,7 @@ automata = [
              "classes":"Definition4"},
             {"field": "Final",
              "classes":"Definition5"},
-            {"field": "q.a",
+            {"field": "Transitions",
              "classes":"Definition6"},
             {"field": "Typ",
              "classes":"Definition7"},

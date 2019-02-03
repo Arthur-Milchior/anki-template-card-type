@@ -3,7 +3,7 @@ from ..generators import *
 
 answers = PotentiallyNumberedFields("Answer",
                                     7,
-                                    label = Field("Question"),
+                                    label = QuestionnedField("Question"),
                                     infix = None,
                                     suffix = hr,
                                     classes = "Notation")
