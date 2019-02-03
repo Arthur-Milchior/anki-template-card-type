@@ -64,8 +64,8 @@ class ListFields(ListElement):
                 assert assertType(filledFields,list)
                 for field in filledFields:
                     checkField(field)
-            toCascadeLocal = processedFieldDic.get("questions",frozenset()) 
-            hideFields = processedFieldDic.get("hideInSomeQuestion",frozenset()) 
+            toCascadeLocal = processedFieldDic.get("questions",frozenset())
+            hideFields = processedFieldDic.get("hideInSomeQuestion",frozenset())
             if not processedField:
                 continue
             if filledFields:
@@ -76,7 +76,7 @@ class ListFields(ListElement):
                 processedField = HideInSomeQuestions(hideFields,processedField)
             elements.append(processedField)
             toCascade |= toCascadeLocal
-            
+
         ret = self.globalFun(elements)
         ret = [self.prefix,ret,self.suffix]
         if toCascade:
@@ -86,7 +86,7 @@ class ListFields(ListElement):
                               cascade = toCascade)
             super().__init__([ret,ToAsk(toCascade)],toKeep = toKeep, **kwargs)
         else:
-            super().__init__(ret,toKeep = toKeep, **kwargs)    
+            super().__init__(ret,toKeep = toKeep, **kwargs)
 
 class TableFields(ListFields):
     @debugInit
@@ -132,15 +132,16 @@ class TableFields(ListFields):
         self.tdLabelAttrs = tdLabelAttrs
         self.tdFieldAttrs= tdFieldAttrs
         self.tdAttrs = tdAttrs
-        
+
         tdLabelAttrs = {**tdLabelAttrs,** tdAttrs}
         tdFieldAttrs = {**tdFieldAttrs,** tdAttrs}
         def localFun(fieldInputDic):
+            ret = dict()
             # Ensuring the input is a dic
             if isinstance(fieldInputDic,str):
                 fieldInputDic = {"field":fieldInputDic}
             assert assertType(fieldInputDic,dict)
-                
+
             fieldName = fieldInputDic["field"]
             label = fieldInputDic.get("label",fieldName)
 
@@ -163,27 +164,43 @@ class TableFields(ListFields):
 
             # The fields
             def tdField(i=""):
+                fieldName_ = f"{fieldName}{i}"
                 if "function" in fieldInputDic:
                     child = fieldInputDic["function"](i)
                 else:
-                    child = None
-                questionnedField = QuestionnedField(f"{fieldName}{i}",
+                    child = Field(fieldName_,
+                                  isMandatory=isMandatory,
+                                  useClasses = False)
+                if "emptyCase" in fieldInputDic:
+                    child = FilledOrEmpty(fieldName_,
+                                          child,
+                                          fieldInputDic["emptyCase"])
+                questionnedField = QuestionnedField(fieldName_,
+                                                    child = child,
                                                     isMandatory = isMandatory,
                                                     useClasses = useClasses,
-                                                    child = child,
                                                     classes = classes)
                 return TD(child = questionnedField, attrs = tdFieldAttrs)
             trChild = [tdLabel,tdField()]+[tdField(i) for i in range(2,self.greater+1)]
 
             # The whole line
-            tr = TR(child = trChild,
-                    attrs = trAttrs) 
+            ret["child"] = TR(child = trChild,
+                              attrs = trAttrs)
             defaultList = [f"""{fieldInputDic["field"]}{i}""" for i in [""]+list(range(2,self.greater+1))]
             defaultSet = set(defaultList)
-            return {"child": tr,
-                    "questions": fieldInputDic.get("questions",defaultSet),
-                    "filledFields": fieldInputDic.get("filledFields",defaultList),
-                    "hideInSomeQuestion": fieldInputDic.get("hideInSomeQuestion",frozenset())}
+            ret["questions"]= fieldInputDic.get("questions",defaultSet)
+
+            # filledFields
+            if "filledFields" in fieldInputDic:
+                ret["filledFields"] = fieldInputDic["filledFields"]
+            elif "emptyCase" in fieldInputDic:
+                ret["filledFields"] = []
+            else:
+                ret["filledFields"] = defaultList
+
+            ret["hideInSomeQuestion"] = fieldInputDic.get("hideInSomeQuestion",frozenset())
+            return ret
+
         @debugFun
         def globalFun(lines):
             ret=Table(lines, attrs = attrs, caption=label, trAttrs = trAttrs, tdAttrs=tdAttrs)
@@ -268,7 +285,7 @@ class NumberedFields(ListFields):
                                  fields =self.numberedFields+[self.groupName],
                                  classes = classes)
                 return [labelGen, ": ", HTML(tag = "ul" if unordered else "ol",child = lines, attrs = attrs)]
-        
+
         super().__init__(fields = self.suffixes,
                          name = self.plural,
                          localFun = localFun,
@@ -285,6 +302,8 @@ no other elements are present, and show only the first element."""
                  toKeep = None,
                  attrs = dict(),
                  classes = None,
+                 localFunMultiple = None,
+                 singleCase = None,
                  liAttrs = dict(),
                  suffix = br,
                  prefix = None,
@@ -297,20 +316,22 @@ no other elements are present, and show only the first element."""
                             attrs = attrs,
                             liAttrs = liAttrs,
                             classes = classes,
+                            localFun = localFunMultiple,
                             isMandatory = isMandatory)
-        qu = DecoratedField(field = fieldPrefix,
-                            label = label,
-                            infix = infix,
-                            classes = classes,
-                            prefix = prefix,
-                            suffix = suffix,
-                            isMandatory = isMandatory)
-        qu = Cascade(field = f"{fieldPrefix}s",
-                     child = qu,
-                     cascade = {fieldPrefix})
+        if singleCase is None:
+            singleCase = DecoratedField(field = fieldPrefix,
+                                        label = label,
+                                        infix = infix,
+                                        classes = classes,
+                                        prefix = prefix,
+                                        suffix = suffix,
+                                        isMandatory = isMandatory)
+        singleCase = Cascade(field = f"{fieldPrefix}s",
+                             child = singleCase,
+                             cascade = {fieldPrefix})
         foe=FilledOrEmpty(f"""{fieldPrefix}2""",
                           nf,
-                          qu)
+                          singleCase)
         super().__init__(child=foe,
                          cascade={fieldPrefix},
                          field=fieldPrefix+"s",
@@ -318,4 +339,3 @@ no other elements are present, and show only the first element."""
 
     # def __repr__(self):
     #     return f"""PotentiallyNumberedFields() on {super().__repr__()}"""
-

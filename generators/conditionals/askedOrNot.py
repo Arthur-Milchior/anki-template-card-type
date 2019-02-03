@@ -9,7 +9,7 @@ class Asked(FieldChild):
     """The class which expands only if its field is asked."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
     def _getWithoutRedundance(self):
         return self.cloneSingle(self.getChild().getWithoutRedundance().assumeAsked(self.field))
 
@@ -19,7 +19,7 @@ class Asked(FieldChild):
             return child
         else:
             return self.cloneSingle(self.getChild().assumeAsked(fields, modelName, changeState))
-        
+
     def _assumeNotAsked(self, field):
         if self.field == field:
             return None
@@ -28,17 +28,17 @@ class Asked(FieldChild):
 
     def _noMoreAsk(self):
         return None
-        
+
     def _createHtml(self, *args, **kwargs):
         raise ExceptionInverse("Asked._createHtml should not exists")
 
-    
+
 @thisClassIsClonable
 class NotAsked(FieldChild):
     """The class which expands only if its field is not asked."""
     def _getWithoutRedundance(self):
         return self.cloneSingle(self.getChild().getWithoutRedundance().assumeNotAsked(self.field))
-    
+
     def _assumeNotAsked(self, field):
         if self.field == field:
             return self.getChild().assumeNotAsked(field)
@@ -53,7 +53,7 @@ class NotAsked(FieldChild):
             return None
         else:
             return self.cloneSingle(self.getChild().assumeAsked(fields, modelName, changeState))
-        
+
     def _createHtml(self, *args, **kwargs):
         raise ExceptionInverse("NotAsked._createHtml should not exists")
 
@@ -68,7 +68,7 @@ class Cascade(FieldChild):
         assert standardContainer(cascade)
         assert cascade
         super().__init__(field, child, **kwargs)
-        
+
     def _repr(self):
         space  = "  "*Gen.indentation
         return f"""{self.__class__.__name__}(
@@ -82,13 +82,13 @@ class Cascade(FieldChild):
             return self.child.getNormalForm()
         else:
             return super()._getNormalForm()
-        
+
     def _cloneSingle(self, child):
         return self.classToClone(
             field = self.field,
             child = child,
             cascade = self.cascade)
-        
+
     def _createHtml(self, *args, **kwargs):
         raise ExceptionInverse("NotAsked._createHtml should not exists")
 
@@ -100,15 +100,15 @@ class Cascade(FieldChild):
 
     def _assumeNotAsked(self,field):
         if self.field == field:
-            return None
+            return self.getChild().assumeNotAsked(field)
         else:
             return self.cloneSingle(self.getChild().assumeNotAsked(field))
 
     def _noMoreAsk(self):
         return self.getChild().noMoreAsk()
 
-        
-    
+
+
 # class AskedOrNot(ListElement):
 #     """The class which expands differently in function of whether a name is asked or not."""
 #     def __init__(self,

@@ -2,7 +2,7 @@
 Anki basic
 ************/
 .card {
- font-family: arial;
+ font-family: "Times";
  text-align: smaller;
  font-size:15px;
  color: black;
@@ -12,7 +12,7 @@ Anki basic
 .hide{
   display: none;
 }
-  
+
 .cloze {
  font-weight: bold;
  color: blue;
@@ -33,10 +33,13 @@ table, td, tr, th {
     /*border-collapse: collapse;*/
     border: 1px solid black;
 }
-
+.Context {
+  font-size: 20px; margin: .67em 0 ;
+ font-style: oblique;
+}
 .Name, .Notation {
-  font-size: 1.5em; margin: .67em 0 ;
-  font-family: Georgia;
+  font-size: 20px; margin: .67em 0 ;
+font-weight: 900;
 }
 
 
@@ -134,4 +137,3 @@ Emphasize
 .Emphasize.Definition6, .Emphasize.Definition11 {
    background-color: paleTurquoise;
 }
-

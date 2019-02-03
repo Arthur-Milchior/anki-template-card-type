@@ -8,19 +8,19 @@ create anki's card type efficiently. This language is based on Python.
 
 ## Leaves
 The leaves are generators which does not recursively contains other
-generators. 
+generators.
 
 The  HTML generator is omitted. While it may have no child, it will
 still be considered in a section for itself alone.
 
 ### Empty
-This generator represents the absence of any information. 
+This generator represents the absence of any information.
 
 None can be used instead of Empty.
 
 ### Literal
 The generator ```Literal(foo)```represents the string foo. It is
-always compiled as this string. 
+always compiled as this string.
 
 A standard Python string can be used instead of this generator. Please
 don't add either mustaches (i.e. {{foo}}) nor tags (i.e. <foo>) in
@@ -29,7 +29,7 @@ literals, use directly the generators for them.
 ### Field
 The generator ```Field(foo)```represents the field {{foo}}. It is
 compiled as this field if it is present in the model, otherwise as the
-empty string. 
+empty string.
 
 The Python expression ```{"foo"}``` (i.e. a set containing the string
 "foo") can be used instead of this generator. This is supposed to
@@ -64,13 +64,13 @@ This allows to ensure that an error is raised in case which should not
 exists at some step, but have not been properly eliminated at previous
 step.
 
- 
+
 
 ## HTML
 The generator ```HTML(tag, atom = False, attrs={}, child=None)``` is
 interpreted as ```<tag attr_1=value_1
 ... attr_n=value_n>child</tag>```, with  ```attr_i=value_i``` being
-given according to the dictionnary attrs. 
+given according to the dictionnary attrs.
 
 A number of generators are created for standard HTML, and ready to use:
 * ```Image(url)```
@@ -98,7 +98,7 @@ listed above.
 The generator ```ListElement([gen_1,...,gen_n])``` represents a list of
 generators ```gen_1``` to ```gen_n```. This means that, the result of
 the compilation of this generator consists in appending the result of
-the concatenation of each of its generators. 
+the concatenation of each of its generators.
 
 The Python expresion ```[gen_1,...,gen_n]``` can be used insted of the generator.
 
@@ -144,14 +144,14 @@ show the result of compiling gen if the field ```field``` is filled,
 (respectively, empty). That is, they compile as ```{{#field}}result of
 compiling gen{{/field}}``` and as ```{{^field}}result of compiling
 gen{{/field}}``` respectively. Note that, in anki
-both 
+both
 ```
 {{#field}}{{#field}} ... {{/field}}{{/field}}
-``` 
-and 
+```
+and
 ```
 {{#field}}{{^field}} ... {{/field}}{{/field}}
-``` 
+```
 are invalid template. You don't have to take care about those
 redundancy/contradiction with generators. They take care of always
 writting correct template (assuming you never write conditionals {{#
@@ -170,7 +170,7 @@ considered to be empty.
 ### Asked or not
 The generator ```Asked("name",gen)``` (resp, ```NotAsked("name",gen)```)
 compiles as ```gen``` if "name" is marked as "asked" in the template
-(respectively, is not marked as asked). 
+(respectively, is not marked as asked).
 
 The generator ```AskedOrNot("name", gen1,gen2)``` is compiled
 similarly to ```gen1``` if ```"name"``` is marked as asked in the
@@ -186,7 +186,7 @@ You may want to ask many questions simultaneously. In fact, you may
 want to give a name to a set of questions. Thus you don't have to
 explicitly write every questions in the template.
 
-This can be made using the generator ```Cascade```. 
+This can be made using the generator ```Cascade```.
 ```
 Cascade(field, child, cascade)
 ```
@@ -238,7 +238,7 @@ of questions.
 The generator ```QuestionnedField(foo)``` is a basic unit
 representing a question. The field is shown on every card, except on
 the question side where this field is asked, in this case, the content
-of the field is replaced by ```???```. 
+of the field is replaced by ```???```.
 
 If this is asked, the answer side is encapsulated in the two css
 classes ```answer``` and ```answer_foo```.
@@ -249,7 +249,7 @@ This generator is used to obtain a result of the form:
 {{#foo}}label: {{foo}}<br/>{{/foo}}
 ```
 Here, ```foo``` is the field considered, ```label``` is some context
-for foo. 
+for foo.
 
 The pair of label and field is given as a labeled field. Those are
 described after this section.
@@ -258,7 +258,7 @@ Here, ```<br/>``` is some suffix to separates the content to
 everything after. A prefix can also be added. Both prefix and suffix
 are shown iff the field ```foo``` is not empty.
 
-If ```foo``` is asked, the question side show 
+If ```foo``` is asked, the question side show
 ```
 {{#foo}}<span class="question queston_foo">label</span>: ???<br/>{{/foo}}
 ```
@@ -305,7 +305,7 @@ or more generally
 ```
 {{French}} in ENGLISH is {{English}}
 ```
-is obtained by 
+is obtained by
 ```
 FromAndTo("French"," in ","English"," is ","English")
 ```
@@ -343,14 +343,17 @@ given either:
   * "label" the label to put in the first column in this line
   * "hideInSomeQuestion": apply HideInSomeQuestion to this line, with
     the value contained in this entry.
+  * "emptyCase" What to show if the field is empty. In this case, the
+    line is always shown, even if the field is empty. Furthermore,
+    this is still considered to be a valid question, with the value
+    associated to this key as the default answer.
 * as a list ```relatedList```. In which case, it is assumed that for
   each field ```f``` of ```relatedList```, the list ```fields```
   contains an entry ```{"field":f,
   hideInSomeQuestion:relatedList-f}```.
-  
 Each line is similar to a Question generator, with ```<tr><td>``` as
 prefix, ```</td><td>``` as infix and ```</td></tr>``` as suffix.
-  
+
 This generator as an optional argument ```name```. When ```name``` is
 asked, it is similarly to asking simultaneously every single fields.
 ##### NumberedFields
@@ -388,6 +391,7 @@ The optional arguments are:
 * ```name```, similarly to the case of tableField
 * ```unordered```, if set to True, then <ul> is used instead of <ol>.
 
+
 ##### PotentiallyNumberedFields
 This generator is similar to the precedent one when ```foo2``` is
 filled. Otherwise, it is similar to ```Question("foo")```, that is, it
@@ -395,7 +399,7 @@ only ask a single question and does not use the list.
 
 Note that you should avoid using this in the case where some
 fields ```fooi``` may be used while ```foo2``` is empty. I.e. we
-assume that you fill the foo in their numeric order. 
+assume that you fill the foo in their numeric order.
 
 The keywords are similar to the one of NumberedFields and of Question.
 
@@ -407,7 +411,7 @@ ListFields takes the following parameters:
 * fields: a list of field or of labeled fields, depending on what is required.
 * globalSep: a function taking the list of fields seen and creating a
   generator which separate each successive pair of fields. By default,
-  it returns None. 
+  it returns None.
 * globalFun: a function applied to the list of generator returned by
   localfun. It should return a generator. By default it is the
   identity function.

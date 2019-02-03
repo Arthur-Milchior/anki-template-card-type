@@ -3,12 +3,20 @@ from ..general.foot import footer
 from ..general.typ import typDic
 from ...generators import *
 
-labelDef= FilledOrEmpty("Conjdef",
-                        Cascade("Definitions",
-                                [QuestionnedField("Conjdef",["Conjdef"]),": "],
-                                {"Conjdef"}),
-                        Filled ("Definition2",
-                                "Equivalently: "))
+
+labelDef= [Filled("Typ",
+                  [QuestionnedField("DefType"),
+                   " such that "]),
+           FilledOrEmpty("Conjdef",
+                         QuestionnedField("Conjdef",["Conjdef"]),
+                         Filled ("Definition2",
+                                 FilledOrEmpty("Typ",
+                                               "equivalently",
+                                               "Equivalently")))
+           ]
+labelDef =  Cascade("Definitions",
+                    labelDef,
+                    {"Conjdef","DefType"})
 
 
 definitions = ("Definition",
@@ -19,7 +27,7 @@ definitions = ("Definition",
                 hr])
 other = TableFields(["Construction",
                      "Property",
+                     "Cardinal",
                      typDic])
 
 definition = [header,definitions,other,footer]
-

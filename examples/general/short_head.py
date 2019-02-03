@@ -4,6 +4,4 @@ contextOrDeck = [FilledOrEmpty('Context',
                                ["Deck: ",deck]), hr]
 def df(name):
     return DecoratedField(name,suffix=hr)
-
 short_header =CLASS("head",[contextOrDeck,df('Variables'),df('Assuming'),df('Intuition')] )
-

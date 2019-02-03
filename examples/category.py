@@ -9,7 +9,10 @@ definition_ordinal = TableFields(
         {"field": "Arrows",
          "classes":"Definition2"},
         {"field": "Compositions",
-         "classes":"Definition3"},
+         "classes":"Definition3",
+         "emptyCase": AskedOrNot("Composition",
+                                 markOfQuestion,
+                                 "Standard composition")},
     ]
 )
 def relatedFields(fields):
