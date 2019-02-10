@@ -13,7 +13,7 @@ You should probably download this add-on and try those examples to
 understand how everything works.
 
 Please, refer to
-[generator's documentation](DOCUMENTATION.md)
+[the documentation](DOCUMENTATION.md)
 to learn how to use this add-on. I'll just give a few examples here.
 
 
