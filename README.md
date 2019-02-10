@@ -1,4 +1,5 @@
-# Multi-column edit window
+# anki-template-card-type
+
 This is a BETA version. If people want to help debugging and
 improving. It may change a lot and while I use this add-on a lot, I
 can't promise it to be fit for everyone (yet?)
@@ -12,7 +13,7 @@ You should probably download this add-on and try those examples to
 understand how everything works.
 
 Please, refer to
-[generator's documentation](generators/DOCUMENTATION.md)
+[generator's documentation](DOCUMENTATION.md)
 to learn how to use this add-on. I'll just give a few examples here.
 
 
