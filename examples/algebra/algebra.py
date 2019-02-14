@@ -94,6 +94,6 @@ properties = TableFields(
 
 algebra = [header,
            algebra_name_formatted,
-           definition
+           definition,
            properties,
            footer]
