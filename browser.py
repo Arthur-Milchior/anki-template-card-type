@@ -1,17 +1,16 @@
-from aqt import mw
 from anki.hooks import addHook
+from aqt import mw
 from aqt.qt import QAction, QKeySequence
 from aqt.utils import tooltip
 from .config import readIfRequired, objects
 from .editTemplate import compileAndSaveModel
-
 
 def runBrowser(browser, action, note):
     if note:
         return runBrowserNote(browser,action)
     else:
         return runBrowserCard(browser,action)
-    
+
 def runBrowserNote(browser, action):
     mw.checkpoint("Change template on notes")
     mw.progress.start()
@@ -27,7 +26,7 @@ def runBrowserNote(browser, action):
         compileAndSaveModel(model, action = action, objects = objects)
     mw.progress.finish()
     tooltip(f"Ending {action} on notes")
-        
+
 def runBrowserCard(browser, action):
     mw.checkpoint("Change template on cards")
     mw.progress.start()
@@ -47,19 +46,19 @@ def runBrowserCard(browser, action):
         compileAndSaveModel(model, action = action, objects = objects, ords=mids[mid])
     mw.progress.finish()
     tooltip(f"Ending {action} on cards")
-    
-    
+
+
 def setupMenu(browser):
     a = QAction("ReTemplate Card", browser)
     a.triggered.connect(lambda : runBrowser(browser,"ReTemplate",False))
     browser.form.menuEdit.addAction(a)
     a.setShortcut(QKeySequence("Ctrl+Shift+T"))
-    
+
     a = QAction("Template Note", browser)
     a.setShortcut(QKeySequence("Ctrl+Alt+T"))
     a.triggered.connect(lambda : runBrowser(browser,"Template",True))
     browser.form.menuEdit.addAction(a)
-    
+
     a = QAction("ReTemplate note", browser)
     a.setShortcut(QKeySequence("Ctrl+Alt+Shift+T"))
     a.triggered.connect(lambda : runBrowser(browser,"ReTemplate",True))

@@ -2,7 +2,7 @@ from ...generators import *
 from .short_head import short_header
 from .foot import footer
 
-def localFunExtra(i):
+def singleRelatedInformation(i):
     return (lambda f:
             {"child":Parenthesis(DecoratedField(field=f"{f}{i}",
                                                 label=f,
@@ -10,34 +10,37 @@ def localFunExtra(i):
                                                 classes = f)),
              "filledFields":[f"{f}{i}"]})
 
-def _name_extra(i=""):
+def relatedInformations(i=""):
     field = f"Name{i}"
-    relatedInformation = ListFields(fields = [f"Abbreviation", f"French", f"Etymology"],
-                                    localFun = localFunExtra(i) )
-    return relatedInformation
+    return ListFields(fields = [f"Abbreviation", f"French", f"Etymology"],
+                      localFun = singleRelatedInformation(i) )
 
-def localFun(i=""):
-    return {"child":LI([QuestionnedField(f"Name{i}",classes=["Name"]),
-                        NotAsked(f"Name{i}",(NotAsked(f"Names",_name_extra(i))))]),
+def nameAndMore(i=""):
+    return QuestionnedField(f"Name{i}",
+                            classes=["Name"],
+                            suffix = relatedInformations(i))
+
+def singleName(i=""):
+    return {"child":LI(nameAndMore(i)),
             "questions":{f"Name{i}"},
             "filledFields":[f"Name{i}"]}
 
-_names = [Label("Names",
+listNames = [Label("Names",
                 ["Name","Name2","Name3","Name4"],
                 "Name"),
           ": ",
           ListFields(fields = ["","2","3","4"],
-                     localFun = localFun,
+                     localFun = singleName,
                      globalFun = (lambda l: UL(l,addLi=False)))]
 
-singleName = DecoratedField("Name",suffix=[_name_extra(),br])
+singleName = DecoratedField(field="Name", child=nameAndMore())
 
-name_s= Filled("Name",
-               child=[
-                   Cascade(child=FilledOrEmpty("Name2",
-                                               _names,
-                                               singleName),
-                           field="Names",
-                           cascade={"Name","Name2","Name3","Name4"}),
-                   hr])
-names = ("Name2",[short_header,_names, footer])
+singleOrMultipleNames= Filled("Name",
+                              child=[
+                                  Cascade(child=FilledOrEmpty("Name2",
+                                                              listNames,
+                                                              singleName),
+                                          field="Names",
+                                          cascade={"Name","Name2","Name3","Name4"}),
+                                  hr])
+names = ("Name2",[short_header, listNames, footer])

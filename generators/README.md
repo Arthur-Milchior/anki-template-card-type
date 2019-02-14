@@ -218,6 +218,11 @@ HideInSomeQuestions(fields,child)
 Print child, except on the question side when some field in the
 container fields is asked.
 
+### ShowIfAskedOrAnswer
+Show something on answer side, or if this thing is asked. For example,
+this can be used for proof of theorem. Those proofs should not be
+shown in question, as it would give too much hints.
+
 ## Syntax
 In this section, we present more complex generators. They represents
 things the author of this add-on often want to do.
@@ -354,8 +359,13 @@ given either:
 Each line is similar to a Question generator, with ```<tr><td>``` as
 prefix, ```</td><td>``` as infix and ```</td></tr>``` as suffix.
 
-This generator as an optional argument ```name```. When ```name``` is
-asked, it is similarly to asking simultaneously every single fields.
+This generator optional argument are:
+* ```name``` When ```name``` is asked, it is similarly to asking
+simultaneously every single fields.
+* ```answer```: a suffix such that, for each field "f", "f answer" is
+  an explanation of the answer "f", shown in a new column and only on
+  answer side.
+
 ##### NumberedFields
 Sometime, you have a list of successive fields with name suffixed by
 numbers, such as ```foo```, ```foo2```, ..., ```foon```. For example

@@ -29,7 +29,7 @@ decreaseRelation = Parenthesis(left = " ",
 
 
 def connexion(nb,side,default = "and"):
-    """{{Connect sidenb}} if field, else (default = "And"). 
+    """{{Connect sidenb}} if field, else (default = "And").
     {{field side(nb+1)}}"""
     return Filled(f"{side}{nb+1}",
                   [Parenthesis(left = " ", right = " ",
@@ -114,15 +114,16 @@ def longLine(line):
                                         line),
                        line),
             hr,
-            DecoratedField("Construction",
-                           classes = "Definition3",
-                           suffix=hr),
+            ShowIfAskedOrAnswer("Construction",
+                                DecoratedField("Construction",
+                                               classes = "Definition3",
+                                               suffix=hr)),
             footer]
     return AtLeastOneField(asked = True,
                            fields = listOfSideFieldNames,
                            child = [Empty("Hide sides","Suspend this card"),line],
                            otherwise = line)
-        
+
 increasing = longLine(increasing_)
 decreasing = longLine(decreasing_)
 

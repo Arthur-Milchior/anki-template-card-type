@@ -22,13 +22,14 @@ def _tagGetParams(tag):
     hideQuestions = split(tag.attrs.get("hidequestion"))
     objGenerator = tag.attrs.get("generator")
     mandatory = split(tag.attrs.get("mandatory"))
+    forbidden = split(tag.attrs.get("forbidden"))
     askedMandatory = split(tag.attrs.get("askedmandatory"))
     mandatory |= askedMandatory
     asked |= askedMandatory
     choose=tag.attrs.get("choose")
     if objGenerator is None:
         raise ExceptionInverse(f"""Generator missing in {tag}.""")
-    ret = (objGenerator, asked, hide, hideQuestions, mandatory,choose)
+    ret = (objGenerator, asked, hide, hideQuestions, mandatory, choose, forbidden)
     assert standardContainer(asked)
     assert standardContainer(hide)
     assert standardContainer(hideQuestions)
@@ -42,7 +43,7 @@ def tagGetParamsConfig(tag, objects):
     add objectabsent to tag if this generator is absent from Objects.
     Remove objectabsent if an object with this generator is present
     """
-    (objGenerator, asked, hide, hideQuestions, mandatory,choose) = _tagGetParams(tag)
+    (objGenerator, asked, hide, hideQuestions, mandatory, choose, forbidden) = _tagGetParams(tag)
     obj = objects.get(objGenerator)
     if obj is None:
         #debug("""Adding "objectabsent ={objGenerator}" to "{tag}".""",-1)
@@ -50,17 +51,17 @@ def tagGetParamsConfig(tag, objects):
         return None
     elif "objectAbsent" in tag.attrs:
         del tag.attrs["objectAbsent"]
-    return (obj, asked, hide, hideQuestions, mandatory,choose)
+    return (obj, asked, hide, hideQuestions, mandatory,choose, forbidden)
 
 def tagGetParamsEval(tag, objects):
     """
     Return everything required from the tag to add its object in it.
     The object is evaluated, and python error may rise
     """
-    (objGenerator, asked, hide, hideQuestions, mandatory, choose) = _tagGetParams(tag)
+    (objGenerator, asked, hide, hideQuestions, mandatory, choose, forbidden) = _tagGetParams(tag)
     #debug("objGenerator is {objGenerator}")
     obj = ensureGen(evaluate(objGenerator, objects = objects))
-    ret = (obj, asked, hide, hideQuestions, mandatory,choose)
+    ret = (obj, asked, hide, hideQuestions, mandatory,choose, forbidden)
     return ret
 
 def compile_(tag, soup, *, isQuestion = True, model = None, objects = dict(), inConfig = True, **kwargs):
@@ -91,7 +92,7 @@ def compile_(tag, soup, *, isQuestion = True, model = None, objects = dict(), in
     else:
         params = tagGetParamsEval(tag, objects)
     if params is not None:
-        (obj, asked, hide, hideQuestions, mandatory, choose) = params
+        (obj, asked, hide, hideQuestions, mandatory, choose, forbidden) = params
         obj=obj.getNormalForm()
         if choose is not None and not asked:
             tag["askedmandatory"]=obj.getQuestionToAsk(modelName)
@@ -100,6 +101,7 @@ def compile_(tag, soup, *, isQuestion = True, model = None, objects = dict(), in
                                fields = fields,
                                isQuestion = isQuestion,
                                asked = asked,
+                               forbidden = forbidden,
                                hide = hide,
                                hideQuestions = hideQuestions,
                                mandatory = mandatory,

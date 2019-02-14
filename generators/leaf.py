@@ -15,7 +15,7 @@ class Leaf(Gen):
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
+
     @debugFun
     def _getChildren(self):
         return frozenset()
@@ -24,7 +24,7 @@ class Leaf(Gen):
     def clone(self, elements = []):
         assert elements == []
         return self
-    
+
     def _firstDifference(self,other):
         return None
 
@@ -54,7 +54,7 @@ class Empty(Leaf):
         super().__init__(state = state,
                          toKeep = toKeep,
                          **kwargs)
-    
+
     def _repr(self):
         if self == emptyGen:
             return "emptyGen"
@@ -63,7 +63,7 @@ class Empty(Leaf):
 
     def _createHtml(self, soup):
         return None
-    
+
     def _outerEq(self,other):
         #debug("{self!r} == {other!r}",1)
         l = isinstance(other,Empty)
@@ -95,27 +95,27 @@ class Literal(Leaf):
             state == EMPTY
         super().__init__(state = state,
                          **kwargs)
-    
+
     def __hash__(self):
         return hash(self.text)
 
     def _repr(self):
             return f"""Literal(text = "{self.text}",{self.params()})"""
-    
+
     def _outerEq(self,other):
         if not isinstance(other,Literal):
             return False
         return self.text == other.text
-    
+
     def _createHtml(self, soup):
         return NavigableString(self.text)
-    
+
 addTypeToGenerator(str,Literal)
 
 @thisClassIsClonable
 class Field(Leaf):
-    """Representation of a field. 
-    
+    """Representation of a field.
+
     keywords parameter:
     field -- The name of the field
     typ -- Whether "type:" should be prefixed. It has some special signification in anki
@@ -157,7 +157,7 @@ class Field(Leaf):
                          toKeep = toKeep,
                          localMandatories = {self.field} if isMandatory else frozenset(),
                          **kwargs)
-        
+
 
     def dealWithClozeAndType(self):
         if self.field.startswith("type:"):
@@ -168,7 +168,7 @@ class Field(Leaf):
             print(f"""Beware: you used "cloze:" in prefix of your field name. Please use "cloze= True" in the Field object creator instead. "cloze:" is removed from the name.""", file=sys.stderr)
             self.cloze = True
             self.field = self.field[6:]
-        
+
     def dealWithSpecial(self):
         specialName = {"FrontSide":"frontside", "Tags":"tags", "Type":"typ", "Deck":"deck", "Card":"card"}
         if self.field in specialName and not self.special:
@@ -180,7 +180,7 @@ class Field(Leaf):
                 print(f"""Beware: you want to have "type:" before a special field {self.field}, this makes no sens.""", file=sys.stderr)
             if self.typ:
                 print(f"""Beware: you want to have "cloze:" before a special field {self.field}, this makes no sens.""", file=sys.stderr)
-                
+
     def _getNormalForm(self):
         if self.useClasses:
             return CLASS(self.classes,
@@ -192,14 +192,14 @@ class Field(Leaf):
                                useClasses=False))
         else:
             return self
-        
-        
+
+
     def __hash__(self):
         return hash(self.field)
 
     def _outerEq(self,other):
         return isinstance(other,Field) and self.field == other.field and self.useClasses == other.useClasses and super()._outerEq(other)
-    
+
     def _repr(self):
         t= f"""Field(field = "{self.field}","""
         if self.typ is not False:
@@ -215,14 +215,14 @@ class Field(Leaf):
         t+=self.params()+")"
         return t
 
-    def _assumeFieldEmpty(self,field):
-        if field == self.field:
+    def _assumeFieldEmpty(self, fields, setForbiddenState):
+        if self.field in fields:
             if self.special:
                 print(f"""Beware: you assert that special name {self.field} is empty, which makes no sens.""", file=sys.stderr)
             return emptyGen
         else:
             return self
-        
+
     def _assumeFieldAbsent(field):
         if field == self.field:
             if self.special:
@@ -241,7 +241,7 @@ class Field(Leaf):
                 return self
             else:
                 return emptyGen
-            
+
     def _createHtml(self, *args, **kwargs):
         typ = "type:" if self.typ else ""
         cloze = "cloze:" if self.typ else ""
@@ -253,4 +253,3 @@ tags = Field("Tags", special = True)
 typ = Field("Type", special = True)
 deck = Field("Deck", special = True)
 card = Field("Card", special = True)
-

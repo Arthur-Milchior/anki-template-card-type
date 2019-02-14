@@ -13,11 +13,10 @@ from .tag import tagContent
 from .templates.soupAndHtml import templateFromSoup, soupFromTemplate
 from .templates.templates import clean, compile_
 
-
 def _templateTagAddText(templateTag,soup,
                         isQuestion,
                         model,
-                        objects, 
+                        objects,
                         recompile = False):
     """Assuming templateTag is a template tag. Return the text for this tag, or none if the object is missing."""
     #debug("""_templateTagAddText({templateTag},{isQuestion},{model["name"]}, {recompile})""", 1)
@@ -28,7 +27,7 @@ def _templateTagAddText(templateTag,soup,
         else:
             templateTag.contents = []
 
-    
+
 
 def shouldProcess(template,key):
     """Whether key is in template and is non-empty"""
@@ -90,7 +89,7 @@ def compileModel(model, objects = objects, action = "Template",  prettify = True
                     break
                 try:
                     answerSoup, answerText = processIfRequired(templateObject, answerKey, action = action, isQuestion = False, model = model, objects = objects, FrontHtml = frontHtml, prettify = prettify)
-                    if answerText: 
+                    if answerText:
                         assert assertType(answerText,str)
                         templateObject[answerKey] = answerText
                 except Exception as e:
@@ -101,8 +100,17 @@ def compileModel(model, objects = objects, action = "Template",  prettify = True
                     break
     return model
 
-def compileAndSaveModel(*args,**kwargs):
-    model = compileModel(*args,**kwargs)
-    mw.col.models.save(model, templates = True)
+def compileAndSaveModel(model,*args,**kwargs):
+    originalModel = copy.deepcopy(model)
+    newModel = compileModel(model, *args,**kwargs)
+    try:
+        mw.col.models.save(newModel,
+                           templates = True,
+                           oldModel = originalModel,
+                           newTemplatesData = [{"is new": False,
+                                                "old idx":i}
+                                               for i in range(len(newModel['tmpls']))])
+    except:
+        print(f"Please install add-on 802285486.")
+        raise
     mw.col.models.flush()
-

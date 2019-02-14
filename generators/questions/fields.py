@@ -25,6 +25,7 @@ class QuestionnedField(AskedOrNot):
                  isMandatory = False,
                  emphasize = True,
                  useClasses = True,
+                 suffix = None,
                  **kwargs):
         """
         useClasses -- whether the name of the field/classes should be applied to this field.
@@ -57,6 +58,8 @@ class QuestionnedField(AskedOrNot):
             self.child = Field(field,
                                isMandatory=isMandatory,
                                useClasses = False)
+        if suffix is not None:
+            self.child = [self.child, suffix]
 
         self.asked = QuestionOrAnswer(markOfQuestion,
                                       CLASS(self.classesAsked,

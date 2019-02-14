@@ -1,6 +1,6 @@
 from ...generators import *
 #Core
-## Leaf 
+## Leaf
 ### Empty
 none = ensureGen(None)
 
@@ -71,7 +71,9 @@ cascadeUseless = Cascade(field ="asked",
                                             "Asked is not asked"))
 cascade = Cascade(field ="asked",
                   cascade = {"cascaded"},
-                  child = AskedOrNot("cascaded", "Cascaded is asked","Cascaded is not asked"))
+                  child = AskedOrNot("cascaded",
+                                     "Cascaded is asked",
+                                     "Cascaded is not asked"))
 
 ### QuestionOrAnswer
 qoa = QuestionOrAnswer(question = "question side", answer = "answer side")
@@ -278,7 +280,7 @@ tableTwoShownAnswerAll= ListElement([
             tableTwoLine1Answered,
             tableTwoLine2Answered
         ]),
-        tag = 'table'), 
+        tag = 'table'),
     ToAsk({'Definition': set(), 'Name': set()})])
 
 ### Table 3 columns
@@ -606,7 +608,7 @@ tableFourShownAnswerAll= ListElement([
             tableFourLine1Answereds,
             tableFourLine2Answereds
         ]),
-        tag = 'table'), 
+        tag = 'table'),
     ToAsk({'Definition': set(), 'Name': set()})])
 
 
@@ -715,5 +717,3 @@ twoQuestionsNumberedAllAnswer = ListElement([
                  twoQuestionsNumberedLine2Answer,
              ],),)],),
     ToAsk({'Definition': set(), 'Definition2': set()})])
-
-

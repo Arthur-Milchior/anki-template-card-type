@@ -2,6 +2,7 @@ from ...debug import debug, ExceptionInverse, debugFun, assertType, debugInit, d
 from ...utils import identity, checkField
 from ..conditionals.askedOrNot import  AskedOrNot, Cascade
 from ..conditionals.numberOfField import AtLeastOneField
+from ..conditionals.questionOrAnswer import QuestionOrAnswer
 from ..conditionals.filledOrEmpty import Filled, FilledOrEmpty
 from ..conditionals.multiple import MultipleRequirement
 from ..conditionals.hide import HideInSomeQuestions
@@ -103,6 +104,7 @@ class TableFields(ListFields):
                  useClasses = True,
                  defaultClasses = None,
                  label = None,
+                 answer = None,
                  **kwargs):
         self.fields = []
         for field_s in fields:
@@ -180,7 +182,17 @@ class TableFields(ListFields):
                                                     isMandatory = isMandatory,
                                                     useClasses = useClasses,
                                                     classes = classes)
-                return TD(child = questionnedField, attrs = tdFieldAttrs)
+                td = TD(child = questionnedField, attrs = tdFieldAttrs)
+                if not answer:
+                    return td
+                answerField = f"{fieldName}{answer}"
+                answerQuestionned = QuestionnedField(answerField,
+                                                     useClasses = useClasses,
+                                                     classes = classes)
+                answerTd = TD(child = answerQuestionned,
+                              attrs = tdFieldAttrs)
+                return QuestionOrAnswer(td,[td,answerTd])
+
             trChild = [tdLabel,tdField()]+[tdField(i) for i in range(2,self.greater+1)]
 
             # The whole line

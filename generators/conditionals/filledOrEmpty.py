@@ -15,28 +15,28 @@ class Empty(FieldChild):
             return emptyGen
         else:
             return self.cloneSingle(self.getChild().assumeFieldFilled(fields, setMandatoryState))
-        
-    def _assumeFieldEmpty(self, field):
-        if self.field == field:
-            return self.getChild().assumeFieldEmpty(field)
+
+    def _assumeFieldEmpty(self, fields, setForbiddenState):
+        if self.field in fields:
+            return self.getChild().assumeFieldEmpty(fields, setForbiddenState)
         else:
-            return self.cloneSingle(self.getChild().assumeFieldEmpty(field))
-        
+            return self.cloneSingle(self.getChild().assumeFieldEmpty(fields, setForbiddenState))
+
     def _assumeFieldAbsent(self, field):
         if self.field == field:
-            return self.getChild().assumeFieldEmpty(field)
+            return self.getChild().assumeFieldAbsent(field)
         else:
-            return self.cloneSingle(self.getChild().assumeFieldEmpty(field))
-         
+            return self.cloneSingle(self.getChild().assumeFieldAbsent(field))
+
     def _restrictToModel(self, fields):
         if self.field in fields:
             return self.cloneSingle(self.getChild().restrictToModel(fields))
         else:
             return self.getChild().restrictToModel(fields)
-    
+
     def _getWithoutRedundance(self):
         child = self.getChild().getWithoutRedundance()
-        child =child.assumeFieldEmpty(self.field)
+        child =child.assumeFieldEmpty(self.field, False)
         return self.cloneSingle(child)
 
     def _createHtml(self, soup):
@@ -46,7 +46,7 @@ class Empty(FieldChild):
                 childHtml+
                 [bs4.NavigableString(f"{{{{/{self.field}}}}}")])
 
-        
+
 @thisClassIsClonable
 class Filled(FieldChild):
     """The class which expands differently in function of the question/answer side."""
@@ -55,24 +55,24 @@ class Filled(FieldChild):
           return self.getChild().assumeFieldFilled(fields, setMandatoryState)
       else:
           return self.cloneSingle(self.getChild().assumeFieldFilled(fields, setMandatoryState))
-        
-    def _assumeFieldEmpty(self, field):
-        if self.field == field:
+
+    def _assumeFieldEmpty(self, fields, setForbiddenState):
+        if self.field in fields:
             return emptyGen
         else:
-            return self.cloneSingle(self.getChild().assumeFieldEmpty(field))
-        
+            return self.cloneSingle(self.getChild().assumeFieldEmpty(fields, setForbiddenState))
+
     def _assumeFieldAbsent(self, field):
         if self.field == field:
             return self.empty
         else:
-            return self.cloneSingle(self.getChild().assumeFieldEmpty(field))
-         
+            return self.cloneSingle(self.getChild().assumeFieldAbsent(field))
+
     def _getWithoutRedundance(self):
         child = self.getChild().getWithoutRedundance()
         child = child.assumeFieldFilled(self.field, setMandatoryState = False)
         return self.cloneSingle(child)
-        
+
     @debugFun
     def _restrictToModel(self,fields):
         if self.field not in fields:
@@ -80,7 +80,7 @@ class Filled(FieldChild):
             return emptyGen
         else:
             return self.cloneSingle(self.getChild().restrictToModel(fields))
-        
+
     def _createHtml(self, soup):
         child = self.getChild().createHtml(soup)
         assert assertType(child,list)
@@ -89,16 +89,22 @@ class Filled(FieldChild):
                 [bs4.NavigableString(f"{{{{/{self.field}}}}}")])
 
 def tupleToFilled(tup):
-    assert len(tup) == 2
-    field, child = tup
-    return Filled(field = field,child = child)
+    if len(tup) == 2:
+        field, child = tup
+        return Filled(field = field,child = child)
+    elif len(tup) == 3:
+        field, filled, empty = tup
+        return FilledOrEmpty(field, filled, empty)
+    else:
+        raise Exception(f"Tuple of size {len(tup)}")
 addTypeToGenerator(tuple, tupleToFilled)
+
 #It is useful to be able to create Filled from generators. Thus it should be in typeToGenerator. Tuple is a type not yet used, which have sens.
-    
+
 # class FilledOrEmpty(ListElement):
 #     # def __repr__(self):
 #     #     return """FilledOrEmpty({self.field},{self.filledCase},{self.emptyCase})"""
-    
+
 #     def __init__(self, field, filledCase = emptyGen, emptyCase = emptyGen,  **kwargs):
 #         self.filledCase = filledCase
 #         self.emptyCase = emptyCase

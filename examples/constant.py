@@ -10,6 +10,7 @@ number=[QuestionnedField("Significative digit", classes= "Definition"),
         )]
 
 typedNumber= [number, QuestionnedField("Typ"),hr]
+typedNumber  = Cascade("Typs",typedNumber,{"Typ"})
 types=Filled("Typ",
              PotentiallyNumberedFields("Typ",
                                        5,

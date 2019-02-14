@@ -25,6 +25,17 @@ definitions = ("Definition",
                                           label = labelDef,
                                           infix = ""),
                 hr])
+
+for i in range(1,4):
+    name = "Part"+("" if i==1 else str(i))
+    content = set()
+    for j in range(4):
+        d = 4*i+j
+        content.add("Definition"+("" if d==1 else str(d)))
+    definitions = Cascade(name,
+                          definitions,
+                          content)
+
 other = TableFields(["Construction",
                      "Property",
                      "Cardinal",

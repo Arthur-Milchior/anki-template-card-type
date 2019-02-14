@@ -5,15 +5,18 @@ can't promise it to be fit for everyone (yet?)
 
 ![An example of card generated using my add-on](https://raw.githubusercontent.com/Arthur-Milchior/anki-template-card-type/master/examples/images/exampleQuestion.png "First name question")
 
+## Requirement
+To use this add-on, you must have installed addon
+[802285486](https://ankiweb.net/shared/info/802285486).
+
 ## Links
 To see a few examples of note type created using this add-on, go read:
 [examples/README.md]
 You should probably download this add-on and try those examples to
 understand how everything works.
 
-Please, refer to
-[generator's documentation](generators/DOCUMENTATION.md)
-to learn how to use this add-on. I'll just give a few examples here.
+Please, refer to [documentation](DOCUMENTATION.md) to learn how to use
+this add-on. I'll just give a few examples here.
 
 
 ## Rationale
@@ -34,7 +37,7 @@ pretty useful for debugging.
 In order to easily write templates, this add-on also gives you a
 library/domain specicif language of basic component, called
 generators. Those generators allow you to change the template,
-depending on a lot of conditions. 
+depending on a lot of conditions.
 
 ## Links, licence and credits
 

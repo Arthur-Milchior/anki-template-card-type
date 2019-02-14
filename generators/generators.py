@@ -1,4 +1,4 @@
-from ..debug import debug, assertType, debugFun, ExceptionInverse, optimize, debugOnlyThisMethod
+from ..debug import debug, assertType, debugFun, ExceptionInverse, doMemoize, debugOnlyThisMethod
 from ..utils import identity, standardContainer
 from .ensureGen import ensureGen, addTypeToGenerator
 from .constants import *
@@ -19,7 +19,7 @@ def memoize(computeKey = (lambda:None)):
     """
     CURRENTLY_COMPUTED = ("CURRENTLY COMPUTED",)
     def actualArobase(fun):
-        if not optimize:
+        if not doMemoize:
             return fun
         fname = fun.__name__
         #@debugFun
@@ -402,6 +402,19 @@ class Gen:
             current.setState(MANDATORY)
         return current
 
+    @memoize(lambda fields: fields)
+    @ensureGenAndSetState(FORBIDDEN)
+    @ensureReturnGen
+    @debugFun
+    def forbidding(self, fields):
+        """Self, where the display only occurs if each fields of mandatory are be filled"""
+        current = self.assumeFieldEmpty(fields, setForbiddenState = True)
+        for field in fields:
+            #EnsureGen of a tuple create a FilledObject.
+            current = self._ensureGen((field, None, current))
+            current.setState(FORBIDDEN)
+        return current
+
     @memoize()
     @ensureReturnGen
     @debugFun
@@ -425,9 +438,9 @@ class Gen:
     @debugFun
     def assumeFieldFilled(self, fields, setMandatoryState = False):
         """Remove Empty(field,foo) and Absent(field,foo), replace Filled(field,foo) by foo, for each field in fields"""
-        ret = self._assumeFieldFilled(fields, setMandatoryState)
         if isinstance(fields, str):
             fields = {fields}
+        ret = self._assumeFieldFilled(fields, setMandatoryState)
         if setMandatoryState:
             ret = self._ensureGen(ret)
             ret.setState(MANDATORY)
@@ -440,12 +453,19 @@ class Gen:
     #@emptyToEmpty
     @ensureReturnGen
     @debugFun
-    def assumeFieldEmpty(self, field):
+    def assumeFieldEmpty(self, fields, setForbiddenState = False):
         """Remove Filled(field,foo), replace Empty(field,foo) by foo"""
-        return self._assumeFieldEmpty(field)
+        if isinstance(fields, str):
+            fields = {fields}
+        ret = self._assumeFieldEmpty(fields, setForbiddenState)
+        if setForbiddenState:
+            ret = self._ensureGen(ret)
+            ret.setState(FORBIDDEN)
+        return ret
+
     @debugFun
-    def _assumeFieldEmpty(self, field):
-        return self.callOnChildren("assumeFieldEmpty", field = field)
+    def _assumeFieldEmpty(self, fields, setForbiddenState):
+        return self.callOnChildren("assumeFieldEmpty", fields, setForbiddenState)
 
     #@emptyToEmpty
     @ensureReturnGen
@@ -634,6 +654,7 @@ class Gen:
                 fields = None,
                 isQuestion = None,
                 asked = None,
+                forbidden = None,
                 mandatory = None,
                 hide = None,
                 hideQuestions = None,
@@ -715,13 +736,20 @@ class Gen:
         if goal == MANDATORY:
             return mandatoried
 
+        if forbidden is None:
+            forbidden = frozenset()
+        forbidded = askedGen.forbidding(mandatory)
+        if toPrint: print(f"""\nWith mandatory({mandatory}) applied, "{mandatoried}".""")
+        # if goal == MANDATORY:
+        #     return forbidded
+
         if template:
-            name = mandatoried.getName()
+            name = forbidded.getName()
             template["name"] = name
 
         assert soup is not None
         try:
-            resultTags = mandatoried.createHtml(soup = soup)
+            resultTags = forbidded.createHtml(soup = soup)
         except Exception:
             print(f"mandatoried is {mandatoried}")
             raise
@@ -799,7 +827,7 @@ class NotNormal(Gen):
     #     raise ExceptionInverse(f"assumeFieldInSet from not normal")
     def _assumeFieldFilled(self, field, setMandatoryState):
         raise ExceptionInverse(f"_assumeFieldFilled from not normal:{self}")
-    def _assumeFieldEmpty(self, field):
+    def _assumeFieldEmpty(self, fields, setForbiddenState = False):
         raise ExceptionInverse(f"_assumeFieldEmpty from not normal:{self}")
     def _assumeFieldPresent(self, field):
         raise ExceptionInverse(f"_assumeFieldPresent from not normal:{self}")
