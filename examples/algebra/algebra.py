@@ -51,9 +51,7 @@ presentation = ("Relation",
                                           greater = 5,
                                           fieldPrefix = "Relation",
                                           suffix = hr))
-
-
-outer_function =TableFields(
+outer_function = TableFields(
     ["Graduation",
      "Norm",
      "Euclidean function",
@@ -61,6 +59,13 @@ outer_function =TableFields(
     ],
     name = "Outer functions"
 )
+definition = Cascade("Definitions",
+                     [DecoratedField("Set", suffix = hr),
+                      presentation,
+                      inner_function,
+                      outer_function],
+                     {"Inner functions", "Outer functions","Relations", "Set"})
+
 properties = TableFields(
     ["Principal ideal",
      "Integral",
@@ -89,11 +94,6 @@ properties = TableFields(
 
 algebra = [header,
            algebra_name_formatted,
-           DecoratedField("Set", suffix = hr),
-           inner_function,
-           outer_function,
+           definition
            properties,
            footer]
-algebra = Cascade("Definitions",
-                  algebra,
-                  {"Inner functions", "Outer functions","Relations", "Set"})
