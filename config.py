@@ -13,19 +13,19 @@ def readIfRequired():
     if not read:
         reread()
         read = True
-        
-def getObject(s = None):
+
+def getObject(s = None, default = None):
     """Get the dictionnary of objects. If a name is given, return the
     object with this name if it exists.
 
     reads if required."""
-    
+
     readIfRequired()
     if s is None:
         return objects
     else:
-        return objects.get(s)
-    
+        return objects.get(s, default = None)
+
 def _set(s,value):
     readIfRequired()
     objects[s] = value
@@ -48,7 +48,7 @@ def jsonToDic(json, dic = dict()):
             else:
                 assert False
     return dic
-    
+
 read = False
 def reread(objects=objects):
     #debug("reread", 1)
@@ -63,7 +63,7 @@ def execute(t):
 def evaluate(t, objects = objects):
     #debug("""evaluating "{t}" """)
     return eval(t, globals(), objects)
-        
+
 def define(name, value):
     #debug("define({name},{value})",1 )
     r = evaluate(value)

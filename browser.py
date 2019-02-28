@@ -2,7 +2,7 @@ from anki.hooks import addHook
 from aqt import mw
 from aqt.qt import QAction, QKeySequence
 from aqt.utils import tooltip
-from .config import readIfRequired, objects
+from .config import readIfRequired, objects, getObject
 from .editTemplate import compileAndSaveModel
 
 def runBrowser(browser, action, note):
@@ -52,23 +52,35 @@ def setupMenu(browser):
     a = QAction("ReTemplate Card", browser)
     a.triggered.connect(lambda : runBrowser(browser,"ReTemplate",False))
     browser.form.menuEdit.addAction(a)
-    a.setShortcut(QKeySequence("Ctrl+Shift+T"))
+    shortCut = getObject("Shortcut: ReTemplate Card","Ctrl+Shift+T")
+    if shortcut:
+        a.setShortcut(QKeySequence(shortCut))
 
     a = QAction("Template Note", browser)
-    a.setShortcut(QKeySequence("Ctrl+Alt+T"))
+    shortCut = getObject("Shortcut: Template Note","Ctrl+Alt+T")
+    if shortcut:
+        a.setShortcut(QKeySequence(shortCut))
     a.triggered.connect(lambda : runBrowser(browser,"Template",True))
     browser.form.menuEdit.addAction(a)
 
-    a = QAction("ReTemplate note", browser)
-    a.setShortcut(QKeySequence("Ctrl+Alt+Shift+T"))
+    a = QAction("ReTemplate Note", browser)
+    shortCut = getObject("Shortcut: ReTemplate Note","Ctrl+Alt+Shift+T")
+    if shortcut:
+        a.setShortcut(QKeySequence(shortCut))
     a.triggered.connect(lambda : runBrowser(browser,"ReTemplate",True))
     browser.form.menuEdit.addAction(a)
 
     a = QAction("\"frontSide\" to each back", browser)
+    shortCut = getObject("Shortcut: frontside")
+    if shortcut:
+        a.setShortcut(QKeySequence(shortCut))
     a.triggered.connect(lambda : runBrowser(browser,"FrontSide",True))
     browser.form.menuEdit.addAction(a)
 
     a = QAction("Clean Template note", browser)
+    shortCut = getObject("Shortcut: Clean Template note")
+    if shortcut:
+        a.setShortcut(QKeySequence(shortCut))
     a.triggered.connect(lambda : runBrowser(browser,"Clean template",True))
     browser.form.menuEdit.addAction(a)
 addHook("browser.setupMenus", setupMenu)
