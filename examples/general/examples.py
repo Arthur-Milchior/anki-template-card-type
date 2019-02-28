@@ -21,7 +21,10 @@ _examples = ('Example',
                                        4,
                                        suffix=hr,
                                        localFunMultiple = localFun,
-                                       singleCase = _example(""),
+                                       singleCase = DecoratedField(label = "Example",
+                                                                   field = "Example",
+                                                                   child=_example(""),
+                                                                   suffix = hr),
                                        isMandatory = False))
 _counterexamples = ('Counterexample',PotentiallyNumberedFields('Counterexample', 4, isMandatory = False, suffix=hr))
 

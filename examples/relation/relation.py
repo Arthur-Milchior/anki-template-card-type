@@ -1,31 +1,35 @@
 from ..general import header, footer
 from ...generators import *
 
+def suspend(when):
+    return Filled(when,[CLASS("Warning","Suspend this card"),hr])
 
 """{{Smaller to greater}} if field else "implies" """
-foe=FilledOrEmpty("Smaller to greater",
+impliesOrMorePrecise=FilledOrEmpty("Smaller to greater",
                   {"Smaller to greater"},
                   "implies")
-qf=QuestionnedField(field = "Smaller to greater",
-                    child = foe,
-                    classes = "Definition")
+
+questionnedImpliesOrMorePrecise = QuestionnedField(field = "Smaller to greater",
+                      child = impliesOrMorePrecise,
+                      classes = "Definition")
+
 increaseRelation = Parenthesis(left = " ",
                               right = " ",
-                               child = qf)
+                               child = questionnedImpliesOrMorePrecise)
 
 """{{Greater to smaller}} if field else {{Smaller to greater}} if field else "Implied by" """
-foe = FilledOrEmpty("Smaller to greater",
+impliedByOrMore = FilledOrEmpty("Smaller to greater",
                     {"Smaller to greater"},
                     "implied by")
-foe = FilledOrEmpty("Greater to smaller",
+impliedByOrLotMore = FilledOrEmpty("Greater to smaller",
                     {"Greater to smaller"},
-                    foe)
-qf = QuestionnedField(field = "Greater to smaller",
-                      child = foe,
+                    impliedByOrMore)
+questionnedImpliedByOrMorePrecise = QuestionnedField(field = "Greater to smaller",
+                      child = impliedByOrLotMore,
                       classes = "Definition")
 decreaseRelation = Parenthesis(left = " ",
                                right = " ",
-                               child = qf)
+                               child = questionnedImpliedByOrMorePrecise)
 
 
 def connexion(nb,side,default = "and"):
@@ -121,7 +125,7 @@ def longLine(line):
             footer]
     return AtLeastOneField(asked = True,
                            fields = listOfSideFieldNames,
-                           child = [Empty("Hide sides","Suspend this card"),line],
+                           child = [suspend("Hide sides"),line],
                            otherwise = line)
 
 increasing = longLine(increasing_)
@@ -143,6 +147,6 @@ def relation(left,right):
     leftFieldName = listOfSideFieldNames[left]
     rightFieldName = listOfSideFieldNames[right]
     l = [header, leftField,relation,rightField,hr,footer]
-    empty = [Empty("Hide middle","Suspend this card"),l]
+    empty = [suspend("Hide middle"),l]
     filled = Filled(leftFieldName,Filled(rightFieldName,empty))
     return filled

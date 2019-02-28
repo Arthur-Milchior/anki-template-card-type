@@ -52,8 +52,8 @@ compactness= tf(name="Compactness",
 
 bounded =tf(name="Bounded",
             fields=[
-                'bounded',
-                'totally bounded'
+                'Bounded',
+                'Totally bounded'
             ]
 )
 
@@ -65,8 +65,8 @@ points = tf(name="Points",
 
 sets =tf(name="Sets",
             fields=[
-                'clopen',
-                'dense',
+                'Clopen',
+                'Dense',
             ]
 )
 
@@ -173,7 +173,7 @@ others = tf(name="Other",
                 'Zero-dimensional',
                 'Dimension',
             ])
-                             
+
 properties = [compactness,bounded,points, sets, separations,connexion,
               group, cardinal,others]
 topology = [header, definition_topology, properties, footer]

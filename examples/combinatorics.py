@@ -1,5 +1,5 @@
-from .general import short_header, footer
-from ..generators.imports import *
+from ..generators import *
+from .general import header, footer
 
 definition_combinatorics = TableFields(
     name = "Combinatorics",
@@ -24,15 +24,36 @@ numeric = TableFields(["Nth value",
                       name="Numeric"
 )
 bijection = DecoratedField("Bijection")
+symbolics = TableFields(["Name",
+                         "French",
+                         "Notation",
+                         "Abbreviation",
+                         {"field":"Equation",
+                          "classes":"Definition"},
+                         {"field":"Nth element",
+                          "classes":"Nth"}],
+                        greater=2,
+                        name="Symbolic")
 symbolic = TableFields(["Name",
-                        "French"
+                        "French",
                         "Notation",
-                        "Abbreviation"
+                        "Abbreviation",
                         {"field":"Equation",
                          "classes":"Definition"},
                         {"field":"Nth element",
                          "classes":"Nth"}],
-                       greater=2,
+                       name="Symbolic")
+symbolic2 = TableFields(["Name2",
+                         "French2",
+                        "Notation2",
+                         "Abbreviation2",
+                        {"field":"Equation2",
+                         "classes":"Definition"},
+                        {"field":"Nth element2",
+                         "classes":"Nth"}],
                        name="Symbolic")
 
-combinatorics = [short_header, numberic, bijection, symbolic, footer]
+combinatorics = [header, numeric, bijection, symbolics, footer]
+combinatoric_numeric = [header, numeric, footer]
+combinatoric_symbolic = [header, symbolic, footer]
+combinatoric_symbolic2 = [header, symbolic2, footer]

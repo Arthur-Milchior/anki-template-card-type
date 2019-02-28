@@ -348,6 +348,8 @@ given either:
   * "label" the label to put in the first column in this line
   * "hideInSomeQuestion": apply HideInSomeQuestion to this line, with
     the value contained in this entry.
+  * "showIfAskedOrAnswer": apply ShowIfAskedOrAnswer to this line, with
+    the value contained in this entry.
   * "emptyCase" What to show if the field is empty. In this case, the
     line is always shown, even if the field is empty. Furthermore,
     this is still considered to be a valid question, with the value

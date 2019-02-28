@@ -4,6 +4,7 @@ from .general import header, footer
 
 automata = [
     header,
+    ("Typ",[{"Typ"},":"]),
     TableFields(
         name = "Automata",
         fields = [
@@ -19,8 +20,6 @@ automata = [
              "classes":"Definition5"},
             {"field": "Transitions",
              "classes":"Definition6"},
-            {"field": "Typ",
-             "classes":"Definition7"},
             {"field": "Labels",
              "classes":"Definition8"},
             {"field": "Actions",

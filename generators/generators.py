@@ -738,10 +738,10 @@ class Gen:
 
         if forbidden is None:
             forbidden = frozenset()
-        forbidded = askedGen.forbidding(mandatory)
-        if toPrint: print(f"""\nWith mandatory({mandatory}) applied, "{mandatoried}".""")
-        # if goal == MANDATORY:
-        #     return forbidded
+        forbidded = mandatoried.forbidding(forbidden)
+        if toPrint: print(f"""\nWith forbidding({forbidden}) applied, "{forbidded}".""")
+        if goal == FORBIDDEN:
+            return forbidded
 
         if template:
             name = forbidded.getName()

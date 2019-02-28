@@ -6,8 +6,11 @@ answers = PotentiallyNumberedFields("Answer",
                                     label = QuestionnedField("Question"),
                                     infix = None,
                                     suffix = hr,
-                                    classes = "Notation")
-                                    
-questionGen = [Filled("Question",
-                      [header, answers, DecoratedField("Construction", suffix=hr, classes = "DenotedBy"), footer]),
-            hr]
+                                    classes = "Definition")
+
+questionGen = [header,
+               answers,
+               ShowIfAskedOrAnswer("Construction",
+                                   DecoratedField("Construction", suffix=hr, classes = "DenotedBy")),
+               footer,
+               hr]

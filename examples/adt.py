@@ -17,5 +17,5 @@ definition_adt = TableFields(
 
 definition=Cascade("Adt",
                    [definition_adt, PotentiallyNumberedFields("Function",5, classes="Definition")],
-                   {"Adt","Functions"})
+                   {"Adt_","Functions"})
 adt = [header, definition, footer]

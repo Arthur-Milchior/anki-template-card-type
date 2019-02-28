@@ -26,7 +26,7 @@ def pianoScale(hand="right", nbOctave = 1,back=False,increase=True):
 
     nbOctaveText = f"""{nbOctave} octave{"s" if nbOctave>1 else ""}"""
     return [Answer([Field(f"{hand}{nbOctave}{suffix}", isMandatory = True),hr]),
-            {"Note"}, " ", {"Scale"}, hr,
+            {"Tonic"}, " ", {"Scale"}, hr,
             handImage,
             arrowImage,
             nbOctaveText]

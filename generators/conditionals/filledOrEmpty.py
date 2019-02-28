@@ -94,7 +94,10 @@ def tupleToFilled(tup):
         return Filled(field = field,child = child)
     elif len(tup) == 3:
         field, filled, empty = tup
-        return FilledOrEmpty(field, filled, empty)
+        if filled is None:
+            return Empty(field, empty)
+        else:
+            return FilledOrEmpty(field, filled, empty)
     else:
         raise Exception(f"Tuple of size {len(tup)}")
 addTypeToGenerator(tuple, tupleToFilled)

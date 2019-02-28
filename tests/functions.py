@@ -48,16 +48,16 @@ def testEachStep(gen,
         mandatory = mandatory,
         hide = hide,
         toPrint = toPrint,
-        modelName=modelName
+        modelName = modelName
     )
 
 def prettifyGen(*args, **kwargs):
     soup = genToSoup(*args, **kwargs)
     return templateFromSoup(soup)
- 
+
 def compileGen(*args, goal = LAST_GEN_STEP, **kwargs):
     return testEachStep(*args, goal = goal, **kwargs)
- 
+
 def genToTags(*args, **kwargs):
     return genToSoup(goal = TAG, *args, **kwargs)
 
@@ -66,5 +66,3 @@ def genToSoup(*args, **kwargs):
     bs = bs4.BeautifulSoup("", "html.parser")
     bs.contents = testEachStep(goal = TAG, *args, **kwargs)
     return bs
-
- 

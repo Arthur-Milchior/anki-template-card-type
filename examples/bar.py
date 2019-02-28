@@ -1,5 +1,5 @@
+from ..generators import *
 from .general import header, footer
-from ..generators.imports import *
 
 definition_bar = TableFields(
     name = "Bar",

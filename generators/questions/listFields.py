@@ -5,7 +5,7 @@ from ..conditionals.numberOfField import AtLeastOneField
 from ..conditionals.questionOrAnswer import QuestionOrAnswer
 from ..conditionals.filledOrEmpty import Filled, FilledOrEmpty
 from ..conditionals.multiple import MultipleRequirement
-from ..conditionals.hide import HideInSomeQuestions
+from ..conditionals.hide import HideInSomeQuestions, ShowIfAskedOrAnswer
 from ..ensureGen import ensureGen
 from ..generators import NotNormal, Gen, genRepr
 from ..html.html import TR, TD, HTML, LI, Table
@@ -44,15 +44,16 @@ class ListFields(ListElement):
         self.globalFun = globalFun or identity
         self.globalSep = globalSep or (lambda x:None)
         elements = []
-        seen = []
+        self.processedInputs = []#List of inputs seen
+        self.potentiallyFilledFields = []
         toCascade = set()
         for field in self.originalFields:
             #print(f"Considering field {field}")
-            if seen:
-                sep = self.globalSep(seen)
+            if self.processedInputs:
+                sep = self.globalSep(self.processedInputs)
                 if sep is not None:
                     elements.append(sep)
-            seen.append(field)
+            self.processedInputs.append(field)
             processedFieldDic = self.localFun(field)
             if isinstance(processedFieldDic,str):
                 processedFieldDic = {"child":processedField}
@@ -67,18 +68,24 @@ class ListFields(ListElement):
                     checkField(field)
             toCascadeLocal = processedFieldDic.get("questions",frozenset())
             hideFields = processedFieldDic.get("hideInSomeQuestion",frozenset())
+            showIfAskedOrAnswer = processedFieldDic.get("showIfAskedOrAnswer",False)
             if not processedField:
                 continue
             if filledFields:
                 processedField = AtLeastOneField(
                     fields = filledFields,
                     child = processedField)
+                self.potentiallyFilledFields.extend(filledFields)
             if hideFields:
                 processedField = HideInSomeQuestions(hideFields,processedField)
+            if showIfAskedOrAnswer:
+                processedField = ShowIfAskedOrAnswer(showIfAskedOrAnswer, processedField)
             elements.append(processedField)
             toCascade |= toCascadeLocal
 
         ret = self.globalFun(elements)
+        if self.suffix:#This ensure that we don't use the big AtLeastOneField on an empty suffix
+            self.suffix = AtLeastOneField(self.suffix, self.potentiallyFilledFields)
         ret = [self.prefix,ret,self.suffix]
         if toCascade:
             if self.name is not None:
@@ -118,9 +125,9 @@ class TableFields(ListFields):
                         assert "field" in field
                         group.add(field["field"])
                 for field in field_s:
-                    if isinstance(field,str):
+                    if isinstance(field, str):
                         d={"field" : field}
-                    elif isinstance(field,dict):
+                    elif isinstance(field, dict):
                         d=field
                     else:
                         assert False
@@ -211,6 +218,8 @@ class TableFields(ListFields):
                 ret["filledFields"] = defaultList
 
             ret["hideInSomeQuestion"] = fieldInputDic.get("hideInSomeQuestion",frozenset())
+            if fieldInputDic.get("showIfAskedOrAnswer"):
+                ret["showIfAskedOrAnswer"] = fieldName
             return ret
 
         @debugFun
@@ -226,15 +235,15 @@ class TableFields(ListFields):
     def _repr(self):
         t= f"""TableFields({self.fields},"""
         if self.name is not None:
-            t+=genRepr(self.name,label="name")
+            t+=genRepr(self.name, label="name")
         if self.attrs:
-            t+=genRepr(self.attrs,label="attrs")
+            t+=genRepr(self.attrs, label="attrs")
         if self.trAttrs:
-            t+=genRepr(self.trAttrs,label="trAttrs")
+            t+=genRepr(self.trAttrs, label="trAttrs")
         if self.tdLabelAttrs:
-            t+=genRepr(self.tdLabelAttrs,label="tdLabelAttrs")
+            t+=genRepr(self.tdLabelAttrs, label="tdLabelAttrs")
         if self.tdFieldAttrs:
-            t+=genRepr(self.tdFieldAttrs,label="tdFieldAttrs")
+            t+=genRepr(self.tdFieldAttrs, label="tdFieldAttrs")
         if self.tdAttrs:
             t+=genRepr(self.tdAttrs,label="tdAttrs")
         t+=")"

@@ -27,3 +27,8 @@ from .graphical import graphical
 from .cardinal import cardinal
 from .guitarChord import guitarChord
 from .fingering import fingering
+from .combinatorics import combinatorics, combinatoric_numeric, combinatoric_symbolic, combinatoric_symbolic2
+from .unary import unary
+from .binaryfunction import binaryfunction
+from .binaryrelation import binaryrelation
+from .metaphor import metaphor

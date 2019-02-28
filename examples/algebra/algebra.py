@@ -85,6 +85,7 @@ properties = TableFields(
      "Generating family",
      "Inner product",
      "Cover",
+     "Faithful",
      "Minimals",
      "Maximals",
      "Well-founded"
