@@ -23,4 +23,4 @@ exprs=NumberedFields("Expression",
 
 
 
-hacker = [header, definition_hacker, DecoratedField("Property"),exprs, footer]
+hacker = [header, definition_hacker, exprs, DecoratedField("Property"), footer]

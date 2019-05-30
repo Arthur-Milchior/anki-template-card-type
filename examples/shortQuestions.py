@@ -2,8 +2,8 @@ from ..generators import *
 from .general import contextOrDeck, short_header
 
 def _question(questionFieldPrefix, fieldToQuestion, actualQuestion, questionToAnswer, answerPrefix):
-    """Intuitively, it is ```{{questionFieldPrefix}} fieldToQuestion
-    <class>actualQuestion</class> questionToAnswer {{answerPrefix}}```
+    """Intuitively, it is `{{questionFieldPrefix}} fieldToQuestion
+    <class>actualQuestion</class> questionToAnswer {{answerPrefix}}`
     Prefix are suffixed with i, and the questions is asked only if there is enough information.
 
     """

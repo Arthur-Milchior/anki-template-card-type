@@ -32,3 +32,4 @@ from .unary import unary
 from .binaryfunction import binaryfunction
 from .binaryrelation import binaryrelation
 from .metaphor import metaphor
+from .functor import functor

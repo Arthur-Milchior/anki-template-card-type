@@ -89,6 +89,7 @@ class Filled(FieldChild):
                 [bs4.NavigableString(f"{{{{/{self.field}}}}}")])
 
 def tupleToFilled(tup):
+    """if tup[0] is filled, then tup[1], else tup[2] if it exists"""
     if len(tup) == 2:
         field, child = tup
         return Filled(field = field,child = child)

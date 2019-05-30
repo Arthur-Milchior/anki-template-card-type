@@ -23,16 +23,25 @@ labelDef =  Cascade("Definitions",
 
 
 definitions = ("Definition",
-               [PotentiallyNumberedFields(fieldPrefix = "Definition",
+               PotentiallyNumberedFields(fieldPrefix = "Definition",
                                           greater = 16,
                                           label = labelDef,
-                                          infix = ""),
-                hr])
+                                         infix = ""))
 
-for i in range(1,4):
+definitions_names = ["Definition"]+[f"Definition{i}" for i in range(2,17) ]
+
+definitions = ("All",
+               AtLeastOneField(definitions,
+                               definitions_names,
+                               asked = True,
+                               otherwise = {"All"}
+               ),
+               definitions)
+
+for i in range(1,5):
     name = "Part"+("" if i==1 else str(i))
     content = set()
-    for j in range(4):
+    for j in range(1,5):
         d = 4*(i-1)+j
         content.add("Definition"+("" if d==1 else str(d)))
     definitions = Cascade(name,
@@ -46,5 +55,6 @@ other = TableFields([{"field":"Construction",
                      {"field":"Cardinal",
                       "showIfAskedOrAnswer":True},
                      typDic])
+music = Asked("Definition",Question({"Music"}))
 
-definition = [header,definitions,other,footer]
+definition = [header,definitions,other,footer, music]

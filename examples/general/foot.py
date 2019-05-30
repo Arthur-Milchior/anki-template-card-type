@@ -6,7 +6,7 @@ origin= [
     DecoratedField("Section", infix=" ", suffix=", ", isMandatory = True),
     FilledOrEmpty("Kind",
                   [Field("Kind", isMandatory = True),
-                   Filled("Index", [" ",("Index")],isMandatory = True),
+                   Filled("Index", [" ",{"Index"}], isMandatory = True),
                    ", "],
                   DecoratedField("Index", infix=" ", suffix=", ", isMandatory = True)),
     DecoratedField("Page", infix=" ", suffix=", ")

@@ -27,7 +27,7 @@ class HTML(SingleChild):
                     attrs = self.attrs,
                     child = child,
         )
-    
+
     def _repr(self):
         space = "  "*Gen.indentation
         t= f"""HTML("{self.tag}","""
@@ -51,7 +51,7 @@ class HTML(SingleChild):
                 raise Exception(f"child {child} has type {type(child)}, which can't be in a tag.")
         newtag.contents = children
         return newtag
-    
+
 
 
 class Table(HTML):
@@ -60,8 +60,8 @@ class Table(HTML):
         """
         A table with content stated. If content is emptyGen, its normal
         form is an Empty object.
-        
-        content -- a list of lines. 
+
+        content -- a list of lines.
         If the line is a list, TD is applied to its elements and TD to the line.
         Otherwise, it is added directly as is. """
         table = []
@@ -72,7 +72,7 @@ class Table(HTML):
                     td = HTML(tag = "td",
                               attrs = tdAttrs,
                               child = content__)
-                    debug("adding td {td}") 
+                    debug("adding td {td}")
                     line.append(td)
                 line = ListElement(elements = line)
                 line = TR(line, attrs=trAttrs)
@@ -87,7 +87,7 @@ class Table(HTML):
                          **kwargs)
 
 def _fixedTag(tag_):
-    assert tag_ is not None    
+    assert tag_ is not None
     class FIXED(HTML):
         def __init__(self,
                      #tag = None,
@@ -104,6 +104,7 @@ LI = _fixedTag("li")
 DIV = _fixedTag("div")
 P = _fixedTag("p")
 TR = _fixedTag("tr")
+TH = _fixedTag("th")
 TD_ = _fixedTag("td")
 class TD(TD_):
     #TD should not be removed from the list, else it'd destroy the
@@ -119,7 +120,7 @@ class _LIST(HTML):
         assert enclosing is not None
         self.elements = elements
         self.enclosing = enclosing
-        
+
         if addLi:
             elements = [LI(child = element, attrs = liAttrs) for element in elements]
         super().__init__(enclosing, child = elements, **kwargs)

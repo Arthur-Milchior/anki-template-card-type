@@ -53,33 +53,33 @@ def setupMenu(browser):
     a.triggered.connect(lambda : runBrowser(browser,"ReTemplate",False))
     browser.form.menuEdit.addAction(a)
     shortCut = getObject("Shortcut: ReTemplate Card","Ctrl+Shift+T")
-    if shortcut:
+    if shortCut:
         a.setShortcut(QKeySequence(shortCut))
 
     a = QAction("Template Note", browser)
     shortCut = getObject("Shortcut: Template Note","Ctrl+Alt+T")
-    if shortcut:
+    if shortCut:
         a.setShortcut(QKeySequence(shortCut))
     a.triggered.connect(lambda : runBrowser(browser,"Template",True))
     browser.form.menuEdit.addAction(a)
 
     a = QAction("ReTemplate Note", browser)
     shortCut = getObject("Shortcut: ReTemplate Note","Ctrl+Alt+Shift+T")
-    if shortcut:
+    if shortCut:
         a.setShortcut(QKeySequence(shortCut))
     a.triggered.connect(lambda : runBrowser(browser,"ReTemplate",True))
     browser.form.menuEdit.addAction(a)
 
     a = QAction("\"frontSide\" to each back", browser)
     shortCut = getObject("Shortcut: frontside")
-    if shortcut:
+    if shortCut:
         a.setShortcut(QKeySequence(shortCut))
     a.triggered.connect(lambda : runBrowser(browser,"FrontSide",True))
     browser.form.menuEdit.addAction(a)
 
     a = QAction("Clean Template note", browser)
     shortCut = getObject("Shortcut: Clean Template note")
-    if shortcut:
+    if shortCut:
         a.setShortcut(QKeySequence(shortCut))
     a.triggered.connect(lambda : runBrowser(browser,"Clean template",True))
     browser.form.menuEdit.addAction(a)

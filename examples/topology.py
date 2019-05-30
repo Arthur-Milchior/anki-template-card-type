@@ -131,7 +131,7 @@ cardinal = tf(name="Cardinal",
                 'First-countable',
                 'Second-countable',
                 'Separable',
-                'Lindelof',
+                'Lindelöf',
             ])
 
 others = tf(name="Other",

@@ -24,6 +24,8 @@ properties = TableFields([
     "Measure",
     "Norm",
     "Morphism",
+    ["Zero",
+     "Unit"],
     ["Derivative",
     "Nth derivative",
      "Integral"],
@@ -31,7 +33,7 @@ properties = TableFields([
     ["Left inverse",
      "Right inverse",
      "Inverse"],
-
+    "Determinant",
 ])
 
 unary = [header, definition, properties, footer]

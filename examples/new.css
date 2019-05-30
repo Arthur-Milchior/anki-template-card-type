@@ -22,6 +22,9 @@ Anki basic
 /**********
 General note type
 ************/
+th {
+    border: 3px solid black;
+}
 td {
     padding-left: 1em;
     padding-right: 1em;
@@ -29,7 +32,7 @@ td {
 markofquestion:before{
     content: "???"
 }
-table, td, tr, th {
+table, td, tr {
     /*border-collapse: collapse;*/
     border: 1px solid black;
 }

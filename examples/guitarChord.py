@@ -19,10 +19,10 @@ partition = color("Partition")
 
 table = TableFields(
     [
-        {"function":diagram,
+        {"function": diagram,
          "field": "Diagram",
          "filledFields":"Diagram"},
-        {"function":partition,
+        {"function": partition,
          "field": "Partition",
          "filledFields":"Partition"},
         [

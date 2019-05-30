@@ -1,4 +1,3 @@
-import aqt
 from aqt import mw
 from .generators import *
 from .user_files import *
@@ -14,6 +13,13 @@ def readIfRequired():
         reread()
         read = True
 
+read = False
+def reread(objects=objects):
+    #debug("reread", 1)
+    userOption = mw.addonManager.getConfig(__name__) or dict()
+    jsonToDic(userOption, objects)
+
+
 def getObject(s = None, default = None):
     """Get the dictionnary of objects. If a name is given, return the
     object with this name if it exists.
@@ -24,7 +30,7 @@ def getObject(s = None, default = None):
     if s is None:
         return objects
     else:
-        return objects.get(s, default = None)
+        return objects.get(s, default)
 
 def _set(s,value):
     readIfRequired()
@@ -48,12 +54,6 @@ def jsonToDic(json, dic = dict()):
             else:
                 assert False
     return dic
-
-read = False
-def reread(objects=objects):
-    #debug("reread", 1)
-    userOption = aqt.mw.addonManager.getConfig(__name__)
-    jsonToDic(userOption, objects)
 
 def execute(t):
     #debug("execute({t})",1 )

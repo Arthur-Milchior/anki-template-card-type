@@ -5,6 +5,7 @@ definition = TableFields(
     fields = [
         "Definition",
         "Definition2",
+        "Definition3",
         "Set"
     ],
     name="Definitions"
@@ -15,6 +16,7 @@ properties = TableFields([
     "Reflexive",
     "Equivalence",
     "Order",
+    "Cardinal",
     ["Stable on left",
      "Stable on right"]
 ])

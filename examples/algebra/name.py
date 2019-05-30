@@ -135,15 +135,15 @@ outer = FOE('*',
                     ' commutative'),
              Filled('Ring-base', ' over a ring')
             ],
-            FOE('Set',
-                'Group-based',
-                FOE('Ring-base',
-                    FOE('Graduation',
-                        'Graduated module',
-                        'Module'
-                    ),
-                    'Vector space'
-                )
+            # FOE('Set',
+            #     'Group-based',
+            FOE('Ring-base',
+                FOE('Graduation',
+                    'Graduated module',
+                    'Module'
+                ),
+                'Vector space'
+                #)
             )
 )
 

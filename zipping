@@ -1,1 +1,2 @@
-zip -r template.zip *py zipping examples/* generators templates tests user_files *md LICENSE *json --exclude \*.ods --exclude \*~
+rm template.zip
+zip -r template.zip *py zipping examples/* generators templates tests user_files *md LICENSE *json --exclude \*.ods --exclude \*~  --exclude \*pyc*

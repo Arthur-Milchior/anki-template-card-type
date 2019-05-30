@@ -6,7 +6,7 @@ label=[Field("Name", isMandatory = True)," is"]
 def no(i):
     filled=Filled(f"Not{i}",
                   "not ")
-    alo=AtLeastOneField(fields=[f"Condition{i}",f"Closure{i}",f"Closures","Conditions"],
+    alo=AtLeastOneField(fields=[f"Condition{i}",f"Under{i}",f"Unders","Conditions"],
                         asked=True,
                         child=markOfQuestion,
                         otherwise=filled)
@@ -21,20 +21,23 @@ def when(i):
                       suffix="",
                       isMandatory = True)
     question=[Label("when",
-                    fields=[f"Conditions",f"Condition{i}",f"Closure{i}"],
+                    fields=[f"Conditions",f"Condition{i}",f"Under{i}"],
                     classes=["Condition"]),
               markOfQuestion]
-    alo=AtLeastOneField(fields=[f"Conditions",f"Condition{i}",f"Closure{i}"],
+    alo=AtLeastOneField(fields=[f"Conditions",f"Condition{i}",f"Under{i}"],
                         asked=True,
                         child=question,
                         otherwise=df)
     return QuestionOrAnswer(alo,
                             df)
 
+
 def closedUnder(i):
-    return DecoratedField(field = f"Closure{i}",
-                          label = "closed under ",
-                          classes = "Closure",
+    return DecoratedField(field = f"Under{i}",
+                          label = FilledOrEmpty(f"Closure{i}",
+                                                Field(f"Closure{i}"),
+                                                "closed under "),
+                          classes = "Under",
                           infix = "",
                           suffix = "",
                           isMandatory = True)
@@ -42,20 +45,27 @@ def closedUnder(i):
 def line(i):
     return [no(i),closedUnder(i),when(i)]
 
-_closed = NumberedFields(fieldPrefix = "Closure",
+_closed = NumberedFields(fieldPrefix = "Under",
                          greater=11,
                          label=label,
                          localFun=(lambda i:{"child":LI(line(str(i))),
-                                             "questions":{f"Closure{i}"},
-                                             "filledFields":[f"Closure{i}"]}),
+                                             "questions":{f"Under{i}"},
+                                             "filledFields":[f"Under{i}"]}),
                          unordered=True,
 )
 
+def counterExample(i=""):
+    return Answer(DecoratedField(field = f"CounterExample{i}",
+                                 label = "Counter example",
+                                 suffix = hr))
 
 closeds = [short_header, _closed, hr,footer]
 def closed(i=""):
-    return [short_header,
-            label,
-            line(str(i)),
-            hr,
-            footer]
+    return Filled(
+        f"Under{i}",
+        [short_header,
+         label,
+         line(str(i)),
+         hr,
+         counterExample(i),
+         footer])

@@ -31,11 +31,11 @@ complexity_ = ["Time complexity",
                "Space complexity",
                "AC complexity",
                "NC complexity",
-               "Logical complexity"
+               "Logical complexity",
                "Other complexity",
                "Potential or credit"]
 complexity=TableFields(complexity_,
-                       isMandatory=False,
+                       isMandatory=True,
                        name="Complexity",
                        suffix = hr)
 
