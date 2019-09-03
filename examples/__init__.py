@@ -1,35 +1,40 @@
+from .adt import adt
 from .algebra.algebra import algebra
 from .automata import automata
-from .category import category
-from .knot import knot
-from .ordinal import ordinal
-from .statistical_distribution import statistical_distribution
-from .theory import theory
-from .topology import topology, topologyBody, topologyHead
-from .shortQuestions import french,french2, english,english2, abbreviation,abbreviation2,abbreviation3,etymology,etymology2, toAbbreviation, toAbbreviation2, represented, represented2
-from .general import *
-from .hacker import hacker
-from .mnemo import mnemo
-from .constant import constant, typedNumber
-from .definition.definition import definition
-from .question import questionGen
-from .face.face import face
-from .LW import lw
-from .CS import algorithm, variable,commandLine, instruction,dataStructure,problem,noteType
-from .closed.closed import closeds,closed
-from .adt import adt
-from .test import *
-from .relation.relation import increasing,decreasing,relation
-from .noeud import noeud
-from .pianoScale.pianoScale import pianoScale
-from .programmingLanguage import programmingLanguage
-from .graphical import graphical
-from .cardinal import cardinal
-from .guitarChord import guitarChord
-from .fingering import fingering
-from .combinatorics import combinatorics, combinatoric_numeric, combinatoric_symbolic, combinatoric_symbolic2
-from .unary import unary
 from .binaryfunction import binaryfunction
 from .binaryrelation import binaryrelation
-from .metaphor import metaphor
+from .cardinal import cardinal
+from .category import category
+from .closed.closed import closed, closeds
+from .combinatorics import (combinatoric_numeric, combinatoric_symbolic,
+                            combinatoric_symbolic2, combinatorics)
+from .constant import constant, typedNumber
+from .CS import (algorithm, commandLine, dataStructure, instruction, noteType,
+                 problem, variable)
+from .definition.definition import definition
+from .face.face import face
+from .fingering import fingering
 from .functor import functor
+from .general import *
+from .graphical import graphical
+from .guitarChord import guitarChord
+from .hacker import hacker
+from .knot import knot
+from .LW import lw
+from .metaphor import metaphor
+from .mnemo import mnemo
+from .noeud import noeud
+from .ordinal import ordinal
+from .pianoScale.pianoScale import pianoScale
+from .programmingLanguage import programmingLanguage
+from .question import questionGen
+from .relation.relation import decreasing, increasing, relation
+from .shortQuestions import (abbreviation, abbreviation2, abbreviation3,
+                             english, english2, etymology, etymology2, french,
+                             french2, represented, represented2,
+                             toAbbreviation, toAbbreviation2)
+from .statistical_distribution import statistical_distribution
+from .test import *
+from .theory import theory
+from .topology import topology, topologyBody, topologyHead
+from .unary import unary

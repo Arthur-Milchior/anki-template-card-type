@@ -1,7 +1,8 @@
-from .leaf import Leaf
+from ..debug import debug, debugFun, debugInit
 from .constants import *
 from .generators import thisClassIsClonable
-from ..debug import  debugInit, debug, debugFun
+from .leaf import Leaf
+
 
 class NoPrint(Leaf):
     def _createHtml(self, soup):
@@ -85,5 +86,3 @@ class Name(NoPrint):
 
     def _innerEq(self,other):
         return True # self.questionsAsked==other.questionsAsked
-    
-    

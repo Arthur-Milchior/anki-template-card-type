@@ -1,19 +1,20 @@
-from ...debug import debug, ExceptionInverse, debugFun, assertType, debugInit, debugOnlyThisMethod
-from ...utils import identity, checkField
-from ..conditionals.askedOrNot import  AskedOrNot, Cascade
+from ...debug import (ExceptionInverse, assertType, debug, debugFun, debugInit,
+                      debugOnlyThisMethod)
+from ...utils import checkField, identity
+from ..conditionals.askedOrNot import AskedOrNot, Cascade
+from ..conditionals.filledOrEmpty import Filled, FilledOrEmpty
+from ..conditionals.hide import HideInSomeQuestions, ShowIfAskedOrAnswer
+from ..conditionals.multiple import MultipleRequirement
 from ..conditionals.numberOfField import AtLeastOneField
 from ..conditionals.questionOrAnswer import QuestionOrAnswer
-from ..conditionals.filledOrEmpty import Filled, FilledOrEmpty
-from ..conditionals.multiple import MultipleRequirement
-from ..conditionals.hide import HideInSomeQuestions, ShowIfAskedOrAnswer
 from ..ensureGen import ensureGen
-from ..generators import NotNormal, Gen, genRepr
-from ..html.html import TR, TD, HTML, LI, Table
+from ..generators import Gen, NotNormal, genRepr
 from ..html.atom import br
+from ..html.html import HTML, LI, TD, TR, Table
 from ..leaf import Field
+from ..listGen import ListElement, MultipleChildren
 from ..nonprinting import ToAsk
-from ..listGen import MultipleChildren, ListElement
-from .fields import QuestionnedField, Label, DecoratedField
+from .fields import DecoratedField, Label, QuestionnedField
 
 
 class ListFields(ListElement):

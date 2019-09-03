@@ -1,7 +1,9 @@
-from .generators import Gen
-from .ensureGen import addTypeToGenerator
-from ..debug import debugFun, debugInit
 import types
+
+from ..debug import debugFun, debugInit
+from .ensureGen import addTypeToGenerator
+from .generators import Gen
+
 
 class Function(Gen):
     @debugInit

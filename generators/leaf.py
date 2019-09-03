@@ -1,12 +1,15 @@
 import copy
 import sys
 import types
-from .constants import *
-from .generators import Gen, genRepr, thisClassIsClonable
-from .ensureGen import addTypeToGenerator
-from ..debug import debug, assertType, debugFun, ExceptionInverse, debugInit
+
 from bs4 import NavigableString
+
+from ..debug import ExceptionInverse, assertType, debug, debugFun, debugInit
+from .constants import *
+from .ensureGen import addTypeToGenerator
+from .generators import Gen, genRepr, thisClassIsClonable
 from .html.html import CLASS
+
 
 class Leaf(Gen):
     """
@@ -33,7 +36,7 @@ class Leaf(Gen):
 
 emptyGen = None
 @thisClassIsClonable
-class Empty(Leaf):
+class NoContent(Leaf):
     """A generator without any content"""
     instance = None
     def __hash__(self):
@@ -47,10 +50,10 @@ class Empty(Leaf):
                  **kwargs):
         if createOther:
             pass
-        elif Empty.instance is None and init:
-            Empty.instance = self
+        elif NoContent.instance is None and init:
+            NoContent.instance = self
         else:
-             raise ExceptionInverse("Calling Empty")
+             raise ExceptionInverse("Calling NoContent")
         super().__init__(state = state,
                          toKeep = toKeep,
                          **kwargs)
@@ -59,26 +62,26 @@ class Empty(Leaf):
         if self == emptyGen:
             return "emptyGen"
         else:
-            return f"""Empty(createOther = True,{self.params()})"""
+            return f"""NoContent(createOther = True,{self.params()})"""
 
     def _createHtml(self, soup):
         return None
 
     def _outerEq(self,other):
         #debug("{self!r} == {other!r}",1)
-        l = isinstance(other,Empty)
+        l = isinstance(other,NoContent)
         #if l:
-            #debug("other is Empty")
+            #debug("other is NoContent")
         #else:
-            #debug("other is not Empty but {type(other)}")
+            #debug("other is not NoContent but {type(other)}")
         #debug("",-1)
         return l
 
 
-emptyGen = Empty(init = True)
-def constEmpty(x):
-    return emptyGen
-addTypeToGenerator(type(None),constEmpty)
+noContentGen = NoContent(init = True)
+def constNoContent(x):
+    return noContentGen
+addTypeToGenerator(type(None),constNoContent)
 
 @thisClassIsClonable
 class Literal(Leaf):
@@ -174,7 +177,7 @@ class Field(Leaf):
         if self.field in specialName and not self.special:
             print(f"""Beware: you use field "{self.field}", which is a special field. If you want to use this special field, use the constant "{[self.field]}".""", file=sys.stderr)
         if not self.special and self.field in specialName:
-            print(f"""Beware: you want to create a special field, which does not belong to {specialName}, thus is not a special name.""", file=sys.stderr)
+            print(f"""Beware: you want to create a special field "{self.field}", which does not belong to {specialName}, thus is not a special name.""", file=sys.stderr)
         if self.special:
             if self.typ:
                 print(f"""Beware: you want to have "type:" before a special field {self.field}, this makes no sens.""", file=sys.stderr)

@@ -1,8 +1,10 @@
 import sys
+from html import escape
+
+from bs4 import NavigableString
+
 from ..debug import debug
 from .templates import Template
-from bs4 import NavigableString
-from html import escape
 
 """Templates for string. Not clear why this would be usefull"""
 

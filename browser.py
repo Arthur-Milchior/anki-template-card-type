@@ -2,8 +2,10 @@ from anki.hooks import addHook
 from aqt import mw
 from aqt.qt import QAction, QKeySequence
 from aqt.utils import tooltip
-from .config import readIfRequired, objects, getObject
+
+from .config import getObject, objects, readIfRequired
 from .editTemplate import compileAndSaveModel
+
 
 def runBrowser(browser, action, note):
     if note:

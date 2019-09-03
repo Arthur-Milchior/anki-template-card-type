@@ -1,5 +1,6 @@
 from ...generators import *
 
+
 def _example(i=""):
     appliedTo = f"Applied to{i}"
     example = f"Example{i}"

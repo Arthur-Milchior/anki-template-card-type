@@ -1,6 +1,7 @@
 from ...generators import *
-from .short_head import short_header
 from .foot import footer
+from .short_head import short_header
+
 
 def singleRelatedInformation(i):
     return (lambda f:

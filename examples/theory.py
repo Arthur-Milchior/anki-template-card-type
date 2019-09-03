@@ -1,6 +1,5 @@
 from ..generators import *
-from .general import header, footer
-
+from .general import footer, header
 
 extends = PotentiallyNumberedFields(fieldPrefix = "Extends",
                                     classes = "Definition2",

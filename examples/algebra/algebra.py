@@ -1,9 +1,8 @@
 from ...generators import *
-from ..general.head import header
 from ..general.foot import footer
+from ..general.head import header
 from ..general.typ import typDic
 from .name import algebra_name_formatted
-
 
 inner_function = TableFields(
     [

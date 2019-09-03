@@ -1,4 +1,5 @@
 from ...config import readIfRequired
+
 readIfRequired()
 # print(objects)
 
@@ -16,5 +17,3 @@ readIfRequired()
 # assert config.get("bar")== Literal("foo")
 # define ("bar","['foo','foo']")
 # assert config.get("bar")== ListElement([Literal("foo"),Literal("foo")])
-
-

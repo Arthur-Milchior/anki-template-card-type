@@ -1,5 +1,5 @@
-from .general import short_header, footer
 from ..generators import *
+from .general import footer, short_header
 
 number=[QuestionnedField("Significative digit", classes= "Definition"),
         Filled("Exponant",

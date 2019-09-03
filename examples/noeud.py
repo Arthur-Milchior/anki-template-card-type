@@ -1,5 +1,6 @@
-from .general import header, footer
 from ..generators import *
+from .general import footer, header
+
 
 def localFun(i):
     fig = TD(QuestionnedField(field=f"Step{i}", child={f"Figure{i}"},classes="Definition"))

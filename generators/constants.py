@@ -1,4 +1,6 @@
-from ..debug import assertType, debugFun, ExceptionInverse
+from ..debug import ExceptionInverse, assertType, debugFun
+
+
 class Step:
     def __init__(self, step, name):
         assert assertType(step, int)

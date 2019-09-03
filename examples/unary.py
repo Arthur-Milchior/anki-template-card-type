@@ -1,5 +1,5 @@
 from ..generators import *
-from .general import header, footer
+from .general import footer, header
 
 definition = TableFields(
     fields = [
@@ -33,7 +33,7 @@ properties = TableFields([
     ["Left inverse",
      "Right inverse",
      "Inverse"],
-    "Determinant",
+
 ])
 
 unary = [header, definition, properties, footer]

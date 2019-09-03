@@ -1,12 +1,14 @@
-from ..generators import NotNormal
 from ..conditionals.filledOrEmpty import Filled
+from ..generators import NotNormal
 from ..leaf import Field
 from .fields import DecoratedField
+
+
 class FromAndTo(NotNormal):
     """This generator allow to create questions of the form
 
-    `{{English}} in CLASS(FRENCH) is {{French}}` or
-    `{{Abbreviation}} is the CLASS(ABBREVIATION) of {{Name}}`
+    ```{{English}} in CLASS(FRENCH) is {{French}}``` or
+    ```{{Abbreviation}} is the CLASS(ABBREVIATION) of {{Name}}```
     From one data, ask another data, emphasize the transformation. Show only if both sides exists.
     """
     def __init__(self,questionField, fieldToQuestion, actualQuestion, questionToAnswer, answer,prefix=None,suffix=None,classes = None):
@@ -19,7 +21,7 @@ class FromAndTo(NotNormal):
         self.suffix=suffix
         self.classes = classes
         super().__init__()
-
+        
     def getNormalForm(self):
         prefix=[Field(self.questionField,
                       classes = self.classes),

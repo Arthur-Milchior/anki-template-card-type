@@ -1,9 +1,12 @@
-from ..debug import debug, assertType, debugFun, ExceptionInverse, doMemoize, debugOnlyThisMethod
-from ..utils import identity, standardContainer
-from .ensureGen import ensureGen, addTypeToGenerator
-from .constants import *
-import bs4
 import sys
+
+import bs4
+
+from ..debug import (ExceptionInverse, assertType, debug, debugFun,
+                     debugOnlyThisMethod, doMemoize)
+from ..utils import identity, standardContainer
+from .constants import *
+from .ensureGen import addTypeToGenerator, ensureGen
 
 
 def thisClassIsClonable(cl):

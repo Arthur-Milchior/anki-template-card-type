@@ -1,5 +1,7 @@
 import sys
+
 from .debug import assertType
+
 
 def firstTruth(l):
     for elt in l:
@@ -19,4 +21,3 @@ def checkField(field):
     if "{" in field or "}" in field:
         raise Exception(f"Field «{field}» contains {{ or }} thus probably unwanted")
     return True
-

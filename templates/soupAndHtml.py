@@ -1,7 +1,10 @@
 import re
-from ..tag import tagContent
+
 from bs4 import BeautifulSoup
+
 from ..debug import debug, debugFun, debugOnlyThisMethod
+from ..tag import tagContent
+
 
 def addEnclose(content):
     return tagContent("enclose", content = content)

@@ -1,6 +1,5 @@
-from .general import header, footer
 from ..generators import *
-
+from .general import footer, header
 
 definition_mnemo = TableFields(
     name = "Mnemo",

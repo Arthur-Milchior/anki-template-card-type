@@ -2,16 +2,18 @@ import collections
 import copy
 import re
 import sys
-from bs4 import BeautifulSoup
 import traceback
+
+from bs4 import BeautifulSoup
 
 from aqt import mw
 
 from .config import objects
-from .debug import debug, assertType
+from .debug import assertType, debug
 from .tag import tagContent
-from .templates.soupAndHtml import templateFromSoup, soupFromTemplate
+from .templates.soupAndHtml import soupFromTemplate, templateFromSoup
 from .templates.templates import clean, compile_
+
 
 def _templateTagAddText(templateTag,soup,
                         isQuestion,

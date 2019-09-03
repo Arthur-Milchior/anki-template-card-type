@@ -1,4 +1,4 @@
-# Multi-column edit window
+# Template in Cards
 This is a BETA version. If people want to help debugging and
 improving. It may change a lot and while I use this add-on a lot, I
 can't promise it to be fit for everyone (yet?)
@@ -47,6 +47,5 @@ Copyright   | Mostly https://github.com/hssm/anki-addons
 Maintener   | Arthur Milchior <arthur@milchior.fr>
 Based on    | Anki code by Damien Elmes <anki@ichi2.net>
 License     | GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-Source in   | https://github.com/Arthur-Milchior/anki-Multi-column-edit-window
-Addon number| [2064123047](https://ankiweb.net/shared/info/2064123047)
-Support me on| [![Ko-fi](https://ko-fi.com/img/Kofi_Logo_Blue.svg)](Ko-fi.com/arthurmilchior) or [![Patreon](http://www.milchior.fr/patreon.png)](https://www.patreon.com/bePatron?u=146206)
+Source in   | https://github.com/Arthur-Milchior/anki-template-card-type
+Addon number| [1159566613](https://ankiweb.net/shared/info/1159566613)

@@ -1,13 +1,16 @@
-from .functions import testEachStep, compileGen, genToSoup, genToTags, prettifyGen,TestHTML
-from bs4 import BeautifulSoup
-from html import escape
 from copy import deepcopy
+from html import escape
+
+from bs4 import BeautifulSoup
+
+from ..debug import assertEqual, debug, endDebug, startDebug
 from ..generators import *
-from ..debug import startDebug, endDebug, debug, assertEqual
-from .data import *
-from ..templates.soupAndHtml import templateFromSoup, soupFromTemplate
-from ..templates.templates import  compile_
+from ..templates.soupAndHtml import soupFromTemplate, templateFromSoup
+from ..templates.templates import compile_
 from ..user_files import *
+from .data import *
+from .functions import (TestHTML, compileGen, genToSoup, genToTags,
+                        prettifyGen, testEachStep)
 
 # tmp = '\n <span name="test" template="conf"/>\n'
 # soup = soupFromTemplate(tmp)

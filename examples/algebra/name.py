@@ -1,4 +1,6 @@
 from ...generators import *
+
+
 def FOE(*args,**kwargs):
     return FilledOrEmpty(*args, isMandatory=True, **kwargs)
 ringCom1 = FOE('/',
@@ -46,7 +48,7 @@ ring = FOE('1',
                 'Ring')
 )
 
-ring_like =Empty('Not associative',
+ring_like = Empty('Not associative',
                FOE('1',
                    FOE('-',
                        FOE('Right-distributive',

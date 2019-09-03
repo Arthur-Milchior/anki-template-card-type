@@ -1,6 +1,6 @@
-from .models import *
-from .jsons import testObjects
 from ...generators import *
+from .jsons import testObjects
+from .models import *
 
 noTagHtml = "foo1"
 
@@ -275,4 +275,3 @@ definitionAnswerHard ="""<span template="Front Side">
 singleTest = "<test/>"
 questionMarks = """<markofquestion>
  </markofquestion>"""
-

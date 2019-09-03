@@ -1,13 +1,13 @@
-from ..conditionals.questionOrAnswer import QuestionOrAnswer
-from ..conditionals.filledOrEmpty import Filled
-from ..generators import Gen, NotNormal
-from ..leaf import Field, Leaf
-from ...debug import debug, assertType
+from ...debug import assertType, debug
 from ..conditionals.askedOrNot import AskedOrNot
-from ..html.html import CLASS
-from ..html.atom import br, markOfQuestion
-from ..leaf import Field
+from ..conditionals.filledOrEmpty import Filled
 from ..conditionals.numberOfField import AtLeastOneField
+from ..conditionals.questionOrAnswer import QuestionOrAnswer
+from ..generators import Gen, NotNormal
+from ..html.atom import br, markOfQuestion
+from ..html.html import CLASS
+from ..leaf import Field, Leaf
+
 
 class QuestionnedField(AskedOrNot):
     """Show the content of the field. Unless the field is asked and its the question, then show ???

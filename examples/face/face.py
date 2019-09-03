@@ -1,5 +1,5 @@
 from ...generators import *
-from ..general import header, footer
+from ..general import footer, header
 
 firstName = QuestionnedField("First name", classes="Notation")
 lastName = QuestionnedField("Last name", classes="Name")

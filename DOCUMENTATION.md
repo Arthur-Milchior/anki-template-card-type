@@ -11,51 +11,51 @@ either the generators or the template if you see a problem. As any
 person who tried to make complex template should now, it's hard to
 have it all right at the first try.
 
-You can find a few examples in
+You can find a few examples in 
 [https://github.com/Arthur-Milchior/anki-template-card-type/blob/master/generators/README.md]
 
 ### Generators
 A generator is an abstract piece of template. Each generator can be
 compiled into an actual template that anki can use. The result of the
 computation depends:
-* on the set of fields present in the model,
+* on the set of fields present in the model, 
 * on whether the generator is used in the question side or in the
-  answer side.
+  answer side. 
 * on some names which are asked or hidden.
 
 Here are a few examples of generators:
 * The simplest generators represents a string literal.  For example
-  the string `"foo"`, is a generator. In the template, it is
-  always compiled as the string `foo` in the template.
-* A list of generator `[gen1, gen2, gen3]` is also a
+  the string ```"foo"```, is a generator. In the template, it is
+  always compiled as the string ```foo``` in the template.
+* A list of generator ```[gen1, gen2, gen3]``` is also a
   generator. When it is compiled, it becomes the concatenation of the
   result of the compilations of gen1, gen2 and gen3.
-* A more complex generator would be `QuestionOrAnswer(gen1,
-  gen2)`, which compiles as gen1 on the question side of the card,
+* A more complex generator would be ```QuestionOrAnswer(gen1,
+  gen2)```, which compiles as gen1 on the question side of the card,
   and as gen2 on the answer side of the card. (Similarly, the
-  generator `Question(gen)`, compiles similarly to the generator
+  generator ```Question(gen)```, compiles similarly to the generator
   gen on the question side, and compiles as an empty string on the
   answer side.)
-* `FilledOrEmpty('foo', gen1, gen2)` is a more complex
+* ```FilledOrEmpty('foo', gen1, gen2)``` is a more complex
   generator. It shows gen1 if the field foo is filled, and it shows
   gen2 if the field 'foo' is empty. Thus, it compiles as
-  ```python
+  ```
   {{#foo}}gen1{{/foo}}{{^foo}}gen2{{/foo}}
   ```
   However, if this
-  generator inside some `{{#foo}}...{{/foo}}`, since it is already
+  generator inside some ```{{#foo}}...{{/foo}}```, since it is already
   known that the field 'foo' is filled, this generator compiles as
   gen1 only. Reciprocally, if the field foo is not present in the
   model, then it can't be filled, thus this generator compiles as gen2
   only.
-
+  
 #### Where to write the generators
 
 You may put your generators in two distinct places. Json's
-add-on configuration file or the folder `user_files`.
+add-on configuration file or the folder ```user_files```.
 
 ##### User files
-The file `user_files/imports.py` is executed while loading the
+The file ```user_files/imports.py``` is executed while loading the
 add-on. Its entire content is imported while compiling
 templates. Thus, you can use it for debugging purpose as
 standard-python. And you can put any variables that you want in it,
@@ -75,7 +75,7 @@ JSON. Currently, there is a single field in the json configuration
 field. It is called: "instructions". This is a list of instructions.
 
 Each instruction is either a string, which is interpreted as standard
-python code, in the environment of the add-on.
+python code, in the environment of the add-on. 
 
 Or a pair ("name","expression"), in which case a name is added to the
 environment, whose value is "expression" evaluated in the current
@@ -113,7 +113,7 @@ The templates must satisfy a few basic rules:
 * The compilation can be undone, in the sens that some code can remove
   the result of the compilation (i.e. the content of a tag), and keep
   only the code (i.e. the tag and its attributes).
-
+  
 An HTML tag is used by this add-on if it has a "template"
 parameter. The action done on this tag depends on the value of this
 paramer. The current possible values are listed below.
@@ -127,41 +127,41 @@ in this add-on.
 #### Generator
 The most basic template's value is a generator. This generator is
 compiled and the result of the compilation is put between the tags.
-```python
+```
 <span template="eval" generator="foo" askedmandatory="bar"/>
 ```
-This compile as
-```python
+This compile as 
+```
 <span template="eval" generator="foo" asked="bar">
   Result of the compilation of foo, where the name bar is asked.
 </span>
 ```
 
-For example, if `foo` is the generator `DecoratedField("bar")`,
+For example, if ```foo``` is the generator ```DecoratedField("bar")```,
 then this templates compiles, on the question side, as:
-```python
+```
 <span template="eval" generator="foo" asked="bar">
   {{#bar}}<span class="Question bar">bar</span>: ???{{/bar}}
 </span>
 ```
 and on the answer side as:
-```python
+```
 <span template="eval" generator="foo" asked="bar">
   {{#bar}}bar: <span class="Answer bar">{{bar}}</span>{{/bar}}
 </span>
 ```
-Finally, in the case where `bar` is not asked, then this template
+Finally, in the case where ```bar``` is not asked, then this template
 is printed as:
-```python
+```
 <span template="eval" generator="foo">
   {{#bar}}bar: <span class="bar">{{bar}}</span>{{/bar}}
 </span>
 ```
 
 
-Note that the CSS classes `Question` and `Answer` are applied
-to the question and the answer respectively. And the class `bar`
-is applied to emphasize the value `bar`. Unless this value is
+Note that the CSS classes ```Question``` and ```Answer``` are applied
+to the question and the answer respectively. And the class ```bar```
+is applied to emphasize the value ```bar```. Unless this value is
 absent, in which case it is applied to its label.
 
 #### Front side
@@ -173,13 +173,13 @@ side, for example emphasizing an element, replacing [...] by its
 value. In those case, in anki, you have to copy-paste front side into
 the back side and do the edition manually.
 
-Instead, this add-on allow you to use `<span template='Front
-side'>`, to obtain the question side, where each generators are
+Instead, this add-on allow you to use ```<span template='Front
+side'>```, to obtain the question side, where each generators are
 recompiled using the knowledge that this is the answer side.
 
 
-In the last example `<span template='Front side'/>` would compile as:
-```python
+In the last example ```<span template='Front side'/>``` would compile as:
+```
 <span template='Front side'>
   <span template='eval' generator='foo' asked='bar'>
     {{#bar}}bar: <span class="Answer bar">{{bar}}</span>{{/bar}}
@@ -188,16 +188,16 @@ In the last example `<span template='Front side'/>` would compile as:
 ```
 
 #### Instruction
-You may want to execute an arbitrary Python expression `foo` during the
-compilation. This can be done using `<span template='instructions'
-instr="foo"/>`. Note that this must remains valid html, thus <, > and
-' must be replaced in foo by `&lt;`, `&gt;` and `&quot;`.
+You may want to execute an arbitrary Python expression ```foo``` during the
+compilation. This can be done using ```<span template='instructions'
+instr="foo"/>```. Note that this must remains valid html, thus <, > and
+' must be replaced in foo by ```&lt;```, ```&gt;``` and ```&quot;```.
 
 #### String
-You may want to have a string `foo` which is shown only when the
+You may want to have a string ```foo``` which is shown only when the
 template is compiled, and absent when the template is
-«uncompiled». This can be done using `<span template='string'
-string="foo"/>`.
+«uncompiled». This can be done using ```<span template='string'
+string="foo"/>```.
 
 Having some text present only during uncompilation is not currently
 possible, and I don't intend to ever do it. Because uncompiling means
@@ -205,8 +205,8 @@ removing, and never adding.
 
 #### Fixing content
 You may want to ensure that the content of some part of the text is
-not changed. This can be done using `<span
-template='fix'>foo<span>`. Not that if foo contains template, they
+not changed. This can be done using ```<span
+template='fix'>foo<span>```. Not that if foo contains template, they
 may be compiled (TODO: remove the last statement.)
 Note that if this span is contained in another template, it may still
 be removed. This span does not affect tags containing it.
@@ -220,3 +220,4 @@ This is still relatively experimental. It works on the author's
 computer. But it is possible that anything breaks on another
 computer. So think about backuping your note type before using this
 add-on.
+

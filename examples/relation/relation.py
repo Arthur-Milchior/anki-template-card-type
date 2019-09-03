@@ -1,5 +1,6 @@
-from ..general import header, footer
 from ...generators import *
+from ..general import footer, header
+
 
 def suspend(when):
     return Filled(when,[CLASS("Warning","Suspend this card"),hr])

@@ -1,5 +1,5 @@
-from .general import header, footer
 from ..generators import *
+from .general import footer, header
 
 answers = PotentiallyNumberedFields("Answer",
                                     7,

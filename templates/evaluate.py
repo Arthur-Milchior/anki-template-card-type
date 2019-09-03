@@ -1,12 +1,13 @@
 import sys
-from ..utils import standardContainer
-from ..debug import assertType
-from ..generators.constants import TAG
-from ..debug import ExceptionInverse
-from . import templates
+
 from ..config import evaluate
+from ..debug import ExceptionInverse, assertType
+from ..generators.constants import TAG
 from ..generators.generators import ensureGen, modelToFields
+from ..utils import standardContainer
+from . import templates
 from .templates import Template
+
 
 def split(text):
     """None->None, string to the list, splitted at commas"""

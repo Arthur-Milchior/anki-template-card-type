@@ -1,12 +1,13 @@
-from ..generators import SingleChild, NotNormal
-from ..constants import BASIC, EMPTY
-from ...debug import debugFun
-from .filledOrEmpty import Filled, Empty
-from .askedOrNot import Asked, NotAsked
-from .presentOrAbsent import Present, Absent
-from ...debug import debugFun, debug
-from ...utils import standardContainer
 import sys
+
+from ...debug import debug, debugFun
+from ...utils import standardContainer
+from ..constants import BASIC, EMPTY
+from ..generators import NotNormal, SingleChild
+from .askedOrNot import Asked, NotAsked
+from .filledOrEmpty import Empty, Filled
+from .presentOrAbsent import Absent, Present
+
 
 class Inconsistent(Exception):
     pass
@@ -102,4 +103,3 @@ class MultipleRequirement(SingleChild, NotNormal):
                 return True
         #debug("""isInconsistent() returns False""",-1)
         return False
-    

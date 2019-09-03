@@ -1,5 +1,7 @@
-from ..debug import debug, assertType, ExceptionInverse, debugOnlyThisMethod
 import bs4
+
+from ..debug import ExceptionInverse, assertType, debug, debugOnlyThisMethod
+
 
 class Template:
     kindOfTemplate = dict()
@@ -65,7 +67,3 @@ def clean(soup):
         module=getModule(tag_)
         assert tag_ is not None
         module.clean(tag_)
-
-
-    
-

@@ -1,6 +1,7 @@
 import bs4
-from ...debug import debugFun, debugInit, debug, assertType, assertEqual
-from ..generators import thisClassIsClonable, Gen, genRepr, SingleChild
+
+from ...debug import assertEqual, assertType, debug, debugFun, debugInit
+from ..generators import Gen, SingleChild, genRepr, thisClassIsClonable
 from ..listGen import ListElement
 
 

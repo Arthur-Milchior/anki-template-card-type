@@ -1,11 +1,12 @@
 import bs4
+
+from ...debug import assertType, debug, debugFun, debugOnlyThisMethod
 from ..constants import MANDATORY
-from ..generators import thisClassIsClonable
-from ...debug import debugFun, debug, debugOnlyThisMethod, assertType
-from .meta import FieldChild, Dichotomy
-from ..generators import addTypeToGenerator
+from ..generators import addTypeToGenerator, thisClassIsClonable
 from ..leaf import emptyGen
 from ..listGen import ListElement
+from .meta import Dichotomy, FieldChild
+
 
 @thisClassIsClonable
 class Empty(FieldChild):
@@ -89,7 +90,6 @@ class Filled(FieldChild):
                 [bs4.NavigableString(f"{{{{/{self.field}}}}}")])
 
 def tupleToFilled(tup):
-    """if tup[0] is filled, then tup[1], else tup[2] if it exists"""
     if len(tup) == 2:
         field, child = tup
         return Filled(field = field,child = child)

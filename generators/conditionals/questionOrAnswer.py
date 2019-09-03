@@ -1,7 +1,8 @@
-from .meta import FieldChild
-from ..generators import thisClassIsClonable, SingleChild
-from ...debug import debugFun, debug
+from ...debug import debug, debugFun
+from ..generators import SingleChild, thisClassIsClonable
 from ..listGen import ListElement
+from .meta import FieldChild
+
 
 @thisClassIsClonable
 class Question(SingleChild):

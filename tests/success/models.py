@@ -1,6 +1,6 @@
-from ..data import *
-from ...editTemplate import compileModel
 from ...debug import assertEqual
+from ...editTemplate import compileModel
+from ..data import *
 
 modelCompiled = compileModel(model, objects = testObjects, prettify = True)
 #print(modelCompiled)

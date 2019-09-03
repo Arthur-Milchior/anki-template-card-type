@@ -1,6 +1,8 @@
-from ..generators import thisClassIsClonable, Gen, genRepr, SingleChild
+from ...debug import assertEqual, assertType, debug, debugFun, debugInit
+from ..generators import Gen, SingleChild, genRepr, thisClassIsClonable
 from ..leaf import Leaf
-from ...debug import debugFun, debugInit, debug, assertType, assertEqual
+
+
 @thisClassIsClonable
 class HTMLAtom(Leaf):
     """A html tag, without content."""

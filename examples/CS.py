@@ -1,6 +1,6 @@
 from ..generators import *
-from .general.head import header
 from .general.foot import footer
+from .general.head import header
 from .general.typ import typDic
 
 cs_context_ = [
@@ -31,11 +31,11 @@ complexity_ = ["Time complexity",
                "Space complexity",
                "AC complexity",
                "NC complexity",
-               "Logical complexity",
+               "Logical complexity"
                "Other complexity",
                "Potential or credit"]
 complexity=TableFields(complexity_,
-                       isMandatory=True,
+                       isMandatory=False,
                        name="Complexity",
                        suffix = hr)
 

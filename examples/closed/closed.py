@@ -1,5 +1,5 @@
-from ..general import short_header, footer
 from ...generators import *
+from ..general import footer, short_header
 
 label=[Field("Name", isMandatory = True)," is"]
 

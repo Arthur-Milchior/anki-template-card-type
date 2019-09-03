@@ -1,4 +1,6 @@
 from html import escape
+
+
 def startOpenTag(tag,attrs= dict()):
     tag = f"""<{tag}"""
     for attr in attrs:

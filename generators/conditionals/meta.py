@@ -1,9 +1,11 @@
-from ..generators import Gen, genRepr, MultipleChildren, SingleChild, NotNormal
-from ..leaf import emptyGen, Field
-from ..listGen import ListElement
-from ...debug import assertType
 import sys
+
+from ...debug import assertType
 from ...utils import checkField
+from ..generators import Gen, MultipleChildren, NotNormal, SingleChild, genRepr
+from ..leaf import Field, emptyGen
+from ..listGen import ListElement
+
 
 class FieldChild(SingleChild):
     def __init__(self,

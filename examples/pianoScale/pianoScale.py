@@ -1,5 +1,6 @@
 from ...generators import *
 
+
 def pianoScale(hand="right", nbOctave = 1,back=False,increase=True):
     if hand=="Both":
         handImage = [Image("_Left_hand.png"),
@@ -25,8 +26,10 @@ def pianoScale(hand="right", nbOctave = 1,back=False,increase=True):
     arrowImage = [Image(f"_{side}_arrow.png") for side in arrow]
 
     nbOctaveText = f"""{nbOctave} octave{"s" if nbOctave>1 else ""}"""
-    return [Answer([Field(f"{hand}{nbOctave}{suffix}", isMandatory = True),hr]),
+    fieldName = f"{hand}{nbOctave}{suffix}"
+    content = [Answer([Field(fieldName, isMandatory = True),hr]),
             {"Tonic"}, " ", {"Scale"}, hr,
             handImage,
             arrowImage,
             nbOctaveText]
+    return Filled(fieldName, content)

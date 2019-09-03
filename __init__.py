@@ -1,6 +1,9 @@
-import traceback
-import sys
 import os
+import sys
+import traceback
+
+from . import browser
+
 #from . import templates
 #from .imports import *
 
@@ -11,5 +14,3 @@ except:
     st = "\n".join(reversed(str(traceback.format_exc()).split("\n")))
     print(st)
     os._exit(1)
-
-from . import browser

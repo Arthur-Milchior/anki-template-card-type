@@ -1,5 +1,5 @@
-from .general import header, footer
 from ..generators import *
+from .general import footer, header
 
 properties = TableFields([
     {"field":   "Location",

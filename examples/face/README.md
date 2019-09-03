@@ -38,7 +38,7 @@ or both.
 
 If I have to do it in standard anki, I'll have to do a lot of copy and
 paste. Which I really want to avoid. Instead, I'll write the following
-python code in `user_files/imports.py` (or in a file imported by
+python code in ```user_files/imports.py``` (or in a file imported by
 imports.py)
 
 ``` Python
@@ -51,15 +51,15 @@ face=[fullName,knownFor,Field("Picture")]
 ```
 Then, the template of my cards, in the same order as above, are going
 to be:
-* `<span template="eval" generator="face" askedmandatory="First name"/>`
-* `<span template="eval" generator="face" askedmandatory="Last name"/>`
-* `<span template="eval" generator="face" askedmandatory="Known for" hide="Full name"/>`
-* `<span template="eval" generator="face" asked="Full name" hide="Known for"/>`
-* `<span template="eval" generator="face" asked="Full name" hide="Picture"/>`
+* ```<span template="eval" generator="face" askedmandatory="First name"/>```
+* ```<span template="eval" generator="face" askedmandatory="Last name"/>```
+* ```<span template="eval" generator="face" askedmandatory="Known for" hide="Full name"/>```
+* ```<span template="eval" generator="face" asked="Full name" hide="Known for"/>```
+* ```<span template="eval" generator="face" asked="Full name" hide="Picture"/>```
 ## Explanation
 We now explain this example
 ### Python part
-First, `from ..generators.imports import *`
+First, ```from ..generators.imports import *```
 is used to import in this file everything required to create templates.
 
 ```Python
@@ -68,20 +68,20 @@ firstName = QuestionnedField("First name")
 means that you create an object, which by default shows the first name, except if "First name" is asked in the template. Instead, it'll show ???.
 
 
-In the fullName line, `[firstName,lastName,br]` is an object,
+In the fullName line, ```[firstName,lastName,br]``` is an object,
 representing the concatenation of the first name (as a question), the
 last name, and a newline symbol.
 
 ```Python
 fullName = Cascade("Full name",[firstName,lastName,br],["First name","Last name"])
 ```
-means that `fullName` is a variable represing the following
+means that ```fullName``` is a variable represing the following
 informations:
-* when `Full name` is asked, you must ask both `First name`
-  and `Last name` (that's the point of the first and third
+* when ```Full name``` is asked, you must ask both ```First name```
+  and ```Last name``` (that's the point of the first and third
   arguments)
 * in all cases, you must show the content of
-  ```Python
+  ```
   [firstName,lastName,br]
   ```
 ```Python
@@ -101,42 +101,42 @@ DecoratedField. It ensures that this newline is not printed when
 The entire templates are contained in an HTML tag. This ensure that no
 information is ever printed on the card's itself. It still allows us
 to keep all information related to this process in the card's
-template.
+template. 
 
-We use `template="eval"` to state that this template
+We use ```template="eval"``` to state that this template
 will have a generator field - which is an arbitrary python expression
 which must be evaluated as a generator (see
 [https://github.com/Arthur-Milchior/anki-template-card-type/tree/master/generators/DOCUMENTATION.md]
 to learn more about generators).
 
-We use `generator="face"` to state that we'll use the
-variable `face` defined in the python file. The value of
+We use ```generator="face"``` to state that we'll use the
+variable ```face``` defined in the python file. The value of
 thi variable will state how to compile the template.
 
-We use `askedmandatory="First name"` as an abbreviation for
-```python
+We use ```askedmandatory="First name"``` as an abbreviation for
+```
 asked="First name" mandatory="First name"
 ```
-Here, `mandatory="First Name"` means that this template should be
+Here, ```mandatory="First Name"``` means that this template should be
 printed only when the field "First name" has some content. In anki's
 template, it means that the entire template will be contained between
-the mustaches `{{#First name}}` and `{{/First name}}`.
+the mustaches ```{{#First name}}``` and ```{{/First name}}```.
 
-The parameter `asked="First name"` states that "First name" should
-be considered to be asked. `QuestionnedField("First name")` will
+The parameter ```asked="First name"``` states that "First name" should
+be considered to be asked. ```QuestionnedField("First name")``` will
 know that it means:
 * in the question side, replace the field content by ???
 * in the answer side, apply the CSS classes "Answer" and "First name"
   on the field. (In this example, we won't consider CSS)
-
-Finally, `hide="Known for"` means: in this template, don't show
+  
+Finally, ```hide="Known for"``` means: in this template, don't show
 the content of the part named "Known for". Once again, it is
-`
+```
 QuestionnedField("Known for",suffix=br)
-`
+``` 
 which interprets it and understands that, in this template, its
 content should not be printed.
 
 ## Back side/answer
 
-The template on the answer side will always be `<span template='Front side'/>`. Note that this add-on add, in the edit menu «frontSide to each», which add this template to each back side of the templates of the selected's note. This ensure
+The template on the answer side will always be ```<span template='Front side'/>```. Note that this add-on add, in the edit menu «frontSide to each», which add this template to each back side of the templates of the selected's note. This ensure 

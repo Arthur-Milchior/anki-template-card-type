@@ -1,6 +1,6 @@
 from ...generators import *
-from .short_head import short_header
 from .foot import footer
+from .short_head import short_header
 
 _notations = Filled("Notation",
                     [('Notation',PotentiallyNumberedFields('Notation', 4, isMandatory = False)),

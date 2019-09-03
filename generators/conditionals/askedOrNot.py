@@ -1,8 +1,10 @@
-from .meta import FieldChild, Dichotomy
-from ..generators import thisClassIsClonable, Gen, genRepr
-from ...debug import debugFun, debug, debugOnlyThisMethod, debugInit,debugOnlyThisInit, assertType
-from ..listGen import ListElement
+from ...debug import (assertType, debug, debugFun, debugInit,
+                      debugOnlyThisInit, debugOnlyThisMethod)
 from ...utils import standardContainer
+from ..generators import Gen, genRepr, thisClassIsClonable
+from ..listGen import ListElement
+from .meta import Dichotomy, FieldChild
+
 
 @thisClassIsClonable
 class Asked(FieldChild):

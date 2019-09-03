@@ -1,6 +1,7 @@
 from .generators import SingleChild
 from .listGen import ListElement
 
+
 class Parenthesis(SingleChild):
     """A generator, with parenthesis around them."""
     def __init__(self,child, left = "(", right = ")", *args, **kwargs):

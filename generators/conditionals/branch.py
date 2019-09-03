@@ -11,6 +11,7 @@
 from ...utils import firstTruth
 from .askedOrNot import AskedOrNot
 
+
 class Branch(AskedOrNot):
     """The class which expands differently in function of the question/hidden value.
 

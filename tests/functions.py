@@ -1,11 +1,12 @@
 import bs4
-from .data.models import *
+
 from ..debug import assertEqual, debugOnlyThisMethod
 from ..generators.constants import *
+from ..generators.ensureGen import ensureGen
 from ..generators.generators import modelToFields
 from ..templates.soupAndHtml import soupFromTemplate, templateFromSoup
-from ..generators.ensureGen import ensureGen
-from ..templates.templates import  compile_
+from ..templates.templates import compile_
+from .data.models import *
 
 
 class TestHTML:

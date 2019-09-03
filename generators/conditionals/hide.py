@@ -1,7 +1,8 @@
-from .multiple import MultipleRequirement
-from .questionOrAnswer import QuestionOrAnswer
 from ...utils import standardContainer
 from .askedOrNot import Asked
+from .multiple import MultipleRequirement
+from .questionOrAnswer import QuestionOrAnswer
+
 
 class HideInSomeQuestions(QuestionOrAnswer):
     """Return child except on the question side when some field from fields is asked"""

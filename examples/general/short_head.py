@@ -1,4 +1,5 @@
 from ...generators import *
+
 contextOrDeck = [FilledOrEmpty('Context',
                                DecoratedField('Context', isMandatory = True),
                                ["Deck: ",deck]), hr]

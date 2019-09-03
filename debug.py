@@ -1,5 +1,6 @@
 import re
 from inspect import stack
+
 doMemoize = False
 
 #whether debug may be turned on eventually. Less efficient

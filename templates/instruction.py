@@ -1,6 +1,8 @@
 import sys
+
 from ..debug import debug
 from .templates import Template
+
 
 def compile_(*args, objects = None, **kwargs):
     if objects is None:

@@ -1,4 +1,5 @@
 from ..generators import *
+
 firstName = QuestionnedField("First name")
 lastName = QuestionnedField("Last name", classes= "Notation")
 fullName = Cascade("Full name",[firstName,lastName,br],{"First name","Last name"})

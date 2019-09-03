@@ -1,8 +1,9 @@
 from ...generators import *
-from .short_head import short_header
 from .foot import footer
 from .names import singleOrMultipleNames
 from .notations import _notations
+from .short_head import short_header
+
 _namesNotationsDenotedBy = Cascade(child=[singleOrMultipleNames,
                                           _notations,
                                           DecoratedField('Representation',suffix=hr),

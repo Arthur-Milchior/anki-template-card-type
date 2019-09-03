@@ -1,10 +1,14 @@
 import sys
 from copy import copy
-from .soupAndHtml import soupFromTemplate, templateFromSoup
-from .templates import Template, compile_ as templateCompile
+
 from bs4 import NavigableString
-from ..tag import tagContent
+
 from ..debug import debug
+from ..tag import tagContent
+from .soupAndHtml import soupFromTemplate, templateFromSoup
+from .templates import Template
+from .templates import compile_ as templateCompile
+
 
 def compile_(tag, soup = None, FrontSoup = None, FrontHtml = None,  **kwargs):
     """We should receive the front either as HTML string or as a soup. Soup will be generated if we get html. If both are None, the front is empty"""

@@ -1,6 +1,6 @@
 from ..generators import *
-from .general import header, footer
 from .definition.definition import definitions
+from .general import footer, header
 
 properties = TableFields(
     [

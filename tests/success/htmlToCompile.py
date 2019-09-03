@@ -1,6 +1,6 @@
 from ..data import *
-from ..functions import TestHTML
 from ..data.templatesToCompile import *
+from ..functions import TestHTML
 
 TestHTML(noTagHtml, noTagHtml, numberOfTagToEdit = 0, objects = testObjects, isQuestion = True)
 

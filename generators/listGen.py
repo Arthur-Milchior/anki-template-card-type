@@ -1,17 +1,20 @@
 import copy
-from .generators import Gen, shouldBeKept, genRepr, thisClassIsClonable, MultipleChildren
+
+from ..debug import (ExceptionInverse, assertType, debug, debugFun, debugInit,
+                     debugOnlyThisMethod)
 from .constants import *
 from .ensureGen import addTypeToGenerator
-from ..debug import debug, assertType, debugFun, ExceptionInverse, debugInit, debugOnlyThisMethod
+from .generators import (Gen, MultipleChildren, genRepr, shouldBeKept,
+                         thisClassIsClonable)
 
- 
+
 @thisClassIsClonable
 class ListElement(MultipleChildren):
     @debugInit
     def __init__(self,
                  elements = None,
                  **kwargs):
-        """ 
+        """
         Keyword arguments:
         elements -- list of elements
         """
@@ -21,7 +24,6 @@ class ListElement(MultipleChildren):
         super().__init__(**kwargs)
         self.changeElements()
 
-        
     def changeElements(self):
         truthyElements = []
         # someToKeep = False
@@ -46,7 +48,7 @@ class ListElement(MultipleChildren):
             return child
         else:
             return l
-        
+
     def _repr(self):
         space  = "  "*Gen.indentation
         t = f"""ListElement(["""
@@ -71,7 +73,7 @@ class ListElement(MultipleChildren):
             if ret is not None:
                 return ret
         return None
-    
+
     @debugFun
     def _getChildren(self):
         # if self.childEnsured == False:
@@ -86,10 +88,10 @@ class ListElement(MultipleChildren):
         for child in self.elements:
             l+= child.createHtml(*args, **kwargs)
         return l
-            
-addTypeToGenerator(list,ListElement)
 
-    
+addTypeToGenerator(list, ListElement)
+
+
 # class RecursiveFields(MultipleChildren):
 #     """
 
@@ -98,7 +100,7 @@ addTypeToGenerator(list,ListElement)
 #                  fields,
 #                  descriptions ,
 #                  hideSuccessor = False,
-#                  
+#
 #                  **kwargs):
 #         super().__init__( **kwargs)
 #         self.fields = fields
@@ -120,7 +122,3 @@ addTypeToGenerator(list,ListElement)
 #                     prefix = level[i]["prefix"],
 #                     suffix = level[i]["suffix"],
 #                     separator = level[i].get(separator, " : "))
-        
-    
-        
-        

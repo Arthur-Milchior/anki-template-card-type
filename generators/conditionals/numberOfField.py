@@ -1,11 +1,10 @@
-from ...debug import debugFun, debugInit, debug
-from ..leaf import emptyGen
-from .filledOrEmpty import FilledOrEmpty
+from ...debug import debug, debugFun, debugInit
+from ...utils import checkField
+from ..conditionals.askedOrNot import AskedOrNot
 from ..constants import *
 from ..generators import Gen, NotNormal, SingleChild, genRepr
-from ..conditionals.askedOrNot import AskedOrNot
-from ...utils import checkField
-
+from ..leaf import emptyGen
+from .filledOrEmpty import FilledOrEmpty
 
 # class AtMostNField(SingleChild, NotNormal):
 #     """Show the child if at most n of the fields have content.
@@ -17,9 +16,9 @@ from ...utils import checkField
 #     So use this only for small text, such as
 #     <table>.
 #     """
-
+    
 class AtLeastNField(SingleChild, NotNormal):
-    """Show the child if at least n of the fields satisfy a property.
+    """Show the child if at least n of the fields satifsy a property.
 
     By default, the property is that those fields have content. In
     this case, if there are m fields, then the length of the text
@@ -45,7 +44,7 @@ class AtLeastNField(SingleChild, NotNormal):
         super().__init__(child)
         self.child = self._ensureGen(child)
         self.otherwise = self._ensureGen(otherwise)
-
+        
     def _repr(self):
         t="""AtLeastNField(\n"""
         t+=f"""{genRepr(self.child, label ="child")},\n"""
@@ -88,7 +87,7 @@ class AtLeastNField(SingleChild, NotNormal):
 class AtLeastOneField(AtLeastNField):
     def __init__(self,*args,**kwargs):
         super().__init__(*args, n=1,**kwargs)
-
+        
 class AtLeastTwoFields(AtLeastNField):
     def __init__(self,*args,**kwargs):
         super().__init__(*args, n=2,**kwargs)
