@@ -117,4 +117,4 @@ addTypeToGenerator(tuple, tupleToFilled)
 #             Filled(field = field, child = filledCase),
 #             Empty(field = field, child = emptyCase)],  **kwargs)
 
-FilledOrEmpty = Dichotomy(Filled,Empty,"FilledOrEmpty")
+FilledOrEmpty = Dichotomy(Filled, Empty, "FilledOrEmpty")

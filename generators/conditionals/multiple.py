@@ -18,7 +18,7 @@ class MultipleRequirement(SingleChild, NotNormal):
 
     requireFilled -- the fields which must have some content, (and thus be present in the model)
     requireEmpty -- the field must be either requireEmpty or absentOfModel of the model
-    requireInModel -- the field must be present in the model. 
+    requireInModel -- the field must be present in the model.
     requireAbsentOfModel -- the field must not belong to the model
 
     requirements -- the map of set to use if the other value is not explicitly given.
@@ -26,7 +26,7 @@ class MultipleRequirement(SingleChild, NotNormal):
     def __init__(self,
                  *args,
                  requirements = None,
-                 
+
                  requireFilled = None,
                  requireEmpty = None,
                  requireInModel = None,
@@ -34,7 +34,7 @@ class MultipleRequirement(SingleChild, NotNormal):
                  requireAsked = None,
                  requireNotAsked = None,
                  isQuestion = None,
-                 
+
                  state = BASIC,
                  **kwargs):
         self.requirements = dict()
@@ -55,7 +55,7 @@ class MultipleRequirement(SingleChild, NotNormal):
                 self.requirements[name] = default
             assert standardContainer(self.requirements[name])
         if requirements is not None:
-            self.requirements["isQuestion"]= requirements ["isQuestion"]
+            self.requirements["isQuestion"]= requirements["isQuestion"]
         else:
             self.requirements["isQuestion"] = isQuestion
         inconsistent = self.isInconsistent()
@@ -87,12 +87,12 @@ class MultipleRequirement(SingleChild, NotNormal):
             current = Question(current)
         if self.requirements["isQuestion"] is False:
             current = answer(current)
-                
+
         return current.getNormalForm()
-    
+
     def _outerEq(self,other):
         return isinstance(other,MultipleRequirement) and self.requirements == other.requirements and super().__outerEq(self,other)
-    
+
     def isInconsistent(self):
         #debug("""isInconsistent("{self}")""",1)
         for left, right in [("requireFilled", "requireEmpty"), ("requireFilled", "requireAbsentOfModel"), ("requireInModel", "requireAbsentOfModel"), ("requireAsked","requireNotAsked")]:

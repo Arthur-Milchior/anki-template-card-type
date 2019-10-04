@@ -65,7 +65,6 @@ exists at some step, but have not been properly eliminated at previous
 step.
 
 
-
 ## HTML
 The generator ```HTML(tag, atom = False, attrs={}, child=None)``` is
 interpreted as ```<tag attr_1=value_1

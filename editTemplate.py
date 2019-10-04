@@ -106,12 +106,15 @@ def compileAndSaveModel(model,*args,**kwargs):
     originalModel = copy.deepcopy(model)
     newModel = compileModel(model, *args,**kwargs)
     try:
+        newTemplatesData  = []
+        for i in range(len(newModel['tmpls'])):
+            newTemplatesData.append({"is new": False,
+                                     "old idx":i})
         mw.col.models.save(newModel,
                            templates = True,
                            oldModel = originalModel,
-                           newTemplatesData = [{"is new": False,
-                                                "old idx":i}
-                                               for i in range(len(newModel['tmpls']))])
+                           newTemplatesData = newTemplatesData
+        )
     except:
         print(f"Please install add-on 802285486.")
         raise

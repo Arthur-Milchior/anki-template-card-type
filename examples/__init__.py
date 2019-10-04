@@ -29,6 +29,7 @@ from .pianoScale.pianoScale import pianoScale
 from .programmingLanguage import programmingLanguage
 from .question import questionGen
 from .relation.relation import decreasing, increasing, relation
+from .scale.scale import scale
 from .shortQuestions import (abbreviation, abbreviation2, abbreviation3,
                              english, english2, etymology, etymology2, french,
                              french2, represented, represented2,
