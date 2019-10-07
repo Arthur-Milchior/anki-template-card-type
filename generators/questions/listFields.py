@@ -36,6 +36,8 @@ class ListFields(ListElement):
                  toKeep = True,
                  prefix=None,
                  suffix=None,
+                 applyToGroup=None,
+                 groupSize=None,
                  **kwargs):
         self.originalFields = fields
         self.name = name
@@ -83,6 +85,13 @@ class ListFields(ListElement):
                 processedField = ShowIfAskedOrAnswer(showIfAskedOrAnswer, processedField)
             elements.append(processedField)
             toCascade |= toCascadeLocal
+
+        elements_ = []
+        if applyToGroup and groupSize:
+            for i in range(len(elements)//groupSize):
+                subgroup = elements[groupSize*i:groupSize*(i+1)]
+                elements_.append(applyToGroup(subgroup, i))
+            elements = elements_
 
         ret = self.globalFun(elements)
         if self.suffix:#This ensure that we don't use the big AtLeastOneField on an empty suffix
@@ -315,8 +324,8 @@ class NumberedFields(ListFields):
                          **kwargs)
 
 class PotentiallyNumberedFields(Cascade):
-    """If the second element is present, a list is used. Otherwise, assume
-no other elements are present, and show only the first element."""
+    """If the second element is absent show singleCase. Otherwise, show a
+    list of elements."""
     def __init__(self,
                  fieldPrefix,
                  greater,
@@ -329,25 +338,30 @@ no other elements are present, and show only the first element."""
                  liAttrs = dict(),
                  suffix = br,
                  prefix = None,
-                 infix = ": ",
-                 isMandatory = False,
+                 infix=": ",
+                 isMandatory=False,
+                 applyToGroup=None,
+                 groupSize=None,
                  **kwargs):
         nf = NumberedFields(fieldPrefix,
                             greater,
-                            label = label,
-                            attrs = attrs,
-                            liAttrs = liAttrs,
-                            classes = classes,
-                            localFun = localFunMultiple,
-                            isMandatory = isMandatory)
+                            label=label,
+                            attrs=attrs,
+                            liAttrs=liAttrs,
+                            classes=classes,
+                            localFun=localFunMultiple,
+                            isMandatory=isMandatory,
+                            applyToGroup=applyToGroup,
+                            groupSize=groupSize,
+        )
         if singleCase is None:
-            singleCase = DecoratedField(field = fieldPrefix,
-                                        label = label,
-                                        infix = infix,
-                                        classes = classes,
-                                        prefix = prefix,
-                                        suffix = suffix,
-                                        isMandatory = isMandatory)
+            singleCase = DecoratedField(field=fieldPrefix,
+                                        label=label,
+                                        infix=infix,
+                                        classes=classes,
+                                        prefix=prefix,
+                                        suffix=suffix,
+                                        isMandatory=isMandatory)
         singleCase = Cascade(field = f"{fieldPrefix}s",
                              child = singleCase,
                              cascade = {fieldPrefix})

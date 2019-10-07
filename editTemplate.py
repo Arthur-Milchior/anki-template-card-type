@@ -112,8 +112,6 @@ def compileAndSaveModel(model,*args,**kwargs):
                                      "old idx":i})
         mw.col.models.save(newModel,
                            templates = True,
-                           oldModel = originalModel,
-                           newTemplatesData = newTemplatesData
         )
     except:
         print(f"Please install add-on 802285486.")
