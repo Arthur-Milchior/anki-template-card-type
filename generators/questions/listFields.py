@@ -90,9 +90,12 @@ class ListFields(ListElement):
 
         elements_ = []
         if applyToGroup and groupSize:
-            for i in range(len(elements)//groupSize):
-                subgroup = elements[groupSize*i:groupSize*(i+1)]
+            i=0
+            while elements:
+                subgroup = elements[:groupSize]
+                elements = elements[groupSize:]
                 elements_.append(applyToGroup(subgroup, i))
+                i += 1
             elements = elements_
 
         ret = self.globalFun(elements)
