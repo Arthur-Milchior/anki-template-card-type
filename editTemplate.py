@@ -103,7 +103,6 @@ def compileModel(model, objects = objects, action = "Template",  prettify = True
     return model
 
 def compileAndSaveModel(model,*args,**kwargs):
-    originalModel = copy.deepcopy(model)
     newModel = compileModel(model, *args,**kwargs)
     try:
         newTemplatesData  = []

@@ -34,6 +34,7 @@ from .shortQuestions import (abbreviation, abbreviation2, abbreviation3,
                              english, english2, etymology, etymology2, french,
                              french2, represented, represented2,
                              toAbbreviation, toAbbreviation2)
+from .song import song
 from .statistical_distribution import statistical_distribution
 from .test import *
 from .theory import theory

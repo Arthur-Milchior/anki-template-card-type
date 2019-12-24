@@ -22,7 +22,7 @@ class FromAndTo(NotNormal):
         self.classes = classes
         super().__init__()
         
-    def getNormalForm(self):
+    def _getNormalForm(self):
         prefix=[Field(self.questionField,
                       classes = self.classes),
                 self.fieldToQuestion]

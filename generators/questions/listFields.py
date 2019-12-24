@@ -26,6 +26,8 @@ class ListFields(ListElement):
     globalSep -- the function to apply generate field separator. Takes as argument all the previous fields. By default, return None.
     globalFun -- the function to apply to generate the final object. Takes as argument the list of fields and separator passed as argument. By default, apply ListElement.
     name -- a name for this generator. When this name is asked, the questions returned as 3rd element by localFun are also considered to be asked
+    groupSize -- stating that each subgroup containing elements groupSize*n up to groupSize *(n+1) -1 belongs to a single subgroup
+    applyToGroup -- a method applied to each subgroup, with second argument the index of the subgroup
     """
     def __init__(self,
                  fields,
