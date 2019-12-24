@@ -12,7 +12,7 @@ person who tried to make complex template should now, it's hard to
 have it all right at the first try.
 
 You can find a few examples in 
-[https://github.com/Arthur-Milchior/anki-template-card-type/blob/master/generators/README.md]
+[https://github.com/Arthur-Milchior/anki-template-card-type/blob/master/examples/README.md]
 
 ### Generators
 A generator is an abstract piece of template. Each generator can be
@@ -43,7 +43,7 @@ Here are a few examples of generators:
   {{#foo}}gen1{{/foo}}{{^foo}}gen2{{/foo}}
   ```
   However, if this
-  generator inside some ```{{#foo}}...{{/foo}}```, since it is already
+  generator appears inside some ```{{#foo}}...{{/foo}}```, since it is already
   known that the field 'foo' is filled, this generator compiles as
   gen1 only. Reciprocally, if the field foo is not present in the
   model, then it can't be filled, thus this generator compiles as gen2
@@ -104,7 +104,7 @@ document also explains how to create more generators. Don't hesitate
 to send me your generators so that I can include them in this add-on.
 
 ### Template
-The templates must satisfy a few basic rules:
+I ensured that the templates follow those basic rules:
 * Compiled or not, the template must be valid HTML.
 * The code written for this add-on must never be shown in anki's
   card. Thus it is written in parameters of HTML tag.
