@@ -10,13 +10,10 @@ def toField(n):
         return f"vers{n}"
 
 def toPart(n):
-    if n==1:
-        return "Part"
-    else:
-        return f"Part{n}"
+    return f"Part{int(n)}"
 
-def grouping(subgroup, nb=0, size=10, part="Part"):
-    partName = f"{part}{nb+1}" if nb else part
+def grouping(subgroup, nb=0, size=10):
+    partName = toPart(nb+1)
     verses = [toField(i) for i in range(size*nb+1, size*(nb+1)+1)]
     prefix = AtLeastOneField(child=hr, fields=verses)
     verses = {*verses}
@@ -37,13 +34,14 @@ def song(nb, nbQuestions):
         questions = frozenset({toField(nb), toField(nb-1)})
     else:
         assert nbQuestions % 10 ==0
-        nbParts = nbQuestions / 10
+        nbParts = nbQuestions // 10
         if nbParts == 1:
-            questions = frozenset({toPart(nb/10)})
+            questions = frozenset({toPart(nb//10)})
         elif nbParts == 2:
-            questions = frozenset({toPart(nb/10), toPart(nb/10-1)})
+            questions = frozenset({toPart(nb//10), toPart(nb//10-1)})
+        elif nbParts == 20:
+            questions = frozenset({toPart(nb) for nb in range(1,21)})
         else:
             assert False
-    print(f"questions is {questions}")
     lyrics = lyrics.getNormalForm().assumeAsked(questions)
     return [prefix, lyrics]
