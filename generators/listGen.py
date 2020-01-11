@@ -43,7 +43,7 @@ class ListElement(MultipleChildren):
         l= ListElement(elements)
         if not l.elements:
             return None
-        elif len(l.elements) is 1:
+        elif len(l.elements) == 1:
             child = l.elements[0]
             return child
         else:
