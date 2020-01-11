@@ -53,7 +53,7 @@ class AtLeastNField(SingleChild, NotNormal):
             t+=genRepr(self.otherwise,label= "otherwise")+",\n"
         if self.otherwise is not False:
             t+=genRepr(self.asked,label= "asked")+",\n"
-        if self.n is not 1:
+        if self.n != 1:
             t=",\n"+genRepr(self.n,label= "n")+"\n"
         t+=")"
         return t
