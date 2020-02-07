@@ -1,7 +1,7 @@
 from ...generators import *
 from ..general import footer, short_header
 
-label=[Field("Name", isMandatory = True)," is"]
+label=[Field("Name", isMandatory = True), " "]
 
 def no(i):
     filled=Filled(f"Not{i}",
@@ -33,17 +33,25 @@ def when(i):
 
 
 def closedUnder(i):
+    filled = [FilledOrEmpty(f"Prefix{i}",
+                            Field(f"Prefix{i}"),
+                            ""),
+              " ",
+              no(i),
+              " ",
+              Field(f"Closure{i}")]
+    unfilled = ["is ", no(i), " closed under"]
     return DecoratedField(field = f"Under{i}",
                           label = FilledOrEmpty(f"Closure{i}",
-                                                Field(f"Closure{i}"),
-                                                "closed under "),
+                                                filled,
+                                                unfilled),
                           classes = "Under",
                           infix = "",
                           suffix = "",
                           isMandatory = True)
 
 def line(i):
-    return [no(i),closedUnder(i),when(i)]
+    return [closedUnder(i)," ",when(i)]
 
 _closed = NumberedFields(fieldPrefix = "Under",
                          greater=11,
