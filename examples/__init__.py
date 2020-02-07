@@ -23,13 +23,14 @@ from .knot import knot
 from .LW import lw
 from .metaphor import metaphor
 from .mnemo import mnemo
-from .noeud import noeud
+from .noeud import noeud, noeudContruction
 from .ordinal import ordinal
 from .pianoScale.pianoScale import pianoScale
 from .programmingLanguage import programmingLanguage
 from .question import questionGen
 from .relation.relation import decreasing, increasing, relation
 from .scale.scale import scale
+from .sheets import learn_sheet, practice
 from .shortQuestions import (abbreviation, abbreviation2, abbreviation3,
                              english, english2, etymology, etymology2, french,
                              french2, represented, represented2,
