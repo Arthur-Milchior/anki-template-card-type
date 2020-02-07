@@ -3,9 +3,10 @@ from .general import footer, header
 
 
 def localFun(i):
+    nb = TD(str(i or 1))
     fig = TD(QuestionnedField(field=f"Step{i}", child={f"Figure{i}"},classes="Definition"))
     step = TD(QuestionnedField(field=f"Step{i}",classes="Definition"))
-    return {"child":TR([step,fig]),
+    return {"child":TR([nb,step,fig]),
             "questions":{f"Step{i}"},
             "filledFields":[f"Step{i}",f"Figure{i}"]}
 
@@ -20,11 +21,14 @@ def globalFun(l):
     result = TH(QuestionnedField(field=f"Description", child=result,classes="Notation"))
     return Table([TR([description, result])]+l)
 
-steps = NumberedFields(fieldPrefix="Step",
-                       greater=5,
-                       localFun=localFun,
-                       globalFun=globalFun)
+def steps(i):
+    return NumberedFields(fieldPrefix="Step",
+                          greater=i,
+                          localFun=localFun,
+                          globalFun=globalFun)
 
 properties = TableFields(["Interest","Types","Fiable","Réglable", "Décoratif", "Défaisable"])
 
-noeud = [header, steps, properties, footer]
+def noeudContruction(i):
+    return [header, steps(i), footer]
+noeud = noeudContruction(5)
