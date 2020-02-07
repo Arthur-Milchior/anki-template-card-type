@@ -107,6 +107,11 @@ P = _fixedTag("p")
 TR = _fixedTag("tr")
 TH = _fixedTag("th")
 TD_ = _fixedTag("td")
+H1 = _fixedTag("H1")
+H2 = _fixedTag("H2")
+H3 = _fixedTag("H3")
+H4 = _fixedTag("H4")
+H5 = _fixedTag("H5")
 class TD(TD_):
     #TD should not be removed from the list, else it'd destroy the
     #table. Thus it's never considered to be empty.
