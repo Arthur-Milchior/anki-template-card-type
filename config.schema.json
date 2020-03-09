@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Edit cards template with python and a domain specific language",
+  "properties": {
+    "Shortcut: ReTemplate Card": {
+      "type": ["string", "null"],
+      "pattern": "^((([Cc][Tt][Rr][Ll]|[Aa][Ll][Tt]|[Ss][Hh][Ii][Ff][Tt])\\+){0,3}([a-zA-Z0-9]|F[1-9]|F1[0-2]))?$",
+      "default": "Ctrl+Shift+T"
+     },
+    "Shortcut: Template Note": {
+      "type": ["string", "null"],
+      "pattern": "^((([Cc][Tt][Rr][Ll]|[Aa][Ll][Tt]|[Ss][Hh][Ii][Ff][Tt])\\+){0,3}([a-zA-Z0-9]|F[1-9]|F1[0-2]))?$",
+      "default": "Ctrl+Alt+T"
+     },
+    "Shortcut: ReTemplate note": {
+      "type": ["string", "null"],
+      "pattern": "^((([Cc][Tt][Rr][Ll]|[Aa][Ll][Tt]|[Ss][Hh][Ii][Ff][Tt])\\+){0,3}([a-zA-Z0-9]|F[1-9]|F1[0-2]))?$",
+      "default": "Ctrl+Alt+Shift+T"
+    },
+    "Shortuct: frontside":{
+      "type": ["string", "null"],
+      "pattern": "^((([Cc][Tt][Rr][Ll]|[Aa][Ll][Tt]|[Ss][Hh][Ii][Ff][Tt])\\+){0,3}([a-zA-Z0-9]|F[1-9]|F1[0-2]))?$",
+      "default": null
+    },
+    "Shortuct: Clean template note":{
+      "type": ["string", "null"],
+      "pattern": "^((([Cc][Tt][Rr][Ll]|[Aa][Ll][Tt]|[Ss][Hh][Ii][Ff][Tt])\\+){0,3}([a-zA-Z0-9]|F[1-9]|F1[0-2]))?$",
+      "default": null
+    },
+  }
+}
+
