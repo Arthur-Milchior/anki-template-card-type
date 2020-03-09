@@ -9,6 +9,7 @@ from .meta import Dichotomy, FieldChild
 @thisClassIsClonable
 class Asked(FieldChild):
     """The class which expands only if its field is asked."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -38,6 +39,7 @@ class Asked(FieldChild):
 @thisClassIsClonable
 class NotAsked(FieldChild):
     """The class which expands only if its field is not asked."""
+
     def _getWithoutRedundance(self):
         return self.cloneSingle(self.getChild().getWithoutRedundance().assumeNotAsked(self.field))
 
@@ -59,20 +61,21 @@ class NotAsked(FieldChild):
     def _createHtml(self, *args, **kwargs):
         raise ExceptionInverse("NotAsked._createHtml should not exists")
 
+
 @thisClassIsClonable
 class Cascade(FieldChild):
     @debugInit
-    #@debugOnlyThisInit
+    # @debugOnlyThisInit
     def __init__(self, field, child, cascade, **kwargs):
         assert assertType(cascade, set)
         self.cascade = cascade
-        assert isinstance(field,str)
+        assert isinstance(field, str)
         assert standardContainer(cascade)
         assert cascade
         super().__init__(field, child, **kwargs)
 
     def _repr(self):
-        space  = "  "*Gen.indentation
+        space = "  "*Gen.indentation
         return f"""{self.__class__.__name__}(
 {genRepr(self.field, label = "field")},
 {genRepr(self.cascade, label = "cascade")},
@@ -87,20 +90,20 @@ class Cascade(FieldChild):
 
     def _cloneSingle(self, child):
         return self.classToClone(
-            field = self.field,
-            child = child,
-            cascade = self.cascade)
+            field=self.field,
+            child=child,
+            cascade=self.cascade)
 
     def _createHtml(self, *args, **kwargs):
         raise ExceptionInverse("NotAsked._createHtml should not exists")
 
     def _assumeAsked(self, fields, modelName, changeState):
         if self.field in fields:
-            return self.getChild().assumeAsked(fields|self.cascade, modelName, changeState)
+            return self.getChild().assumeAsked(fields | self.cascade, modelName, changeState)
         else:
             return self.cloneSingle(self.getChild().assumeAsked(fields, modelName, changeState))
 
-    def _assumeNotAsked(self,field):
+    def _assumeNotAsked(self, field):
         if self.field == field:
             return self.getChild().assumeNotAsked(field)
         else:
@@ -108,7 +111,6 @@ class Cascade(FieldChild):
 
     def _noMoreAsk(self):
         return self.getChild().noMoreAsk()
-
 
 
 # class AskedOrNot(ListElement):
@@ -125,4 +127,4 @@ class Cascade(FieldChild):
 #         askedGen = Asked(field = field, child = askedGen)
 #         notAskedGen = NotAsked(field = field,child = notAsked)
 #         super().__init__([askedGen, notAskedGen ], **kwargs)
-AskedOrNot = Dichotomy(Asked,NotAsked,"AskedOrNot")
+AskedOrNot = Dichotomy(Asked, NotAsked, "AskedOrNot")

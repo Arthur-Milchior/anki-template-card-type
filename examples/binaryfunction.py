@@ -12,7 +12,7 @@ properties = TableFields(
         "Associative",
         "Commutative",
     ],
-    name = "Properties"
+    name="Properties"
 )
 
 binaryfunction = [header, definitions, properties, footer]

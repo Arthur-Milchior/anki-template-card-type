@@ -16,6 +16,7 @@ class Leaf(Gen):
     The class of generators with no child.
 
     """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -24,38 +25,41 @@ class Leaf(Gen):
         return frozenset()
 
     @debugFun
-    def clone(self, elements = []):
+    def clone(self, elements=[]):
         assert elements == []
         return self
 
-    def _firstDifference(self,other):
+    def _firstDifference(self, other):
         return None
 
-    def _innerEq(self,other):
+    def _innerEq(self, other):
         return True
+
 
 emptyGen = None
 @thisClassIsClonable
 class NoContent(Leaf):
     """A generator without any content"""
     instance = None
+
     def __hash__(self):
         return 0
+
     def __init__(self,
-                 *args,#required, because EnsureGen may give an argument
+                 *args,  # required, because EnsureGen may give an argument
                  toKeep=False,
-                 state = EMPTY,
-                 createOther = False,
-                 init = None,
+                 state=EMPTY,
+                 createOther=False,
+                 init=None,
                  **kwargs):
         if createOther:
             pass
         elif NoContent.instance is None and init:
             NoContent.instance = self
         else:
-             raise ExceptionInverse("Calling NoContent")
-        super().__init__(state = state,
-                         toKeep = toKeep,
+            raise ExceptionInverse("Calling NoContent")
+        super().__init__(state=state,
+                         toKeep=toKeep,
                          **kwargs)
 
     def _repr(self):
@@ -67,53 +71,61 @@ class NoContent(Leaf):
     def _createHtml(self, soup):
         return None
 
-    def _outerEq(self,other):
+    def _outerEq(self, other):
         #debug("{self!r} == {other!r}",1)
-        l = isinstance(other,NoContent)
-        #if l:
-            #debug("other is NoContent")
-        #else:
-            #debug("other is not NoContent but {type(other)}")
-        #debug("",-1)
+        l = isinstance(other, NoContent)
+        # if l:
+        #debug("other is NoContent")
+        # else:
+        #debug("other is not NoContent but {type(other)}")
+        # debug("",-1)
         return l
 
 
-noContentGen = NoContent(init = True)
+noContentGen = NoContent(init=True)
+
+
 def constNoContent(x):
     return noContentGen
-addTypeToGenerator(type(None),constNoContent)
+
+
+addTypeToGenerator(type(None), constNoContent)
+
 
 @thisClassIsClonable
 class Literal(Leaf):
     """A text to be printed, as-is, unconditionally."""
+
     def __init__(self,
-                 text = None,
-                 state = LAST_GEN_STEP,
+                 text=None,
+                 state=LAST_GEN_STEP,
                  **kwargs):
-        assert assertType(text,str)
+        assert assertType(text, str)
         if text is None:
             text = ""
         self.text = text
         if not self.text:
             state == EMPTY
-        super().__init__(state = state,
+        super().__init__(state=state,
                          **kwargs)
 
     def __hash__(self):
         return hash(self.text)
 
     def _repr(self):
-            return f"""Literal(text = "{self.text}",{self.params()})"""
+        return f"""Literal(text = "{self.text}",{self.params()})"""
 
-    def _outerEq(self,other):
-        if not isinstance(other,Literal):
+    def _outerEq(self, other):
+        if not isinstance(other, Literal):
             return False
         return self.text == other.text
 
     def _createHtml(self, soup):
         return NavigableString(self.text)
 
-addTypeToGenerator(str,Literal)
+
+addTypeToGenerator(str, Literal)
+
 
 @thisClassIsClonable
 class Field(Leaf):
@@ -126,29 +138,32 @@ class Field(Leaf):
     isMandatory -- Show an error message if this field is used in a model where this field is not present. By default its false
     useClasses -- Whether some class should be applied to the field
 """
+
     def __init__(self,
                  field,
-                 typ = False,
-                 cloze = False,
-                 state = WITHOUT_REDUNDANCY,
-                 special = False,
-                 isMandatory = False,
-                 useClasses = True,
-                 toKeep = True,
-                 classes = None,
+                 typ=False,
+                 cloze=False,
+                 state=WITHOUT_REDUNDANCY,
+                 special=False,
+                 isMandatory=False,
+                 useClasses=True,
+                 toKeep=True,
+                 classes=None,
                  **kwargs):
         if special and isMandatory:
-            print(f"""Beware: you stated that a special field {field} is isMandatory, it makes no sens.""", file=sys.stderr)
+            print(
+                f"""Beware: you stated that a special field {field} is isMandatory, it makes no sens.""", file=sys.stderr)
         self.isMandatory = isMandatory
         self.useClasses = useClasses or (classes is not None)
         self.classes = classes if (classes is not None) else field
         self.special = special
         self.typ = typ
         self.cloze = cloze
-        if isinstance(field,Field):
+        if isinstance(field, Field):
             self.field = field.field
-        elif isinstance(field,set):#required so that {{foo}} becomes Field(foo)
-            assert len(field)==1
+        # required so that {{foo}} becomes Field(foo)
+        elif isinstance(field, set):
+            assert len(field) == 1
             self.field = field.pop()
             field.add(self.field)
         else:
@@ -156,11 +171,11 @@ class Field(Leaf):
         assert assertType(self.field, str)
         self.dealWithClozeAndType()
         self.dealWithSpecial()
-        super().__init__(state = state,
-                         toKeep = toKeep,
-                         localMandatories = {self.field} if isMandatory else frozenset(),
+        super().__init__(state=state,
+                         toKeep=toKeep,
+                         localMandatories={
+                             self.field} if isMandatory else frozenset(),
                          **kwargs)
-
 
     def dealWithClozeAndType(self):
         if self.field.startswith("type:"):
@@ -173,16 +188,21 @@ class Field(Leaf):
             self.field = self.field[6:]
 
     def dealWithSpecial(self):
-        specialName = {"FrontSide":"frontside", "Tags":"tags", "Type":"typ", "Deck":"deck", "Card":"card"}
+        specialName = {"FrontSide": "frontside", "Tags": "tags",
+                       "Type": "typ", "Deck": "deck", "Card": "card"}
         if self.field in specialName and not self.special:
-            print(f"""Beware: you use field "{self.field}", which is a special field. If you want to use this special field, use the constant "{[self.field]}".""", file=sys.stderr)
+            print(
+                f"""Beware: you use field "{self.field}", which is a special field. If you want to use this special field, use the constant "{[self.field]}".""", file=sys.stderr)
         if not self.special and self.field in specialName:
-            print(f"""Beware: you want to create a special field "{self.field}", which does not belong to {specialName}, thus is not a special name.""", file=sys.stderr)
+            print(
+                f"""Beware: you want to create a special field "{self.field}", which does not belong to {specialName}, thus is not a special name.""", file=sys.stderr)
         if self.special:
             if self.typ:
-                print(f"""Beware: you want to have "type:" before a special field {self.field}, this makes no sens.""", file=sys.stderr)
+                print(
+                    f"""Beware: you want to have "type:" before a special field {self.field}, this makes no sens.""", file=sys.stderr)
             if self.typ:
-                print(f"""Beware: you want to have "cloze:" before a special field {self.field}, this makes no sens.""", file=sys.stderr)
+                print(
+                    f"""Beware: you want to have "cloze:" before a special field {self.field}, this makes no sens.""", file=sys.stderr)
 
     def _getNormalForm(self):
         if self.useClasses:
@@ -196,32 +216,32 @@ class Field(Leaf):
         else:
             return self
 
-
     def __hash__(self):
         return hash(self.field)
 
-    def _outerEq(self,other):
-        return isinstance(other,Field) and self.field == other.field and self.useClasses == other.useClasses and super()._outerEq(other)
+    def _outerEq(self, other):
+        return isinstance(other, Field) and self.field == other.field and self.useClasses == other.useClasses and super()._outerEq(other)
 
     def _repr(self):
-        t= f"""Field(field = "{self.field}","""
+        t = f"""Field(field = "{self.field}","""
         if self.typ is not False:
-            t+="\n"+genRepr(self.typ, label="type")+","
+            t += "\n"+genRepr(self.typ, label="type")+","
         if self.cloze is not False:
-            t+="\n"+genRepr(self.cloze, label="cloze")+","
+            t += "\n"+genRepr(self.cloze, label="cloze")+","
         if self.special is not False:
-            t+="\n"+genRepr(self.special, label="special")+","
+            t += "\n"+genRepr(self.special, label="special")+","
         if self.isMandatory is not False:
-            t+="\n"+genRepr(self.isMandatory, label="isMandatory")+","
+            t += "\n"+genRepr(self.isMandatory, label="isMandatory")+","
         if self.useClasses is not True:
-            t+="\n"+genRepr(self.useClasses, label="useClasses")+","
-        t+=self.params()+")"
+            t += "\n"+genRepr(self.useClasses, label="useClasses")+","
+        t += self.params()+")"
         return t
 
     def _assumeFieldEmpty(self, fields, setForbiddenState):
         if self.field in fields:
             if self.special:
-                print(f"""Beware: you assert that special name {self.field} is empty, which makes no sens.""", file=sys.stderr)
+                print(
+                    f"""Beware: you assert that special name {self.field} is empty, which makes no sens.""", file=sys.stderr)
             return emptyGen
         else:
             return self
@@ -229,15 +249,18 @@ class Field(Leaf):
     def _assumeFieldAbsent(field):
         if field == self.field:
             if self.special:
-                print(f"""Beware: you assert that special name {self.field} is absent, which makes no sens.""", file=sys.stderr)
+                print(
+                    f"""Beware: you assert that special name {self.field} is absent, which makes no sens.""", file=sys.stderr)
             return emptyGen
         else:
             return self
+
     @debugFun
     def _restrictToModel(self, fields):
         if self.field in fields:
             if self.special:
-                print(f"""Beware: your model has a field {self.field} which is also the name of a special field.""", file=sys.stderr)
+                print(
+                    f"""Beware: your model has a field {self.field} which is also the name of a special field.""", file=sys.stderr)
             return self
         else:
             if self.special:
@@ -250,9 +273,10 @@ class Field(Leaf):
         cloze = "cloze:" if self.typ else ""
         return NavigableString(f"""{{{{{typ}{cloze}{self.field}}}}}""")
 
+
 addTypeToGenerator(set, Field)
-frontside = Field("FrontSide", special = True)
-tags = Field("Tags", special = True)
-typ = Field("Type", special = True)
-deck = Field("Deck", special = True)
-card = Field("Card", special = True)
+frontside = Field("FrontSide", special=True)
+tags = Field("Tags", special=True)
+typ = Field("Type", special=True)
+deck = Field("Deck", special=True)
+card = Field("Card", special=True)

@@ -8,13 +8,16 @@ from .templates import Template
 
 """Templates for string. Not clear why this would be usefull"""
 
+
 def compile_(tag, *args, **kwargs):
     string = tag.attrs.get("string")
     tag.append(NavigableString(escape(string)))
     pass
 
+
 def clean(tag):
     tag.clear()
     pass
-    
+
+
 Template(["string"], compile_, clean)

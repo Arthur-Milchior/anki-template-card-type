@@ -11,22 +11,29 @@ def _question(questionFieldPrefix, fieldToQuestion, actualQuestion, questionToAn
     def fun(i=""):
         questionField = f"{questionFieldPrefix}{i}"
         answer = f"{answerPrefix}{i}"
-        return FromAndTo(questionField, fieldToQuestion, actualQuestion, questionToAnswer, answer,prefix= short_header,classes=answerPrefix)
+        return FromAndTo(questionField, fieldToQuestion, actualQuestion, questionToAnswer, answer, prefix=short_header, classes=answerPrefix)
     return fun
 
-_abbreviation = _question("Abbreviation", " is the ", "abbreviation", " of ", "Name")
+
+_abbreviation = _question("Abbreviation", " is the ",
+                          "abbreviation", " of ", "Name")
 _etymology = _question("Name", "'s ", "etymology", " is ", "Etymology")
+
+
 def _language(question, answer, language):
-    return _question(question," in ", language, " is ", answer)
-_french= _language("Name","French","French")
-_english= _language("French","Name","English")
-_toAbbreviation=_question("Name", "'s ", "abbreviation", " is ", "Abbreviation")
-_represented=_question('Represents', ' ', 'is represented by', ' ', 'Name')
+    return _question(question, " in ", language, " is ", answer)
+
+
+_french = _language("Name", "French", "French")
+_english = _language("French", "Name", "English")
+_toAbbreviation = _question(
+    "Name", "'s ", "abbreviation", " is ", "Abbreviation")
+_represented = _question('Represents', ' ', 'is represented by', ' ', 'Name')
 
 french = _french()
-french2=_french("2")
+french2 = _french("2")
 english = _english()
-english2=_english("2")
+english2 = _english("2")
 abbreviation = _abbreviation()
 abbreviation2 = _abbreviation("2")
 abbreviation3 = _abbreviation("3")

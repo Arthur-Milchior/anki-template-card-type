@@ -2,11 +2,11 @@
 # In my template, there is a recurring case. Some part of the code have
 # most of the time a fixed value. But it also have a value for the
 # question side when some name is asked, and also a value for the answer
-# side when the name is asked. 
+# side when the name is asked.
 
 # A Branch allow to give a default value. A value for question/answer
 # side, or for asked/not asked side, and to override this default value
-# only when some conditions are met. 
+# only when some conditions are met.
 
 from ...utils import firstTruth
 from .askedOrNot import AskedOrNot
@@ -20,19 +20,19 @@ class Branch(AskedOrNot):
 """
 
     def __init__(self,
-                 name = None,
-                 
-                 default = None,
-                 question = None,
-                 answerAsked = None,
-                 answerNotAsked = None,
-                 answer = None,
-                 asked = None,
-                 notAsked = None,
-                 questionAsked = None,
-                 questionNotAsked = None,
-                 
-                 children = dict(),
+                 name=None,
+
+                 default=None,
+                 question=None,
+                 answerAsked=None,
+                 answerNotAsked=None,
+                 answer=None,
+                 asked=None,
+                 notAsked=None,
+                 questionAsked=None,
+                 questionNotAsked=None,
+
+                 children=dict(),
                  **kwargs):
         """
         The value of self.children[isQuestion,isAsked] is:
@@ -45,6 +45,7 @@ class Branch(AskedOrNot):
 
         """
         self.inputs = dict()
+
         def addIfNotNone(key, value):
             if value is not None:
                 self.inputs[key] = value
@@ -59,16 +60,22 @@ class Branch(AskedOrNot):
         addIfNotNone("questionNotAsked", questionNotAsked)
         addIfNotNone("children", children)
         addIfNotNone("name", name)
- 
-        questionAsked = firstTruth([questionAsked, asked, question, children.get((True,True)), default, emptyGen])
-        questionNotAsked = firstTruth([questionNotAsked, notAsked, question, children.get((True,False)), default, emptyGen])
-        answerAsked = firstTruth([answerAsked, asked, answer, children.get((False,True)), default, emptyGen])
-        answerNotAsked = firstTruth([answerNotAsked, notAsked, answer, children.get((False,False)), default, emptyGen])
-        
-        asked = questionAsked if questionAsked == answerAsked else QuestionOrAnswer(questionAsked, answerAsked, **kwargs)
-        notAsked = questionNotAsked if questionNotAsked == answerNotAsked else QuestionOrAnswer(questionNotAsked, answerNotAsked, **kwargs)
 
-        super().__init__(field = name,
-                         asked = asked,
-                         notAsked = notAsked,
+        questionAsked = firstTruth(
+            [questionAsked, asked, question, children.get((True, True)), default, emptyGen])
+        questionNotAsked = firstTruth(
+            [questionNotAsked, notAsked, question, children.get((True, False)), default, emptyGen])
+        answerAsked = firstTruth(
+            [answerAsked, asked, answer, children.get((False, True)), default, emptyGen])
+        answerNotAsked = firstTruth([answerNotAsked, notAsked, answer, children.get(
+            (False, False)), default, emptyGen])
+
+        asked = questionAsked if questionAsked == answerAsked else QuestionOrAnswer(
+            questionAsked, answerAsked, **kwargs)
+        notAsked = questionNotAsked if questionNotAsked == answerNotAsked else QuestionOrAnswer(
+            questionNotAsked, answerNotAsked, **kwargs)
+
+        super().__init__(field=name,
+                         asked=asked,
+                         notAsked=notAsked,
                          **kwargs)

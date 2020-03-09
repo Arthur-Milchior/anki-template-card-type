@@ -6,8 +6,10 @@ from .short_head import short_header
 
 _namesNotationsDenotedBy = Cascade(child=[singleOrMultipleNames,
                                           _notations,
-                                          DecoratedField('Representation',suffix=hr),
-                                          DecoratedField('Denoted by',suffix=hr)],
-                                   cascade = {"Names","Notations","Representation","Denoted by"},
+                                          DecoratedField(
+                                              'Representation', suffix=hr),
+                                          DecoratedField('Denoted by', suffix=hr)],
+                                   cascade={"Names", "Notations",
+                                            "Representation", "Denoted by"},
                                    field="NamesNotationsDenotedBy")
-namesNotationsDenotedBy = [short_header,_namesNotationsDenotedBy,footer]
+namesNotationsDenotedBy = [short_header, _namesNotationsDenotedBy, footer]

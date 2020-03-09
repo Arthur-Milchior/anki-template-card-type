@@ -20,12 +20,12 @@ class QuestionnedField(AskedOrNot):
 
     def __init__(self,
                  field,
-                 classes = None,
+                 classes=None,
                  child=None,
-                 isMandatory = False,
-                 emphasize = True,
-                 useClasses = True,
-                 suffix = None,
+                 isMandatory=False,
+                 emphasize=True,
+                 useClasses=True,
+                 suffix=None,
                  **kwargs):
         """
         useClasses -- whether the name of the field/classes should be applied to this field.
@@ -33,11 +33,11 @@ class QuestionnedField(AskedOrNot):
         """
 
         # Getting both the field and its name
-        if isinstance(field,str):
+        if isinstance(field, str):
             self.fieldName = field
             self.field = Field(field)
         else:
-            assert assertType(field,Field)
+            assert assertType(field, Field)
             self.field = field
             self.fieldName = field.field
 
@@ -45,8 +45,8 @@ class QuestionnedField(AskedOrNot):
         self.classes = classes
         if self.classes is None:
             self.classes = [self.fieldName]
-        if isinstance(self.classes,str):
-            self.classes=[self.classes]
+        if isinstance(self.classes, str):
+            self.classes = [self.classes]
         if useClasses is False:
             self.classes = []
         self.emphasize = ["Answer", "Emphasize"] if emphasize else []
@@ -57,7 +57,7 @@ class QuestionnedField(AskedOrNot):
         if self.child is None:
             self.child = Field(field,
                                isMandatory=isMandatory,
-                               useClasses = False)
+                               useClasses=False)
         if suffix is not None:
             self.child = [self.child, suffix]
 
@@ -75,6 +75,7 @@ class QuestionnedField(AskedOrNot):
     # def __repr__(self):
     #     return f"""QuestionnedField({self.field}, {self.questionAsked}, {self.default})."""
 
+
 class Label(QuestionOrAnswer):
     """Apply classes to the label on question side if one of the fields is
     asked.
@@ -83,31 +84,33 @@ class Label(QuestionOrAnswer):
     classes -- the classes to apply to the label
     fields -- if one of those values is asked, the label is emphasized
     """
+
     def __init__(self,
                  label,
                  fields,
-                 classes = None,
-                 alwaysUseClasses = True):
+                 classes=None,
+                 alwaysUseClasses=True):
         # Classes
         self.classes = classes
-        if self.classes is None and isinstance(label,str) :
-                self.classes = [label]
-        if isinstance(self.classes,str):
-            self.classes=[self.classes]
-        self.questionnedClasses = ["Question","Emphasize"]+self.classes
+        if self.classes is None and isinstance(label, str):
+            self.classes = [label]
+        if isinstance(self.classes, str):
+            self.classes = [self.classes]
+        self.questionnedClasses = ["Question", "Emphasize"]+self.classes
 
-        emphasized = CLASS(self.questionnedClasses,label)
+        emphasized = CLASS(self.questionnedClasses, label)
 
         if alwaysUseClasses:
-            notEmphasized = CLASS(self.classes,label)
+            notEmphasized = CLASS(self.classes, label)
         else:
             notEmphasized = label
 
-        questionSide = AtLeastOneField(child = emphasized,
-                                       fields = fields,
-                                       otherwise = notEmphasized,
-                                       asked = True)
-        super().__init__(questionSide,notEmphasized)
+        questionSide = AtLeastOneField(child=emphasized,
+                                       fields=fields,
+                                       otherwise=notEmphasized,
+                                       asked=True)
+        super().__init__(questionSide, notEmphasized)
+
 
 class DecoratedField(Filled):
     """A questionned field, preceded by some way to ask the question.
@@ -119,48 +122,49 @@ class DecoratedField(Filled):
 
     def __init__(self,
                  field,
-                 label = None,
-                 infix = ": ",
-                 prefix = None,
-                 suffix = br,
-                 toKeep = True,
-                 classes = None,
-                 child = None,
-                 isMandatory = False,
-                 useClasses = True,
-                 emphasize = True,
+                 label=None,
+                 infix=": ",
+                 prefix=None,
+                 suffix=br,
+                 toKeep=True,
+                 classes=None,
+                 child=None,
+                 isMandatory=False,
+                 useClasses=True,
+                 emphasize=True,
                  **kwargs):
         """field -- a field object, or a string"""
-        self.prefix=prefix
-        self.child=child
+        self.prefix = prefix
+        self.child = child
         self.infix = infix
-        self.suffix=suffix
+        self.suffix = suffix
         self.field = field
-        if isinstance(self.field,str):
-            self.field= Field(self.field, isMandatory = isMandatory, useClasses = useClasses)
+        if isinstance(self.field, str):
+            self.field = Field(
+                self.field, isMandatory=isMandatory, useClasses=useClasses)
         if label is None:
             self.label = self.field.field
         else:
-            self.label =label
+            self.label = label
         if classes is None:
-            self.classes=[self.field.field]
+            self.classes = [self.field.field]
         else:
-            self.classes=classes
+            self.classes = classes
         if self.child is None:
-            self.child = QuestionnedField(field = self.field,
-                                          classes = self.classes,
-                                          isMandatory = isMandatory,
-                                          useClasses = useClasses,
-                                          emphasize =  emphasize)
+            self.child = QuestionnedField(field=self.field,
+                                          classes=self.classes,
+                                          isMandatory=isMandatory,
+                                          useClasses=useClasses,
+                                          emphasize=emphasize)
         if emphasize:
-            labelGen = Label(label = self.label,
-                             fields = [self.field.field],
-                             classes = self.classes)
+            labelGen = Label(label=self.label,
+                             fields=[self.field.field],
+                             classes=self.classes)
         else:
             labelGen = self.label
 
-        super().__init__(field = self.field.field,
-                         child = [
+        super().__init__(field=self.field.field,
+                         child=[
                              self.prefix,
                              labelGen,
                              self.infix,
@@ -168,4 +172,4 @@ class DecoratedField(Filled):
                              self.suffix,
                          ],
                          **kwargs
-        )
+                         )

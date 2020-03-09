@@ -12,14 +12,14 @@ from .generators import (Gen, MultipleChildren, genRepr, shouldBeKept,
 class ListElement(MultipleChildren):
     @debugInit
     def __init__(self,
-                 elements = None,
+                 elements=None,
                  **kwargs):
         """
         Keyword arguments:
         elements -- list of elements
         """
         # self.childEnsured = False
-        assert assertType(elements,list)
+        assert assertType(elements, list)
         self.elements = elements
         super().__init__(**kwargs)
         self.changeElements()
@@ -33,14 +33,14 @@ class ListElement(MultipleChildren):
                 truthyElements.append(element)
                 # if element.getToKeep() is not False:
                 #     someToKeep = True
-        if len(truthyElements)==0:# or not someToKeep:
+        if len(truthyElements) == 0:  # or not someToKeep:
             self.elements = []
             self.setState(EMPTY)
         else:
-            self.elements= truthyElements
+            self.elements = truthyElements
 
     def clone(self, elements):
-        l= ListElement(elements)
+        l = ListElement(elements)
         if not l.elements:
             return None
         elif len(l.elements) == 1:
@@ -50,24 +50,26 @@ class ListElement(MultipleChildren):
             return l
 
     def _repr(self):
-        space  = "  "*Gen.indentation
+        space = "  "*Gen.indentation
         t = f"""ListElement(["""
         first = True
         for element in self.elements:
             if first:
                 first = False
             else:
-                t+=","
-            t+="\n"
-            t+=genRepr(element)
-        t+=f"""],{self.params()})"""
+                t += ","
+            t += "\n"
+            t += genRepr(element)
+        t += f"""],{self.params()})"""
         return t
 
-    def _innerEq(self,other):
+    def _innerEq(self, other):
         return self.elements == other.elements
-    def _outerEq(self,other):
-        return isinstance(other,ListElement) and len(self.elements) == len(other.elements) and super()._outerEq(other)
-    def _firstDifference(self,other):
+
+    def _outerEq(self, other):
+        return isinstance(other, ListElement) and len(self.elements) == len(other.elements) and super()._outerEq(other)
+
+    def _firstDifference(self, other):
         for i in range(len(self.elements)):
             ret = self.elements[i].firstDifference(other.elements[i])
             if ret is not None:
@@ -86,8 +88,9 @@ class ListElement(MultipleChildren):
     def _createHtml(self, *args, **kwargs):
         l = []
         for child in self.elements:
-            l+= child.createHtml(*args, **kwargs)
+            l += child.createHtml(*args, **kwargs)
         return l
+
 
 addTypeToGenerator(list, ListElement)
 

@@ -1,4 +1,4 @@
-#This input every generators created for this add-on
+# This input every generators created for this add-on
 from ..examples import *
 from ..generators import *
 

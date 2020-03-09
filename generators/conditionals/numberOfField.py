@@ -16,7 +16,8 @@ from .filledOrEmpty import FilledOrEmpty
 #     So use this only for small text, such as
 #     <table>.
 #     """
-    
+
+
 class AtLeastNField(SingleChild, NotNormal):
     """Show the child if at least n of the fields satifsy a property.
 
@@ -32,62 +33,64 @@ class AtLeastNField(SingleChild, NotNormal):
     checked whether at least n fields are asked.
 
     """
-    #@debugInit
-    def __init__(self, child, fields, otherwise = None, asked = False, n=1):
+    # @debugInit
+
+    def __init__(self, child, fields, otherwise=None, asked=False, n=1):
         self.n = n
         self.asked = asked
         self.setOfRequiredFields = fields
         for field in fields:
             checkField(field)
-        assert assertType(fields,list)
-        self.otherwise=otherwise
+        assert assertType(fields, list)
+        self.otherwise = otherwise
         super().__init__(child)
         self.child = self._ensureGen(child)
         self.otherwise = self._ensureGen(otherwise)
-        
+
     def _repr(self):
-        t="""AtLeastNField(\n"""
-        t+=f"""{genRepr(self.child, label ="child")},\n"""
-        t+=f"""{genRepr(self.setOfRequiredFields, label="fields")},\n"""
+        t = """AtLeastNField(\n"""
+        t += f"""{genRepr(self.child, label ="child")},\n"""
+        t += f"""{genRepr(self.setOfRequiredFields, label="fields")},\n"""
         if self.otherwise is not None:
-            t+=genRepr(self.otherwise,label= "otherwise")+",\n"
+            t += genRepr(self.otherwise, label="otherwise")+",\n"
         if self.otherwise is not False:
-            t+=genRepr(self.asked,label= "asked")+",\n"
+            t += genRepr(self.asked, label="asked")+",\n"
         if self.n != 1:
-            t=",\n"+genRepr(self.n,label= "n")+"\n"
-        t+=")"
+            t = ",\n"+genRepr(self.n, label="n")+"\n"
+        t += ")"
         return t
 
     @debugFun
     def _getNormalForm(self):
         if self.n == 0:
             return self.child.getNormalForm()
-        if self.n> len(self.setOfRequiredFields):
+        if self.n > len(self.setOfRequiredFields):
             return self.otherwise.getNormalForm()
         element = self.setOfRequiredFields[-1]
         remaining = self.setOfRequiredFields[:-1]
-        positiveCase = AtLeastNField(child = self.child,
-                                     fields = remaining,
-                                     otherwise = self.otherwise,
-                                     asked = self.asked,
-                                     n = self.n-1)
-        negativeCase = AtLeastNField(child = self.child,
-                                     fields = remaining,
-                                     otherwise = self.otherwise,
-                                     asked = self.asked,
-                                     n = self.n)
+        positiveCase = AtLeastNField(child=self.child,
+                                     fields=remaining,
+                                     otherwise=self.otherwise,
+                                     asked=self.asked,
+                                     n=self.n-1)
+        negativeCase = AtLeastNField(child=self.child,
+                                     fields=remaining,
+                                     otherwise=self.otherwise,
+                                     asked=self.asked,
+                                     n=self.n)
         clas = AskedOrNot if self.asked else FilledOrEmpty
         dichotomy = clas(element,
                          positiveCase,
                          negativeCase,
-        )
+                         )
         return dichotomy.getNormalForm()
 
 
 class AtLeastOneField(AtLeastNField):
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args, n=1,**kwargs)
-        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, n=1, **kwargs)
+
+
 class AtLeastTwoFields(AtLeastNField):
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args, n=2,**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, n=2, **kwargs)

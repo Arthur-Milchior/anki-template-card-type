@@ -1,11 +1,11 @@
 from ..generators import *
-from .general.short_head import short_header
-from .general.foot import footer
 from .definition.definition import definition
+from .general.foot import footer
+from .general.short_head import short_header
 
-header = [short_header, {"Name"}, " ", {"Composer"}, br, {"Speed"}, ", ", {"Rythm"}]
-music = [ Asked("Subpart", {"Music"}),  Asked("Part", {"Music"})]
-
+header = [short_header, {"Name"}, " ", {
+    "Composer"}, br, {"Speed"}, ", ", {"Rythm"}]
+music = [Asked("Subpart", {"Music"}),  Asked("Part", {"Music"})]
 
 
 def grouping(subgroup, nb=0, size=4, part="Part", prefix="Subpart"):
@@ -15,7 +15,8 @@ def grouping(subgroup, nb=0, size=4, part="Part", prefix="Subpart"):
 
     """
     partName = f"{part}{nb+1}" if nb else part
-    definitions = [prefix if i == 1 else f"{prefix}{i}" for i in range(size*nb+1, size*(nb+1)+1)]
+    definitions = [prefix if i == 1 else f"{prefix}{i}" for i in range(
+        size*nb+1, size*(nb+1)+1)]
     part = LI({partName})
     part = FilledOrEmpty(
         partName,
@@ -27,23 +28,24 @@ def grouping(subgroup, nb=0, size=4, part="Part", prefix="Subpart"):
                           subgroup,
                           part)
     return part
-    
-labelDef= [Filled("DefType",
-                  [QuestionnedField("DefType",
-                                    isMandatory=True),
-                   " such that "]),
-           FilledOrEmpty("Conjdef",
-                         QuestionnedField("Conjdef",["Conjdef"]),
-                         Filled ("Definition2",
+
+
+labelDef = [Filled("DefType",
+                   [QuestionnedField("DefType",
+                                     isMandatory=True),
+                    " such that "]),
+            FilledOrEmpty("Conjdef",
+                          QuestionnedField("Conjdef", ["Conjdef"]),
+                          Filled("Definition2",
                                  FilledOrEmpty("Typ",
                                                "equivalently",
                                                "Equivalently")))
-           ]
-labelDef =  Cascade("Definitions",
-                    Cascade("Conjdef",
-                            labelDef,
-                            {"DefType"}),
-                    {"Conjdef"})
+            ]
+labelDef = Cascade("Definitions",
+                   Cascade("Conjdef",
+                           labelDef,
+                           {"DefType"}),
+                   {"Conjdef"})
 
 definitions = PotentiallyNumberedFields(fieldPrefix="Subpart",
                                         greater=16,
@@ -53,10 +55,11 @@ definitions = PotentiallyNumberedFields(fieldPrefix="Subpart",
                                         groupSize=4)
 learn_sheet = Filled("Learn", [header, music, definitions, hr, footer])
 
+
 def practice(*args):
     parts = [arg for arg in args if isinstance(arg, int)]
     other = [arg for arg in args if not isinstance(arg, int)]
-    assert len(other)<= 1 and (not other or isinstance(other[0], str))
+    assert len(other) <= 1 and (not other or isinstance(other[0], str))
     precision = f" ({other[0]}) " if other else ""
     if not parts:
         s = "Play all"
@@ -71,8 +74,7 @@ def practice(*args):
         else:
             s = "Play parts " + ", ".join(parts[:-1]) + " and " + parts[-1]
             l = [[{f"Part{i if i>1 else ''}"}, br] for i in parts]
-    content = [header, H1(s+ " "+precision), l, hr, footer]
+    content = [header, H1(s + " "+precision), l, hr, footer]
     for part in parts:
         content = Filled(f"Part{part if part>1 else ''}", content)
     return content
-        

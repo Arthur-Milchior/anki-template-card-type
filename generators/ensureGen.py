@@ -3,13 +3,15 @@ import types
 
 from ..debug import debug, debugFun
 
-typeToGenerator= dict()
+typeToGenerator = dict()
 
-def addTypeToGenerator(type,generator):
-    typeToGenerator[type]=generator
-    
+
+def addTypeToGenerator(type, generator):
+    typeToGenerator[type] = generator
+
+
 @debugFun
-def ensureGen(element, locals_ = None):
+def ensureGen(element, locals_=None):
     """Element if it is a Gen, or construct it. The type is chosen
     according to typeToGenerator.
 
@@ -30,6 +32,7 @@ def ensureGen(element, locals_ = None):
             debug("{element} has not type {typ}")
             pass
     if ret is None:
-        print(f"{element} has type {type(element)} which we can not consider", file=sys.stderr)
+        print(
+            f"{element} has type {type(element)} which we can not consider", file=sys.stderr)
         assert False
     return ret

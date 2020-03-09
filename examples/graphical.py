@@ -3,9 +3,9 @@ from .general import footer, header
 
 properties = TableFields([
     {"field":   "Location",
-     "classes":"Definition"},
+     "classes": "Definition"},
     {"field":   "Description",
-     "classes":"Definition2"},
+     "classes": "Definition2"},
 ])
 
 graphical = [header, properties, footer]

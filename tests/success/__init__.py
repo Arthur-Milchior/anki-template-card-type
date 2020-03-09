@@ -1,5 +1,5 @@
-print("Regression test")
-from .generators import *
-from .htmlToCompile import *
-from .models import *
 from .templates import *
+from .models import *
+from .htmlToCompile import *
+from .generators import *
+print("Regression test")

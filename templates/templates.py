@@ -5,10 +5,11 @@ from ..debug import ExceptionInverse, assertType, debug, debugOnlyThisMethod
 
 class Template:
     kindOfTemplate = dict()
+
     def __init__(self, names, compile_, clean):
         for name in names:
             Template.kindOfTemplate[name.lower()] = self
-        self.compile_=compile_
+        self.compile_ = compile_
         self.clean = clean
 
 # def addKindOfTemplate(name, f):
@@ -18,11 +19,13 @@ class Template:
 #     #debug("Adding {name}")
 #     kindOfTemplate[name.lower()]=f
 
+
 def getFunctionFromKind(kind):
     """Given a kind, the method to call to generate the content."""
     r = Template.kindOfTemplate.get(kind.lower())
     if r is None:
-        raise ExceptionInverse(f"""Kind "{kind}" is called, but not present in templates.template.kindOfTemplate. It contains only Template {Template.kindOfTemplate}""")
+        raise ExceptionInverse(
+            f"""Kind "{kind}" is called, but not present in templates.template.kindOfTemplate. It contains only Template {Template.kindOfTemplate}""")
     return r
 
 
@@ -40,8 +43,9 @@ def getKind(tag):
     """The kind of template from this tag."""
     return tag.get("template")
 
+
 def getModule(tag):
-    """The module object according to the template name from this tag.""" 
+    """The module object according to the template name from this tag."""
     return getFunctionFromKind(getKind(tag))
 
 
@@ -57,13 +61,14 @@ def compile_(tag, soup, recompile=False, **kwargs):
     if "template" in tag.attrs:
         if not tag.contents or recompile:
             tag.contents = []
-            getModule(tag).compile_(tag = tag, soup = soup,  **kwargs)
+            getModule(tag).compile_(tag=tag, soup=soup,  **kwargs)
     for child in tag.children:
         compile_(child, soup, recompile, **kwargs)
+
 
 def clean(soup):
     for tag_ in tagsToEdit(soup):
         assert tag_ is not None
-        module=getModule(tag_)
+        module = getModule(tag_)
         assert tag_ is not None
         module.clean(tag_)

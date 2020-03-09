@@ -3,22 +3,23 @@ from ..general.foot import footer
 from ..general.head import header
 from ..general.typ import typDic
 
-labelDef= [Filled("DefType",
-                  [QuestionnedField("DefType",
-                                    isMandatory=True),
-                   " such that "]),
-           FilledOrEmpty("Conjdef",
-                         QuestionnedField("Conjdef",["Conjdef"]),
-                         Filled ("Definition2",
+labelDef = [Filled("DefType",
+                   [QuestionnedField("DefType",
+                                     isMandatory=True),
+                    " such that "]),
+            FilledOrEmpty("Conjdef",
+                          QuestionnedField("Conjdef", ["Conjdef"]),
+                          Filled("Definition2",
                                  FilledOrEmpty("Typ",
                                                "equivalently",
                                                "Equivalently")))
-           ]
-labelDef =  Cascade("Definitions",
-                    Cascade("Conjdef",
-                            labelDef,
-                            {"DefType"}),
-                    {"Conjdef"})
+            ]
+labelDef = Cascade("Definitions",
+                   Cascade("Conjdef",
+                           labelDef,
+                           {"DefType"}),
+                   {"Conjdef"})
+
 
 def grouping(subgroup, nb=0, size=4, part="Part", prefix="Definition"):
     """If none of prefix{i} for i in the nb-th segment of size size is
@@ -27,7 +28,8 @@ def grouping(subgroup, nb=0, size=4, part="Part", prefix="Definition"):
 
     """
     partName = f"{part}{nb+1}" if nb else part
-    definitions = [prefix if i == 1 else f"{prefix}{i}" for i in range(size*nb+1, size*(nb+1)+1)]
+    definitions = [prefix if i == 1 else f"{prefix}{i}" for i in range(
+        size*nb+1, size*(nb+1)+1)]
     part = LI({partName})
     part = FilledOrEmpty(
         partName,
@@ -39,7 +41,8 @@ def grouping(subgroup, nb=0, size=4, part="Part", prefix="Definition"):
                           subgroup,
                           part)
     return part
-    
+
+
 definitions = ("Definition",
                [PotentiallyNumberedFields(fieldPrefix="Definition",
                                           greater=16,
@@ -53,23 +56,23 @@ definitions = ("Definition",
 # definitions = grouping(definitions, size=4, part="All", prefix="Part")
 # definitions = grouping(definitions, size=1, part="All", prefix="Definitions")
 
-#Ensure that if Parti is asked, then Definition4i+1, 4i+2, 4i+3 and 4i+4 is asked
-for i in range(1,5):
-    name = "Part"+("" if i==1 else str(i))
+# Ensure that if Parti is asked, then Definition4i+1, 4i+2, 4i+3 and 4i+4 is asked
+for i in range(1, 5):
+    name = "Part"+("" if i == 1 else str(i))
     content = set()
     for j in range(4):
         d = 4*(i-1)+j
-        content.add("Definition"+("" if d==1 else str(d)))
+        content.add("Definition"+("" if d == 1 else str(d)))
     definitions = Cascade(name,
                           definitions,
                           content)
 
-other = TableFields([{"field":"Construction",
-                      "showIfAskedOrAnswer":True},
-                     {"field":"Property",
-                      "showIfAskedOrAnswer":True},
-                     {"field":"Cardinal",
-                      "showIfAskedOrAnswer":True},
+other = TableFields([{"field": "Construction",
+                      "showIfAskedOrAnswer": True},
+                     {"field": "Property",
+                      "showIfAskedOrAnswer": True},
+                     {"field": "Cardinal",
+                      "showIfAskedOrAnswer": True},
                      typDic])
 
-definition = [header,definitions,other,footer]
+definition = [header, definitions, other, footer]

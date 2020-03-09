@@ -40,5 +40,5 @@ from .statistical_distribution import statistical_distribution
 from .test import *
 from .theory import theory
 from .topology import topology, topologyBody, topologyHead
-from .translation import translationToEnglish, translationFromEnglish
+from .translation import translationFromEnglish, translationToEnglish
 from .unary import unary

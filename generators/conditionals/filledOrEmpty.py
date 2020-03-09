@@ -11,6 +11,7 @@ from .meta import Dichotomy, FieldChild
 @thisClassIsClonable
 class Empty(FieldChild):
     """The class which expands differently in function of the question/answer side."""
+
     def _assumeFieldFilled(self, fields, setMandatoryState):
         if self.field in fields:
             return emptyGen
@@ -37,25 +38,26 @@ class Empty(FieldChild):
 
     def _getWithoutRedundance(self):
         child = self.getChild().getWithoutRedundance()
-        child =child.assumeFieldEmpty(self.field, False)
+        child = child.assumeFieldEmpty(self.field, False)
         return self.cloneSingle(child)
 
     def _createHtml(self, soup):
         childHtml = self.getChild().createHtml(soup)
-        assert assertType(childHtml,list)
-        return ([bs4.NavigableString(f"{{{{^{self.field}}}}}")]+
-                childHtml+
+        assert assertType(childHtml, list)
+        return ([bs4.NavigableString(f"{{{{^{self.field}}}}}")] +
+                childHtml +
                 [bs4.NavigableString(f"{{{{/{self.field}}}}}")])
 
 
 @thisClassIsClonable
 class Filled(FieldChild):
     """The class which expands differently in function of the question/answer side."""
+
     def _assumeFieldFilled(self, fields, setMandatoryState):
-      if self.field in fields:
-          return self.getChild().assumeFieldFilled(fields, setMandatoryState)
-      else:
-          return self.cloneSingle(self.getChild().assumeFieldFilled(fields, setMandatoryState))
+        if self.field in fields:
+            return self.getChild().assumeFieldFilled(fields, setMandatoryState)
+        else:
+            return self.cloneSingle(self.getChild().assumeFieldFilled(fields, setMandatoryState))
 
     def _assumeFieldEmpty(self, fields, setForbiddenState):
         if self.field in fields:
@@ -71,11 +73,11 @@ class Filled(FieldChild):
 
     def _getWithoutRedundance(self):
         child = self.getChild().getWithoutRedundance()
-        child = child.assumeFieldFilled(self.field, setMandatoryState = False)
+        child = child.assumeFieldFilled(self.field, setMandatoryState=False)
         return self.cloneSingle(child)
 
     @debugFun
-    def _restrictToModel(self,fields):
+    def _restrictToModel(self, fields):
         if self.field not in fields:
             #debug("self.field({self.field}) not in fields({fields})")
             return emptyGen
@@ -84,15 +86,16 @@ class Filled(FieldChild):
 
     def _createHtml(self, soup):
         child = self.getChild().createHtml(soup)
-        assert assertType(child,list)
-        return ([bs4.NavigableString(f"{{{{#{self.field}}}}}")]+
-                child+
+        assert assertType(child, list)
+        return ([bs4.NavigableString(f"{{{{#{self.field}}}}}")] +
+                child +
                 [bs4.NavigableString(f"{{{{/{self.field}}}}}")])
+
 
 def tupleToFilled(tup):
     if len(tup) == 2:
         field, child = tup
-        return Filled(field = field,child = child)
+        return Filled(field=field, child=child)
     elif len(tup) == 3:
         field, filled, empty = tup
         if filled is None:
@@ -101,9 +104,11 @@ def tupleToFilled(tup):
             return FilledOrEmpty(field, filled, empty)
     else:
         raise Exception(f"Tuple of size {len(tup)}")
+
+
 addTypeToGenerator(tuple, tupleToFilled)
 
-#It is useful to be able to create Filled from generators. Thus it should be in typeToGenerator. Tuple is a type not yet used, which have sens.
+# It is useful to be able to create Filled from generators. Thus it should be in typeToGenerator. Tuple is a type not yet used, which have sens.
 
 # class FilledOrEmpty(ListElement):
 #     # def __repr__(self):

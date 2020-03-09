@@ -87,6 +87,6 @@ properties = TableFields(["Alexander polynomial",
                           "A-b notation",
                           "Rational",
                           "Tangle",
-])
+                          ])
 
 knot = [header, definition_knot, properties, footer]

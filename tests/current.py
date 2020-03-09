@@ -16,62 +16,64 @@ from .functions import (TestHTML, compileGen, genToSoup, genToTags,
 # soup = soupFromTemplate(tmp)
 # print (f"tags are {tags}")
 
-labelDef=[Label("Definition",["Definition"]),
-          FilledOrEmpty("Conjdef",
-                      Cascade("Definitions",
-                              [QuestionnedField("Conjdef",["Conjdef"]),": "],
-                              {"Conjdef"}),
-                      Filled ("Definition2","Equivalently: "))
-]
+labelDef = [Label("Definition", ["Definition"]),
+            FilledOrEmpty("Conjdef",
+                          Cascade("Definitions",
+                                  [QuestionnedField(
+                                      "Conjdef", ["Conjdef"]), ": "],
+                                  {"Conjdef"}),
+                          Filled("Definition2", "Equivalently: "))
+            ]
 definitions = NumberedFields(fieldPrefix="Definition",
-                                        greater=16,
-                                        label=labelDef
-)
-at=AtLeastOneField(child = CLASS(["foo"],""),
-                   fields = ["foo"],
-                   otherwise = labelDef,
-                   asked = True
-)
-label=Label(label=labelDef,
-            fields=["foo"],classes=[])
+                             greater=16,
+                             label=labelDef
+                             )
+at = AtLeastOneField(child=CLASS(["foo"], ""),
+                     fields=["foo"],
+                     otherwise=labelDef,
+                     asked=True
+                     )
+label = Label(label=labelDef,
+              fields=["foo"], classes=[])
 
-ex=('Example',
-             NumberedFields('Example',
-                            4,
-                            suffix=hr,
-                            localFun= (lambda i:{"child":LI(FilledOrEmpty(f"Applied to{i}",
-                                                                           DecoratedField(prefix="On ",
-                                                                                          label = {f"Applied to{i}"},
-                                                                                          field=f"Example{i}",
-                                                                                          suffix=""),
-                                                                          QuestionnedField(f"Example{i}",classes="Example"))),
-                                                 "filledFields":[f"Example{i}"],
-                                                 "questions":{f"Example{i}"}})))
+ex = ('Example',
+      NumberedFields('Example',
+                     4,
+                     suffix=hr,
+                     localFun=(lambda i: {"child": LI(FilledOrEmpty(f"Applied to{i}",
+                                                                    DecoratedField(prefix="On ",
+                                                                                   label={
+                                                                                       f"Applied to{i}"},
+                                                                                   field=f"Example{i}",
+                                                                                   suffix=""),
+                                                                    QuestionnedField(f"Example{i}", classes="Example"))),
+                                          "filledFields": [f"Example{i}"],
+                                          "questions": {f"Example{i}"}})))
 
 
-na=NotAsked(
-      field = 'asked',
-      child = Literal(text = "Asked is not asked",),)
-labelDef= FilledOrEmpty("Conjdef",
-                        Cascade("Definitions",
-                                QuestionnedField("Conjdef",["Conjdef"]),
-                                {"Conjdef"}),
-                        Filled ("Definition2",
+na = NotAsked(
+    field='asked',
+    child=Literal(text="Asked is not asked",),)
+labelDef = FilledOrEmpty("Conjdef",
+                         Cascade("Definitions",
+                                 QuestionnedField("Conjdef", ["Conjdef"]),
+                                 {"Conjdef"}),
+                         Filled("Definition2",
                                 "Equivalently"))
 definitions = ("Definition",
-               [NumberedFields(fieldPrefix = "Definition",
-                                          greater = 3,
-                                          label = labelDef,
-                                          #infix = ""
- ),
+               [NumberedFields(fieldPrefix="Definition",
+                               greater=3,
+                               label=labelDef,
+                               #infix = ""
+                               ),
                 hr])
-label = Label(label = labelDef,
-      fields =["Definitions","Definition1","Definition2"],
-      classes = "test class")
-alo = AtLeastOneField(child = CLASS(["Definitions","Definition1","Definition2"],labelDef),
-                      fields = ["Definitions"],
-                      asked = True,
-                      otherwise = labelDef)
+label = Label(label=labelDef,
+              fields=["Definitions", "Definition1", "Definition2"],
+              classes="test class")
+alo = AtLeastOneField(child=CLASS(["Definitions", "Definition1", "Definition2"], labelDef),
+                      fields=["Definitions"],
+                      asked=True,
+                      otherwise=labelDef)
 # compileGen(
 #     NotAsked(
 #         field = 'Definitions',
@@ -155,14 +157,12 @@ alo = AtLeastOneField(child = CLASS(["Definitions","Definition1","Definition2"],
           child = Literal(text = "Equivalently",),),)],),)],)"""
 
 
-
-
 # """)
 # compileGen(cascadeUseless, asked=frozenset(),toPrint=True)
 #compileGen(question, fields={"Question","Answer","Answer2"}, isQuestion=True,asked={"Answer"}, toPrint=True)
 
 startDebug()
-#print(cascadeBeforeTemplate.template(asked={"cascaded"}))
+# print(cascadeBeforeTemplate.template(asked={"cascaded"}))
 
 endDebug()
 #compileGen(examples, isQuestion=False, fields = {"Example", "Example2", "Example3"},asked =frozenset({"Question"}),   toPrint=True)

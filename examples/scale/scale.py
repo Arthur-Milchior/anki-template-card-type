@@ -1,6 +1,7 @@
 from ...generators import *
 
-def scale(octaveNumber=1, nbOctave = 1, back=False, increase=True):
+
+def scale(octaveNumber=1, nbOctave=1, back=False, increase=True):
     # arrows: which arrow to show and in which order
     # Suffix -- End of field name
 
@@ -26,8 +27,10 @@ def scale(octaveNumber=1, nbOctave = 1, back=False, increase=True):
 
     increasingImage = Image(f"_increasing_arrow.png")
     decreasingImage = Image(f"_decreasing_arrow.png")
-    decreasingAlternate = [f"{i-1}\\{i}" for i in range (end_number, start_number, -1)]
-    increasingAlternate = [f"{i}/{i+1}" for i in range (start_number, end_number)]
+    decreasingAlternate = [
+        f"{i-1}\\{i}" for i in range(end_number, start_number, -1)]
+    increasingAlternate = [
+        f"{i}/{i+1}" for i in range(start_number, end_number)]
     if back:
         if increase:
             fieldName = f"{start_number}/{end_number}\\{start_number}"
@@ -54,20 +57,21 @@ def scale(octaveNumber=1, nbOctave = 1, back=False, increase=True):
     field = FilledOrEmpty(fieldName,
                           {fieldName},
                           [{alternateField} for alternateField in alternates])
-    
-    octaveNumbers = [str(i) for i in range(octaveNumber, octaveNumber+nbOctave)]
+
+    octaveNumbers = [str(i)
+                     for i in range(octaveNumber, octaveNumber+nbOctave)]
     octaveNumbersReverse = octaveNumbers[::-1]
     octaves = "".join(octaveNumbers)
     mandatoryFields = [f"{i}/{i+1}" for i in range(start_number, end_number)]
 
-
     nbOctaveText = f"""{nbOctave} octave{"s" if nbOctave>1 else ""}"""
 
-    scales = (fieldName, field, [{mandatoryFieldName} for mandatoryFieldName in mandatoryFields])
+    scales = (fieldName, field, [{mandatoryFieldName}
+                                 for mandatoryFieldName in mandatoryFields])
 
     content = [Answer([scales, hr]),
                {"Instrument"}, {"Name"}, " ", {"Name2"}, hr,
                arrow,
-               #nbOctaveText
-    ]
+               # nbOctaveText
+               ]
     return MultipleRequirement(child=content, requireFilled=mandatoryFields)

@@ -6,64 +6,65 @@ from .name import algebra_name_formatted
 
 inner_function = TableFields(
     [
-        {"field":"Ring-base",
+        {"field": "Ring-base",
          "label": "Base",
          "classes": "Definition6"},
-        {"field":"Field-base",
+        {"field": "Field-base",
          "label": "Base",
          "classes": "Definition6"},
-        {"field":"+",
-         "classes":"Definition"},
+        {"field": "+",
+         "classes": "Definition"},
         {"field":    "0",
-         "classes":"Definition2"},
+         "classes": "Definition2"},
         {"field":    "-",
-         "classes":"Definition3"},
+         "classes": "Definition3"},
         {"field":    "*",
-         "classes":"Definition4"},
+         "classes": "Definition4"},
         {"field":    "1",
-         "classes":"Definition5"},
+         "classes": "Definition5"},
         {"field":    "/",
-         "classes":"Definition6"},
+         "classes": "Definition6"},
         {"field":    "\\",
-         "classes":"Definition"},
+         "classes": "Definition"},
         {"field":    "×",
-         "classes":"Definition7"},
+         "classes": "Definition7"},
         {"field":    "⋀",
-         "classes":"Definition8"},
+         "classes": "Definition8"},
         {"field":    "⋁",
-         "classes":"Definition9"},
+         "classes": "Definition9"},
         {"field":    "→",
-         "classes":"Definition"},
+         "classes": "Definition"},
         {"field":    "¬",
-         "classes":"Definition4"},
+         "classes": "Definition4"},
         {"field":    "◁",
-         "classes":"Definition5"},
+         "classes": "Definition5"},
     ],
-    name = "Inner functions",
-    suffix = hr
+    name="Inner functions",
+    suffix=hr
 )
 
 presentation = ("Relation",
-                PotentiallyNumberedFields(label = Cascade("Relations",
-                                                          QuestionnedField("Generating family"),
-                                                          {"Generating family"}),
-                                          greater = 5,
-                                          fieldPrefix = "Relation",
-                                          suffix = hr))
+                PotentiallyNumberedFields(label=Cascade("Relations",
+                                                        QuestionnedField(
+                                                            "Generating family"),
+                                                        {"Generating family"}),
+                                          greater=5,
+                                          fieldPrefix="Relation",
+                                          suffix=hr))
 outer_function = TableFields(
     ["Graduation",
      "Norm",
      "Euclidean function",
      "Quadratic form",
-    ],
-    name = "Outer functions"
+     ],
+    name="Outer functions"
 )
 definition = Cascade("Definitions",
-                     [DecoratedField("Set", suffix = hr),
+                     [DecoratedField("Set", suffix=hr),
                       presentation,
                       inner_function,
                       outer_function],
-                     {"Inner functions", "Outer functions","Relations", "Set"})
+                     {"Inner functions", "Outer functions", "Relations", "Set"})
 
 properties = TableFields(
     ["Principal ideal",
@@ -88,8 +89,8 @@ properties = TableFields(
      "Minimals",
      "Maximals",
      "Well-founded"
-    ],
-    name = "Properties"
+     ],
+    name="Properties"
 )
 
 algebra = [header,

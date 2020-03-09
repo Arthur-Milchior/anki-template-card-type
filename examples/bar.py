@@ -2,8 +2,8 @@ from ..generators import *
 from .general import footer, header
 
 definition_bar = TableFields(
-    name = "Bar",
-    fields = []
+    name="Bar",
+    fields=[]
 )
 properties = TableFields([])
 

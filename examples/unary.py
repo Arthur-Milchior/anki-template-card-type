@@ -2,7 +2,7 @@ from ..generators import *
 from .general import footer, header
 
 definition = TableFields(
-    fields = [
+    fields=[
         "Definition",
         "Definition2",
         "Taylor series",
@@ -27,7 +27,7 @@ properties = TableFields([
     ["Zero",
      "Unit"],
     ["Derivative",
-    "Nth derivative",
+     "Nth derivative",
      "Integral"],
     "Jective",
     ["Left inverse",

@@ -2,35 +2,40 @@ from ..generators import *
 from .general import footer, header
 
 definition_ordinal = TableFields(
-    name = "Definition",
-    fields = [
+    name="Definition",
+    fields=[
         {"field": "Objects",
-         "classes":"Definition"},
+         "classes": "Definition"},
         {"field": "Arrows",
-         "classes":"Definition2"},
+         "classes": "Definition2"},
         {"field": "Compositions",
-         "classes":"Definition3",
+         "classes": "Definition3",
          "emptyCase": AskedOrNot("Composition",
                                  markOfQuestion,
                                  "Standard composition")},
     ]
 )
+
+
 def relatedFields(fields):
     assert assertType(relatedFields, list)
-    return [{"field" : field,
-               "hideInSomeQuestion": s - {field}} for field in fields]
+    return [{"field": field,
+             "hideInSomeQuestion": s - {field}} for field in fields]
+
+
 properties_ = TableFields(
     [
-        ["Arrow from initial", "Arrow to initial", "Arrow from terminal", "Arrow to terminal"],
-        ["Mono", "Epi", "Iso", "Bimorphism","Split epi",
-        "Split mono"],
+        ["Arrow from initial", "Arrow to initial",
+            "Arrow from terminal", "Arrow to terminal"],
+        ["Mono", "Epi", "Iso", "Bimorphism", "Split epi",
+         "Split mono"],
         ["Initial", "Terminal", "Zero object"],
-        ["Biproduct","Product", "Coproduct"],
-        ["Pullback","Pushout"],
+        ["Biproduct", "Product", "Coproduct"],
+        ["Pullback", "Pushout"],
         ["Coequalizer",
-        "Equalizer"],
+         "Equalizer"],
         ["Kernel",
-        "Cokernel"],
+         "Cokernel"],
         ["Conormal",
          "Normal"],
         "Abelian",
@@ -64,7 +69,8 @@ properties_ = TableFields(
         "Zero morphism",
         "Has zero morphisms",
     ],
-    defaultClasses = "Property")
+    defaultClasses="Property")
 
-properties = HideInSomeQuestions(["Arrows","Objects","Compositions", "Definition"],properties_,)
+properties = HideInSomeQuestions(
+    ["Arrows", "Objects", "Compositions", "Definition"], properties_,)
 category = [header, definition_ordinal, properties, footer]

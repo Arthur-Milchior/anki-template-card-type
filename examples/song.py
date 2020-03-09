@@ -3,14 +3,17 @@ from .general.foot import footer
 from .general.head import header
 from .general.typ import typDic
 
+
 def toField(n):
-    if n==1:
+    if n == 1:
         return "vers"
     else:
         return f"vers{n}"
 
+
 def toPart(n):
     return f"Part{int(n)}"
+
 
 def grouping(subgroup, nb=0, size=10):
     partName = toPart(nb+1)
@@ -20,7 +23,10 @@ def grouping(subgroup, nb=0, size=10):
     subgroup = Cascade(partName, subgroup, verses)
     return [prefix, subgroup]
 
+
 prefix = TableFields(['Titre', 'Interprète', 'Auteur'])
+
+
 def song(nb, nbQuestions):
     lyrics = NumberedFields(fieldPrefix="vers",
                             label="",
@@ -33,14 +39,14 @@ def song(nb, nbQuestions):
     elif nbQuestions == 2:
         questions = frozenset({toField(nb), toField(nb-1)})
     else:
-        assert nbQuestions % 10 ==0
+        assert nbQuestions % 10 == 0
         nbParts = nbQuestions // 10
         if nbParts == 1:
             questions = frozenset({toPart(nb//10)})
         elif nbParts == 2:
             questions = frozenset({toPart(nb//10), toPart(nb//10-1)})
         elif nbParts == 20:
-            questions = frozenset({toPart(nb) for nb in range(1,21)})
+            questions = frozenset({toPart(nb) for nb in range(1, 21)})
         else:
             assert False
     lyrics = lyrics.getNormalForm().assumeAsked(questions)

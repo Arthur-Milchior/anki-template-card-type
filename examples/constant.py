@@ -1,27 +1,28 @@
 from ..generators import *
 from .general import footer, short_header
 
-number=[QuestionnedField("Significative digit", classes= "Definition"),
-        Filled("Exponant",
-               [Filled("Significative digit","."),
-                FilledOrEmpty("Basis",QuestionnedField("Basis", classes= "Definition2"),"10"),
-                SUP(QuestionnedField("Exponant", classes= "Definition3"))
-               ]
-        )]
+number = [QuestionnedField("Significative digit", classes="Definition"),
+          Filled("Exponant",
+                 [Filled("Significative digit", "."),
+                  FilledOrEmpty("Basis", QuestionnedField(
+                      "Basis", classes="Definition2"), "10"),
+                  SUP(QuestionnedField("Exponant", classes="Definition3"))
+                  ]
+                 )]
 
-typedNumber= [number, QuestionnedField("Typ"),hr]
-typedNumber  = Cascade("Typs",typedNumber,{"Typ"})
-types=Filled("Typ",
-             PotentiallyNumberedFields("Typ",
-                                       5,
-                                       label="Type",
-                                       suffix=hr)
-             )
+typedNumber = [number, QuestionnedField("Typ"), hr]
+typedNumber = Cascade("Typs", typedNumber, {"Typ"})
+types = Filled("Typ",
+               PotentiallyNumberedFields("Typ",
+                                         5,
+                                         label="Type",
+                                         suffix=hr)
+               )
 typeOrNumber = AtLeastOneField(typedNumber,
-                               fields = ["Significative digit",
-                                         "Exponant",
-                                         "Basis"],
-                               otherwise = types)
+                               fields=["Significative digit",
+                                       "Exponant",
+                                       "Basis"],
+                               otherwise=types)
 
 
 definition = TableFields(
@@ -30,13 +31,13 @@ definition = TableFields(
      "Etymology",
      "French",
      "DenotedBy",
-     {"field":"Represents",
-      "classes":"Intuition"}],
-    greater = 2,
-    name = "Definition",
+     {"field": "Represents",
+      "classes": "Intuition"}],
+    greater=2,
+    name="Definition",
     suffix=hr
 )
-sis=Answer(
+sis = Answer(
     [
         TableFields(
             [
@@ -52,9 +53,9 @@ sis=Answer(
                 "cd",
                 "sr",
             ],
-            name = "si details"
+            name="si details"
         ),
         hr])
 constant = [short_header, definition, typeOrNumber, sis, footer]
 
-#find to deal with both represents
+# find to deal with both represents

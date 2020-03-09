@@ -3,31 +3,31 @@ from .general import footer, header
 
 automata = [
     header,
-    ("Typ",[{"Typ"},":"]),
+    ("Typ", [{"Typ"}, ":"]),
     TableFields(
-        name = "Automata",
-        fields = [
+        name="Automata",
+        fields=[
             {"field": "States",
-             "classes":"Definition"},
+             "classes": "Definition"},
             {"field": "Locations",
-             "classes":"Definition2"},
+             "classes": "Definition2"},
             {"field": "Alphabet",
-             "classes":"Definition3"},
+             "classes": "Definition3"},
             {"field": "Initial",
-             "classes":"Definition4"},
+             "classes": "Definition4"},
             {"field": "Final",
-             "classes":"Definition5"},
+             "classes": "Definition5"},
             {"field": "Transitions",
-             "classes":"Definition6"},
+             "classes": "Definition6"},
             {"field": "Labels",
-             "classes":"Definition8"},
+             "classes": "Definition8"},
             {"field": "Actions",
-             "classes":"Definition6"},
+             "classes": "Definition6"},
             {"field": "Edges",
-             "classes":"Definition6"},
+             "classes": "Definition6"},
             {"field": "Labeling function",
-             "classes":"Definition8"},
+             "classes": "Definition8"},
             {"field": "Clock number",
-             "classes":"Definition9"}]),
+             "classes": "Definition9"}]),
     footer
-    ]
+]

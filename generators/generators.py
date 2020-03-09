@@ -13,7 +13,8 @@ def thisClassIsClonable(cl):
     cl.classToClone = cl
     return cl
 
-def memoize(computeKey = (lambda:None)):
+
+def memoize(computeKey=(lambda: None)):
     """Decorator:
 
     It adds a dictionnary "versions" to self.
@@ -21,11 +22,13 @@ def memoize(computeKey = (lambda:None)):
     If computeKey returns the same value for many input, the function is computted a single time.
     """
     CURRENTLY_COMPUTED = ("CURRENTLY COMPUTED",)
+
     def actualArobase(fun):
         if not doMemoize:
             return fun
         fname = fun.__name__
-        #@debugFun
+        # @debugFun
+
         def fun_(self, *args, **kwargs):
             if not hasattr(self, "versions"):
                 self.versions = dict()
@@ -44,8 +47,8 @@ def memoize(computeKey = (lambda:None)):
                 else:
                     debug("Computation is retrieved from memoization")
             return self.versions[fname][key]
-        fun_.__name__=f"Memoized_{fun.__name__}"
-        fun_.__qualname__=f"Memoized_{fun.__qualname__}"
+        fun_.__name__ = f"Memoized_{fun.__name__}"
+        fun_.__qualname__ = f"Memoized_{fun.__qualname__}"
         return fun_
     return actualArobase
 
@@ -54,13 +57,15 @@ def modelToFields(model):
     """The set of fields of the model given in argument"""
     return frozenset({fld["name"] for fld in model["flds"]})
 
+
 def modelToHash(model):
     """Given the model, return the hash of its set of fields."""
     return (model["name"], model["mod"])
 
+
 def ensureGenAndSetState(state):
     def actualArobase(f):
-        #@debugFun
+        # @debugFun
         def aux_ensureGenAndSetState(self, *args, **kwargs):
             self.ensureSingleStep(state)
             ret = f(self, *args, **kwargs)
@@ -71,9 +76,10 @@ def ensureGenAndSetState(state):
                 ret.setState(state)
                 return ret
         return aux_ensureGenAndSetState
-        aux_ensureGenAndSetState.__name__=f"SetState({State})__{f.__name__}"
-        aux_ensureGenAndSetState.__qualname__=f"SetState({State})__{f.__qualname__}"
+        aux_ensureGenAndSetState.__name__ = f"SetState({State})__{f.__name__}"
+        aux_ensureGenAndSetState.__qualname__ = f"SetState({State})__{f.__qualname__}"
     return actualArobase
+
 
 def ensureReturnGen(f):
     def aux_ensureReturnGen(self, *args, **kwargs):
@@ -94,7 +100,9 @@ def ensureReturnGen(f):
 #     f_.__qualname__=f"EmptyToEmpty_{f.__qualname__}"
 #     return f_
 
-#refer to README.md to understand what this class is about
+# refer to README.md to understand what this class is about
+
+
 class Gen:
     """
     Super class for all objects allowing to generate content in templates.
@@ -126,21 +134,22 @@ class Gen:
 
     To implement inheriting class, see INTERNALS.md, «new core» section
     """
-    #@debugFun
+    # @debugFun
+
     def __init__(self,
                  *,
-                 localMandatories = frozenset(),
-                 toKeep = None,
-                 state = BASIC,
-                 locals_ = None,
-    ):
-        assert assertType(localMandatories,[set,frozenset])
+                 localMandatories=frozenset(),
+                 toKeep=None,
+                 state=BASIC,
+                 locals_=None,
+                 ):
+        assert assertType(localMandatories, [set, frozenset])
         self.locals_ = locals_
         self.toKeep = toKeep
         self.state = state
         self.localMandatories = localMandatories
         for m in localMandatories:
-            assert assertType(m,str)
+            assert assertType(m, str)
 
     def getLocalMandatories(self):
         return self.localMandatories
@@ -148,20 +157,20 @@ class Gen:
     def getGlobalMandatories(self):
         m = self.getLocalMandatories()
         for c in self.getChildren():
-            m|= c.getGlobalMandatories()
+            m |= c.getGlobalMandatories()
         return m
 
     indentation = 0
-    #@debugFun
+    # @debugFun
+
     def _ensureGen(self, element):
         """Ensure that a generator is returned, with the state of self"""
         gen = ensureGen(element, self.locals_)
         gen.setState(self.getState())
         return gen
 
-
     @debugFun
-    def clone(self,children):
+    def clone(self, children):
         assert False
 
     #######################
@@ -171,25 +180,25 @@ class Gen:
     def __repr__(self):
         return self.repr()
 
-    def repr(self, indentDone = False):
+    def repr(self, indentDone=False):
         space = "  "*Gen.indentation
-        Gen.indentation +=1
+        Gen.indentation += 1
         if not indentDone:
-            t= space
+            t = space
         else:
-            t =""
-        t+= self._repr()
-        Gen.indentation -=1
+            t = ""
+        t += self._repr()
+        Gen.indentation -= 1
         return t
 
     def _repr(self):
         return f"""{self.__class__.__name__}(without repr,{self.params()})"""
 
-    def params(self, show = False):
+    def params(self, show=False):
         """The list of params as string. So that it can be printed."""
-        if not hasattr(self,"toKeep"):
+        if not hasattr(self, "toKeep"):
             self.toKeep = None
-        if not hasattr(self,"state"):
+        if not hasattr(self, "state"):
             self.state = None
         if not show:
             return ""
@@ -199,13 +208,12 @@ class Gen:
 {space}state = {self.getState()}"""
 
     def _outerEq(self, other):
-        return isinstance(other,Gen) and self.getLocalMandatories() == other.getLocalMandatories()
+        return isinstance(other, Gen) and self.getLocalMandatories() == other.getLocalMandatories()
 
-    def __eq__(self,other):
+    def __eq__(self, other):
         return self._outerEq(other) and self._innerEq(other)
     #######################
     # Finding status
-
 
     @debugFun
     def setState(self, state):
@@ -217,15 +225,15 @@ class Gen:
             self.state = self.state.union(state)
         return self.getState()
 
-    #@debugFun
+    # @debugFun
     def getState(self):
         return self.state
 
-    #@debugFun
-    def isAtLeast(self,state):
+    # @debugFun
+    def isAtLeast(self, state):
         return state <= self.getState()
 
-    #@debugFun
+    # @debugFun
     def isEmpty(self):
         return self.isAtLeast(EMPTY)
 
@@ -245,17 +253,17 @@ class Gen:
     # def isTemplateApplied(self):
     #     return self.isAtLeast(TEMPLATE_APPLIED)
 
+    # @debugFun
 
-    #@debugFun
     def __bool__(self):
         ret = not self.isEmpty()
         return ret
 
-    #@debugFun
+    # @debugFun
     def dontKeep(self):
         self.toKeep = False
 
-        #@debugFun
+        # @debugFun
     def doKeep(self):
         self.toKeep = True
 
@@ -280,13 +288,14 @@ class Gen:
     #############
     # Meta changing gen
 
-    def ensureSingleStep(self,goal):
+    def ensureSingleStep(self, goal):
         if self.getState() < goal.previousStep():
-            raise ExceptionInverse(f"Can't compute {goal} from state {self.getState()} of {self}")
+            raise ExceptionInverse(
+                f"Can't compute {goal} from state {self.getState()} of {self}")
 
     @debugFun
     @ensureReturnGen
-    def callOnChildren(self, method, *args, force = True, **kwargs):
+    def callOnChildren(self, method, *args, force=True, **kwargs):
         # memoize.__name__ = f"memoize_of_{method}"
         # memoize.__qualname__ = f"memoize_of_{method}"
         # fun_ = fun if force else memoize
@@ -294,7 +303,7 @@ class Gen:
         return ret
 
     @debugFun
-    def _callOnChildren(self, method, *args, force = True, **kwargs):
+    def _callOnChildren(self, method, *args, force=True, **kwargs):
         elements = []
         someChange = False
         for element in self.getChildren():
@@ -307,7 +316,7 @@ class Gen:
             elements.append(newElement)
         if someChange:
             debug("Some change did occurs, thus we clone")
-            ret = self.clone(elements = elements)
+            ret = self.clone(elements=elements)
             return ret
             # if ret == self:
             #     debug("However the clone is identic")
@@ -323,15 +332,16 @@ class Gen:
     @memoize()
     @debugFun
     @ensureGenAndSetState(NORMAL)
-    #@emptyToEmpty
+    # @emptyToEmpty
     def getNormalForm(self):
         """A copy of self, where only used classes are «normal»
         classes. In particular, only Gens , and no othe type, are
         returned."""
         return self._getNormalForm()
+
     @debugFun
     def _getNormalForm(self):
-        return self.callOnChildren(method = "getNormalForm")
+        return self.callOnChildren(method="getNormalForm")
 
     @memoize()
     @ensureGenAndSetState(WITHOUT_REDUNDANCY)
@@ -347,11 +357,11 @@ class Gen:
 
     @debugFun
     def _getWithoutRedundance(self):
-        return self.callOnChildren(method = "getWithoutRedundance")
+        return self.callOnChildren(method="getWithoutRedundance")
 
-    @memoize((lambda isQuestion:isQuestion))
+    @memoize((lambda isQuestion: isQuestion))
     @ensureGenAndSetState(QUESTION_ANSWER)
-    #@emptyToEmpty
+    # @emptyToEmpty
     @debugFun
     def questionOrAnswer(self, isQuestion):
         """Assert that this is the question side if isQuestion is
@@ -360,35 +370,36 @@ class Gen:
         Thus remove the Answer(), and replace Question() by its content
         """
 
-
-        return self._questionOrAnswer(isQuestion = isQuestion)
+        return self._questionOrAnswer(isQuestion=isQuestion)
 
     @debugFun
     def _questionOrAnswer(self, isQuestion):
         if isQuestion:
-            return self.assumeQuestion(changeStep = True)
+            return self.assumeQuestion(changeStep=True)
         else:
-            return self.assumeAnswer(changeStep = True)
+            return self.assumeAnswer(changeStep=True)
 
-    @memoize((lambda fields:fields))
+    @memoize((lambda fields: fields))
     @ensureGenAndSetState(MODEL_APPLIED)
-    #@emptyToEmpty
+    # @emptyToEmpty
     @debugFun
-    def restrictToModel(self,fields):
+    def restrictToModel(self, fields):
         """Given the model, restrict the generator according the fields
         existing. It follows that the returned answer contains no
         requireInModel/requireAbsentOfModel requirement. It contains
         no Field(foo), or Filled(foo), if foo does not belong to the model.
         """
-        if isinstance(fields,str):
+        if isinstance(fields, str):
             fields = {fields}
         missing = self.getLocalMandatories() - fields
         if missing:
-            print(f"""Beware: the generator {self} request the field(s) {missing} which is/are absent from your model.""", file=sys.stderr)
-        return self._restrictToModel(fields = fields)
+            print(
+                f"""Beware: the generator {self} request the field(s) {missing} which is/are absent from your model.""", file=sys.stderr)
+        return self._restrictToModel(fields=fields)
+
     @debugFun
-    def _restrictToModel(self,fields):
-        return self.callOnChildren(method = "restrictToModel", fields = fields)
+    def _restrictToModel(self, fields):
+        return self.callOnChildren(method="restrictToModel", fields=fields)
 
     @memoize(lambda fields: fields)
     @ensureGenAndSetState(MANDATORY)
@@ -396,12 +407,12 @@ class Gen:
     @debugFun
     def mandatory(self, fields):
         """Self, where the display only occurs if each fields of mandatory are be filled"""
-        if isinstance(fields,str):
+        if isinstance(fields, str):
             fields = {fields}
-        current = self.assumeFieldFilled(fields, setMandatoryState = True)
+        current = self.assumeFieldFilled(fields, setMandatoryState=True)
         for field in fields:
-            #EnsureGen of a tuple create a FilledObject.
-            current = self._ensureGen((field,current))
+            # EnsureGen of a tuple create a FilledObject.
+            current = self._ensureGen((field, current))
             current.setState(MANDATORY)
         return current
 
@@ -411,9 +422,9 @@ class Gen:
     @debugFun
     def forbidding(self, fields):
         """Self, where the display only occurs if each fields of mandatory are be filled"""
-        current = self.assumeFieldEmpty(fields, setForbiddenState = True)
+        current = self.assumeFieldEmpty(fields, setForbiddenState=True)
         for field in fields:
-            #EnsureGen of a tuple create a FilledObject.
+            # EnsureGen of a tuple create a FilledObject.
             current = self._ensureGen((field, None, current))
             current.setState(FORBIDDEN)
         return current
@@ -423,7 +434,7 @@ class Gen:
     @debugFun
     def force(self):
         """Ensure that ensureGen is called on each element recursively."""
-        self.callOnChildren(method = "force")
+        self.callOnChildren(method="force")
 
     @memoize()
     @ensureGenAndSetState(ASKED)
@@ -432,14 +443,15 @@ class Gen:
     def noMoreAsk(self):
         """Remove all Asked(foo), and replace NotAsked(foo) with foo"""
         return self._noMoreAsk()
+
     @debugFun
     def _noMoreAsk(self):
-        return self.callOnChildren(method = "noMoreAsk")
+        return self.callOnChildren(method="noMoreAsk")
 
-    #@emptyToEmpty
+    # @emptyToEmpty
     @ensureReturnGen
     @debugFun
-    def assumeFieldFilled(self, fields, setMandatoryState = False):
+    def assumeFieldFilled(self, fields, setMandatoryState=False):
         """Remove Empty(field,foo) and Absent(field,foo), replace Filled(field,foo) by foo, for each field in fields"""
         if isinstance(fields, str):
             fields = {fields}
@@ -451,12 +463,12 @@ class Gen:
 
     @debugFun
     def _assumeFieldFilled(self, fields, setMandatoryState):
-        return self.callOnChildren("assumeFieldFilled", fields = fields, setMandatoryState = setMandatoryState)
+        return self.callOnChildren("assumeFieldFilled", fields=fields, setMandatoryState=setMandatoryState)
 
-    #@emptyToEmpty
+    # @emptyToEmpty
     @ensureReturnGen
     @debugFun
-    def assumeFieldEmpty(self, fields, setForbiddenState = False):
+    def assumeFieldEmpty(self, fields, setForbiddenState=False):
         """Remove Filled(field,foo), replace Empty(field,foo) by foo"""
         if isinstance(fields, str):
             fields = {fields}
@@ -470,72 +482,76 @@ class Gen:
     def _assumeFieldEmpty(self, fields, setForbiddenState):
         return self.callOnChildren("assumeFieldEmpty", fields, setForbiddenState)
 
-    #@emptyToEmpty
+    # @emptyToEmpty
     @ensureReturnGen
     @debugFun
     def assumeFieldPresent(self, field):
         """Remove Absent(field,foo), replace Present(field,foo) by foo"""
         return self._assumeFieldPresent(field)
+
     @debugFun
     def _assumeFieldPresent(self, field):
-        return self.callOnChildren("assumeFieldPresent", field = field)
+        return self.callOnChildren("assumeFieldPresent", field=field)
 
-    #@emptyToEmpty
+    # @emptyToEmpty
     @ensureReturnGen
     @debugFun
     def assumeFieldAbsent(self, field):
         """Remove Present(field,foo) and Filled(field,foo), replace Absent(field,foo) by foo"""
         return self._assumeFieldAbsent(field)
+
     @debugFun
     def _assumeFieldAbsent(self, field):
-        return self.callOnChildren("assumeFieldAbsent", field = field)
+        return self.callOnChildren("assumeFieldAbsent", field=field)
 
-    #@emptyToEmpty
-    @memoize((lambda changeStep = False:None))
+    # @emptyToEmpty
+    @memoize((lambda changeStep=False: None))
     @ensureReturnGen
     @debugFun
-    def assumeQuestion(self, changeStep = False):
+    def assumeQuestion(self, changeStep=False):
         """Assume this is question side. Replace Question(foo) by
     foo. Remove Answer(foo)"""
         assert assertType(changeStep, bool)
-        ret = self._assumeQuestion(changeStep = changeStep)
+        ret = self._assumeQuestion(changeStep=changeStep)
         ret = self._ensureGen(ret)
         if changeStep:
             ret.setState(QUESTION_ANSWER)
         return ret
+
     @debugFun
     def _assumeQuestion(self, changeStep):
-        return self.callOnChildren("assumeQuestion", changeStep = changeStep)
+        return self.callOnChildren("assumeQuestion", changeStep=changeStep)
 
-    #@emptyToEmpty
-    @memoize((lambda changeStep = False:None))
+    # @emptyToEmpty
+    @memoize((lambda changeStep=False: None))
     @ensureReturnGen
     @debugFun
-    def assumeAnswer(self, changeStep = False):
+    def assumeAnswer(self, changeStep=False):
         """Assume this is answer side. Replace Answer(foo) by
         foo. Remove Question(foo)"""
-        ret = self._assumeAnswer(changeStep = changeStep)
+        ret = self._assumeAnswer(changeStep=changeStep)
         ret = self._ensureGen(ret)
         if changeStep:
             ret.setState(QUESTION_ANSWER)
         return ret
-    @debugFun
-    def _assumeAnswer(self, changeStep = False):
-        return self.callOnChildren("assumeAnswer", changeStep = changeStep)
 
-    #@emptyToEmpty
-    @memoize((lambda fields, modelName=None, changeState = False:fields))
+    @debugFun
+    def _assumeAnswer(self, changeStep=False):
+        return self.callOnChildren("assumeAnswer", changeStep=changeStep)
+
+    # @emptyToEmpty
+    @memoize((lambda fields, modelName=None, changeState=False: fields))
     @ensureReturnGen
     @debugFun
-    def assumeAsked(self, fields, modelName=None, changeState = False):
+    def assumeAsked(self, fields, modelName=None, changeState=False):
         """
         Assume that name is asked. Thus remove notAsked(name,foo). Replace
         Asked(name,foo) by foo. Recall that this name was asked in
         this model. Change the state to ASKED if changeState is True.
         """
-        if isinstance(fields,str):
+        if isinstance(fields, str):
             fields = frozenset({fields})
-        ret = self._assumeAsked(fields,modelName, changeState)
+        ret = self._assumeAsked(fields, modelName, changeState)
         ret = self._ensureGen(ret)
         if changeState:
             ret.setState(ASKED)
@@ -545,30 +561,32 @@ class Gen:
     def _assumeAsked(self, fields, modelName, changeState):
         return self.callOnChildren("assumeAsked", fields, modelName, changeState)
 
-    #@emptyToEmpty
+    # @emptyToEmpty
     @ensureReturnGen
     @debugFun
     def assumeNotAsked(self, name):
         """Assume that name is not asked. Thus remove
         Asked(name,foo). Replace NotAsked(name,foo) by foo."""
         return self._assumeNotAsked(name)
+
     @debugFun
     def _assumeNotAsked(self, name):
         return self.callOnChildren("assumeNotAsked", name)
 
-    #@emptyToEmpty
-    @memoize((lambda fields, changeState=False:fields))
+    # @emptyToEmpty
+    @memoize((lambda fields, changeState=False: fields))
     @ensureReturnGen
     @debugFun
-    def removeName(self, fields, changeState = False):
+    def removeName(self, fields, changeState=False):
         """remove each instance of Asked(name,foo) and NotAsked(name,Foo)"""
-        if isinstance(fields,str):
+        if isinstance(fields, str):
             fields = {fields}
         ret = self._removeName(fields, changeState)
         ret = self._ensureGen(ret)
         if changeState:
             ret.setState(HIDE)
         return ret
+
     @debugFun
     def _removeName(self, fields, changeState):
         return self.callOnChildren("removeName", fields, changeState)
@@ -576,7 +594,7 @@ class Gen:
     #################
     # Consider the end of compilation
 
-    @memoize((lambda soup:None))
+    @memoize((lambda soup: None))
     @debugFun
     def createHtml(self, soup):
         """A list of BeautifulSoup object representing this
@@ -602,10 +620,11 @@ class Gen:
 
     @debugFun
     def _getQuestions(self):
-        s=[]
+        s = []
         for child in self.getChildren():
-            s+=child.getQuestions()
+            s += child.getQuestions()
         return s
+
     @debugFun
     def getName(self):
         return self._getName()
@@ -619,13 +638,13 @@ class Gen:
         return None
 
     @debugFun
-    def getQuestionToAsk(self,model):
+    def getQuestionToAsk(self, model):
         return self._getQuestionToAsk(model)
 
     @debugFun
-    def _getQuestionToAsk(self,model):
+    def _getQuestionToAsk(self, model):
         for child in self.getChildren():
-            q=child.getQuestionToAsk(model)
+            q = child.getQuestionToAsk(model)
             if q is not None:
                 return q
         return None
@@ -638,33 +657,33 @@ class Gen:
         raise ExceptionInverse(f"""_createHtml in gen for: "{self}".""")
 
     @memoize((lambda
-              soup = None,
-              goal = None,
-              fields = None,
-              isQuestion = None,
-              asked = None,
-              mandatory = None,
-              hide = None,
-              hideQuestions = None,
-              toPrint = False,
-              modelName = None,
-              template = None:
-              (goal,fields,isQuestion,asked,mandatory,hide,hideQuestions)))
+              soup=None,
+              goal=None,
+              fields=None,
+              isQuestion=None,
+              asked=None,
+              mandatory=None,
+              hide=None,
+              hideQuestions=None,
+              toPrint=False,
+              modelName=None,
+              template=None:
+              (goal, fields, isQuestion, asked, mandatory, hide, hideQuestions)))
     @debugFun
     def compile(self,
-                soup = None,
-                goal = None,
-                fields = None,
-                isQuestion = None,
-                asked = None,
-                forbidden = None,
-                mandatory = None,
-                hide = None,
-                hideQuestions = None,
-                toPrint = False,
-                modelName = None,
-                template = None
-    ):
+                soup=None,
+                goal=None,
+                fields=None,
+                isQuestion=None,
+                asked=None,
+                forbidden=None,
+                mandatory=None,
+                hide=None,
+                hideQuestions=None,
+                toPrint=False,
+                modelName=None,
+                template=None
+                ):
         """Compile as much as possible given the informations. Or up to goal."""
         if goal is None:
             if isQuestion is None:
@@ -679,37 +698,43 @@ class Gen:
                 goal = ASKED
             elif mandatory is None:
                 goal = MANDATORY
-            else :
+            else:
                 goal = TAG
 
-        if toPrint: print(f"""\nTesting each step of "{self}".""")
+        if toPrint:
+            print(f"""\nTesting each step of "{self}".""")
         if goal == BASIC:
             return self
 
         nf = self.getNormalForm()
-        if toPrint: print(f"""\nNormal form is "{nf}".""")
+        if toPrint:
+            print(f"""\nNormal form is "{nf}".""")
         if goal == NORMAL:
             return nf
 
         wr = nf.getWithoutRedundance()
-        if toPrint: print(f"""\nWithout redundance is "{wr}".""")
+        if toPrint:
+            print(f"""\nWithout redundance is "{wr}".""")
         if goal == WITHOUT_REDUNDANCY:
             return wr
 
         assert isQuestion is not None
-        questionRestriction = wr.questionOrAnswer(isQuestion = isQuestion)
-        assert QUESTION_ANSWER<= questionRestriction.getState()
-        if toPrint: print(f"""\nWith question restricted, "{questionRestriction}".""")
+        questionRestriction = wr.questionOrAnswer(isQuestion=isQuestion)
+        assert QUESTION_ANSWER <= questionRestriction.getState()
+        if toPrint:
+            print(f"""\nWith question restricted, "{questionRestriction}".""")
         if goal == QUESTION_ANSWER:
             return questionRestriction
 
         if isQuestion and hideQuestions:
             for hideQuestion in hideQuestions:
-                questionRestriction = questionRestriction.removeName(hideQuestion)
+                questionRestriction = questionRestriction.removeName(
+                    hideQuestion)
 
         assert fields is not None
         modelRestriction = questionRestriction.restrictToModel(fields)
-        if toPrint: print(f"""\nWith model({fields}) applied, "{modelRestriction}".""")
+        if toPrint:
+            print(f"""\nWith model({fields}) applied, "{modelRestriction}".""")
         if goal == MODEL_APPLIED:
             return modelRestriction
 
@@ -717,7 +742,8 @@ class Gen:
             hide = frozenset()
         assert standardContainer(hide)
         hidden = modelRestriction.removeName(hide, True)
-        if toPrint: print(f"""\nWith removeName({hide}) applied, "{hidden}".""")
+        if toPrint:
+            print(f"""\nWith removeName({hide}) applied, "{hidden}".""")
         if goal == HIDE:
             return hidden
 
@@ -725,24 +751,30 @@ class Gen:
             asked = frozenset()
         assert standardContainer(asked)
         askedGen = hidden.assumeAsked(asked, modelName, True).noMoreAsk()
-        if toPrint: print(f"""\nWith assumeAsked({asked}) applied, "{askedGen}".""")
+        if toPrint:
+            print(f"""\nWith assumeAsked({asked}) applied, "{askedGen}".""")
         if goal == ASKED:
             return askedGen
 
         if mandatory is None:
             mandatory = frozenset()
-        missingFields=mandatory-fields
+        missingFields = mandatory-fields
         if missingFields:
-            raise Exception(f"{missingFields} are mandatory but not in the model.")
+            raise Exception(
+                f"{missingFields} are mandatory but not in the model.")
         mandatoried = askedGen.mandatory(mandatory)
-        if toPrint: print(f"""\nWith mandatory({mandatory}) applied, "{mandatoried}".""")
+        if toPrint:
+            print(
+                f"""\nWith mandatory({mandatory}) applied, "{mandatoried}".""")
         if goal == MANDATORY:
             return mandatoried
 
         if forbidden is None:
             forbidden = frozenset()
         forbidded = mandatoried.forbidding(forbidden)
-        if toPrint: print(f"""\nWith forbidding({forbidden}) applied, "{forbidded}".""")
+        if toPrint:
+            print(
+                f"""\nWith forbidding({forbidden}) applied, "{forbidded}".""")
         if goal == FORBIDDEN:
             return forbidded
 
@@ -752,7 +784,7 @@ class Gen:
 
         assert soup is not None
         try:
-            resultTags = forbidded.createHtml(soup = soup)
+            resultTags = forbidded.createHtml(soup=soup)
         except Exception:
             print(f"mandatoried is {mandatoried}")
             raise
@@ -762,10 +794,10 @@ class Gen:
 
         assert False
 
-    def firstDifference(self,other):
+    def firstDifference(self, other):
         """A pair of generators, in the same position in the tree of self/other, which are distinct"""
         if not self._outerEq(other):
-            return (self,other)
+            return (self, other)
         else:
             return self._firstDifference(other)
 
@@ -775,34 +807,38 @@ class Gen:
 #         if not hasattr(hasNormalType)
 #     pass
 
+
 addTypeToGenerator(Gen, identity)
 
-#@debugFun
+# @debugFun
+
+
 def shouldBeKept(gen):
     """
     True if Gen which must be kept.
     False if Gen which can be discarded
     None if it can't yet been known."""
-    if isinstance(gen,Gen):
+    if isinstance(gen, Gen):
         return gen.getToKeep()
     else:
         return None
 
-def genRepr(g, label = None):
-    t="  "*Gen.indentation
+
+def genRepr(g, label=None):
+    t = "  "*Gen.indentation
     if label is not None:
-        t+= f"{label} = "
-    if isinstance(g,Gen):
-        t+= g.repr(indentDone = True)
+        t += f"{label} = "
+    if isinstance(g, Gen):
+        t += g.repr(indentDone=True)
     else:
-        t+=repr(g)
+        t += repr(g)
     return t
 
-class MultipleChildren(Gen):
-    #@debugFun
-    def __init__(self, toKeep = None,  **kwargs):
-        super().__init__(**kwargs)
 
+class MultipleChildren(Gen):
+    # @debugFun
+    def __init__(self, toKeep=None,  **kwargs):
+        super().__init__(**kwargs)
 
         # if toKeep is None:
         #     allFalse = True
@@ -821,6 +857,7 @@ class MultipleChildren(Gen):
         # elif toKeep is False:
         #     self.dontKeep()
 
+
 class NotNormal(Gen):
     def _getWithoutRedundance(self):
         raise ExceptionInverse(f"_getWithoutRedundance from not normal")
@@ -828,13 +865,17 @@ class NotNormal(Gen):
     #     raise ExceptionInverse(f"getWithoutRedundance from not normal")
     # def assumeFieldInSet(self, *args, **kwargs):
     #     raise ExceptionInverse(f"assumeFieldInSet from not normal")
+
     def _assumeFieldFilled(self, field, setMandatoryState):
         raise ExceptionInverse(f"_assumeFieldFilled from not normal:{self}")
-    def _assumeFieldEmpty(self, fields, setForbiddenState = False):
+
+    def _assumeFieldEmpty(self, fields, setForbiddenState=False):
         raise ExceptionInverse(f"_assumeFieldEmpty from not normal:{self}")
+
     def _assumeFieldPresent(self, field):
         raise ExceptionInverse(f"_assumeFieldPresent from not normal:{self}")
-    def _assumeAnswer(self, changeStep = False):
+
+    def _assumeAnswer(self, changeStep=False):
         raise ExceptionInverse(f"_assumeAnswer from not normal:{self}")
 
     def _assumeFieldAbsent(self, field):
@@ -842,28 +883,33 @@ class NotNormal(Gen):
 
     def _getQuestions(self):
         raise ExceptionInverse(f"_getQuestions from not normal:{self}")
+
     def _getName(self):
         raise ExceptionInverse(f"_getQuestions from not normal:{self}")
     # def _assumeFieldInSet(self, *args, **kwargs):
     #     raise ExceptionInverse(f"_assumeFieldInSet from not normal")
+
     def _assumeQuestion(self, *args, **kwargs):
         raise ExceptionInverse(f"_assumeQuestion from not normal:{self}")
+
     def _createHtml(self, *args, **kwargs):
         raise ExceptionInverse(f"_createHtml from not normal:{self}")
+
     def _restrictToModel(self, *args, **kwargs):
         raise ExceptionInverse(f"_restrictToModel from not normal:{self}")
 
     def _questionOrAnswer(self, *args, **kwargs):
         raise ExceptionInverse(f"_questionOrAnswer from not normal:{self}")
 
+
 class SingleChild(MultipleChildren):
-    def __init__(self, child = None, toKeep = None, **kwargs):
+    def __init__(self, child=None, toKeep=None, **kwargs):
         self.child = child
-        super().__init__(toKeep = toKeep, **kwargs)
+        super().__init__(toKeep=toKeep, **kwargs)
 
     @debugFun
     def clone(self, elements):
-        assert len(elements)==1
+        assert len(elements) == 1
         child = elements[0]
         return self.cloneSingle(child)
 
@@ -878,7 +924,7 @@ class SingleChild(MultipleChildren):
     @debugFun
     def _cloneSingle(self, child):
         """Assuming child is distinct from self.child and is not truthy"""
-        return self.classToClone(child = child)
+        return self.classToClone(child=child)
 
     @debugFun
     def getChild(self):
@@ -894,29 +940,30 @@ class SingleChild(MultipleChildren):
     @debugFun
     def _getChildren(self):
         return [self.getChild()]
+
     def __hash__(self):
-        return hash((self.__class__,self.child))
+        return hash((self.__class__, self.child))
 
     def _repr(self):
         space = "  "*Gen.indentation
         if hasattr(self, "classToClone"):
             toClone = self.classToClone
-            if toClone==self.__class__:
+            if toClone == self.__class__:
                 className = self.__class__.__name__
             else:
                 className = f"{self.__class__.__name__}/{toClone}"
         else:
             className = self.__class__.__name__
-        t= f"""{className}(
+        t = f"""{className}(
 {genRepr(self.child, label="child")},{self.params()})"""
         return t
 
-    def _innerEq(self,other):
+    def _innerEq(self, other):
         """It may require to actually compute the child"""
         return self.getChild() == other.getChild()
 
     def _outerEq(self, other):
         return isinstance(other, SingleChild) and super()._outerEq(other)
 
-    def _firstDifference(self,other):
+    def _firstDifference(self, other):
         return self.getChild().firstDifference(other.getChild())

@@ -1,41 +1,47 @@
 from ..generators import *
 
-name = CLASS(["Name","Chord name"],
-             [QuestionnedField("Base", isMandatory=True, classes = "Definition"),
-              QuestionnedField("Quality", isMandatory=True, classes = "Definition2"),
-              QuestionnedField("Inverval", isMandatory=True, classes ="Definition4"),
-              Filled("Over",["/",QuestionnedField("Over", isMandatory=True)]
-              )])
+name = CLASS(["Name", "Chord name"],
+             [QuestionnedField("Base", isMandatory=True, classes="Definition"),
+              QuestionnedField("Quality", isMandatory=True,
+                               classes="Definition2"),
+              QuestionnedField("Inverval", isMandatory=True,
+                               classes="Definition4"),
+              Filled("Over", ["/", QuestionnedField("Over", isMandatory=True)]
+                     )])
+
 
 def color(name):
     def aux(i):
         return QuestionOrAnswer(QuestionnedField(f"{name}{i}", isMandatory=True),
                                 FilledOrEmpty(f"{name} color{i}",
-                                              QuestionnedField(f"{name} color{i}", isMandatory=True),
+                                              QuestionnedField(
+                                                  f"{name} color{i}", isMandatory=True),
                                               QuestionnedField(f"{name}{i}", isMandatory=True)))
     return aux
+
+
 diagram = color("Diagram")
 partition = color("Partition")
 
 table = TableFields(
     [
-        {"function":diagram,
+        {"function": diagram,
          "field": "Diagram",
-         "filledFields":"Diagram"},
-        {"function":partition,
+         "filledFields": "Diagram"},
+        {"function": partition,
          "field": "Partition",
-         "filledFields":"Partition"},
+         "filledFields": "Partition"},
         [
             {"field": "Unison",
-             "classes":["Definition", "Guitar chord"]},
+             "classes": ["Definition", "Guitar chord"]},
             {"field": "3rd",
-             "classes":["Definition2", "Guitar chord"]},
+             "classes": ["Definition2", "Guitar chord"]},
             {"field": "5th",
-             "classes":["Definition3", "Guitar chord"]},
+             "classes": ["Definition3", "Guitar chord"]},
             {"field": "Nth",
-             "classes":["Definition4", "Guitar chord"]},
+             "classes": ["Definition4", "Guitar chord"]},
         ]],
     greater=5,
     isMandatory=True)
 
-guitarChord = [name,table]
+guitarChord = [name, table]

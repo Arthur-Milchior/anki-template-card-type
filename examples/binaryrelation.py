@@ -2,7 +2,7 @@ from ..generators import *
 from .general import footer, header
 
 definition = TableFields(
-    fields = [
+    fields=[
         "Definition",
         "Definition2",
         "Definition3",
