@@ -1,9 +1,17 @@
 from ...generators import *
-from .foot import footer
-from .short_head import short_header
+from ..util import *
 
+singleNameAsked = DecoratedField("Name",
+                                 emphasizing=decorateQuestion)
+singleName = AskedOrNot("Name",
+                        singleNameAsked,
+                        decorateName(Field("Name"))
+)
+
+namesAsked = decorateQuestion("Names")
 
 def singleRelatedInformation(i):
+    """ A function which asks some information about the i-th name """
     return (lambda f:
             {"child": Parenthesis(DecoratedField(field=f"{f}{i}",
                                                  label=f,
@@ -13,39 +21,44 @@ def singleRelatedInformation(i):
 
 
 def relatedInformations(i=""):
-    field = f"Name{i}"
+    """List of information about the i-th name to give"""
     return ListFields(fields=[f"Abbreviation", f"French", f"Etymology"],
                       localFun=singleRelatedInformation(i))
 
+def nameLine(i):
+    """Give all information about the i-th name"""
+    name = f"""Name{empty1(i)}"""
+    return Filled(name, [decorateName(Field(name)), relatedInformations(i)])
 
-def nameAndMore(i=""):
-    return QuestionnedField(f"Name{i}",
-                            classes=["Name"],
-                            suffix=relatedInformations(i))
+allNames = UL([nameLine(i) for i in range(1, 5)])
 
+def cascade(child):
+    return Cascade("Names",
+                child,
+                {f"Name{empty1(i)}" for i in range(1,5)})
 
-def singleName(i=""):
-    return {"child": LI(nameAndMore(i)),
-            "questions": {f"Name{i}"},
-            "filledFields": [f"Name{i}"]}
+"""One name or a list of name
 
+suffix -- after names if there is any
+"""
+def names(suffix=None):
+    return cascade(
+        Filled("Name", [
+            FilledOrEmpty("Name2", allNames, singleName),
+            suffix
+        ]))
 
-listNames = [Label("Names",
-                   ["Name", "Name2", "Name3", "Name4"],
-                   "Name"),
-             ": ",
-             ListFields(fields=["", "2", "3", "4"],
-                        localFun=singleName,
-                        globalFun=(lambda l: UL(l, addLi=False)))]
+def nameAsked(i):
+    """Give all information about given name and ask name i
 
-singleName = DecoratedField(field="Name", child=nameAndMore())
-
-singleOrMultipleNames = Filled("Name",
-                               child=[
-                                   Cascade(child=FilledOrEmpty("Name2",
-                                                               listNames,
-                                                               singleName),
-                                           field="Names",
-                                           cascade={"Name", "Name2", "Name3", "Name4"}),
-                                   hr])
-names = ("Name2", [short_header, listNames, footer])
+    suffix -- after names if there is any
+    """
+    l = []
+    for j in range(i + 1, i + 4):
+        if j > 4:
+            j -= 4
+        l.append(nameLine(j))
+    if i == 1:
+        i = ""
+    l.append(LI(AskedField(f"Name{i}", question="Or ?")))
+    return addBoilerplate(cascade([UL(l, addLi=False), Filled("Name", hr)]))

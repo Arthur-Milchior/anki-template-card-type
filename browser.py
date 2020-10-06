@@ -86,7 +86,7 @@ def setupMenu(browser):
     shortCut = getObject("Shortcut: Clean Template note")
     if shortCut:
         a.setShortcut(QKeySequence(shortCut))
-    a.triggered.connect(lambda: runBrowser(browser, "Clean template", True))
+    a.triggered.connect(lambda: runBrowser(browser, "Clean", True))
     browser.form.menuEdit.addAction(a)
 
 

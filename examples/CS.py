@@ -1,6 +1,6 @@
 from ..generators import *
-from .general.foot import footer
-from .general.head import header
+from .general.footer import footer
+from .general.header import header
 from .general.typ import typDic
 
 cs_context_ = [

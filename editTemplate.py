@@ -79,7 +79,7 @@ def compileModel(model, objects=objects, action="Template",  prettify=True, ords
             if action == "FrontSide":
                 templateObject[answerKey] = """<span template="Front Side"/>"""
             else:
-                assert action in {"Template", "ReTemplate"}
+                assert action in {"Template", "ReTemplate", "Clean"}
                 frontHtml = templateObject[questionKey]
                 try:
                     questionSoup, questionText = processIfRequired(

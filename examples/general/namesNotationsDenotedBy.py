@@ -1,15 +1,37 @@
 from ...generators import *
-from .foot import footer
-from .names import singleOrMultipleNames
-from .notations import _notations
-from .short_head import short_header
+from .footer import footer
+from .names import names
+from .notations import notations
+from .header import header
 
-_namesNotationsDenotedBy = Cascade(child=[singleOrMultipleNames,
-                                          _notations,
-                                          DecoratedField(
-                                              'Representation', suffix=hr),
-                                          DecoratedField('Denoted by', suffix=hr)],
-                                   cascade={"Names", "Notations",
-                                            "Representation", "Denoted by"},
-                                   field="NamesNotationsDenotedBy")
-namesNotationsDenotedBy = [short_header, _namesNotationsDenotedBy, footer]
+"""All informations about names, notations, and denoted by. Ask name number nameNumber potentially"""
+namesNotationsDenotedBy = Cascade(child=
+                                  [
+                                      names(),
+                                      notations,
+                                      DecoratedField( 'Representation', suffix=hr),
+                                      DecoratedField('Denoted by', suffix=hr)],
+                                  cascade={"Names", "Notations",
+                                           "Representation", "Denoted by"},
+                                  field="NamesNotationsDenotedBy")
+
+toNotations = Filled("Name",
+                   Filled("Notation",
+                         [
+                             header,
+                             notations,
+                             names(),
+                             footer,
+                         ]
+                   )).assumeAsked("Notations")
+
+
+toNames = Filled("Name",
+                Filled("Notation",
+                      [
+                          header,
+                          names(),
+                          notations,
+                          footer,
+                      ]
+                )).assumeAsked("Names")

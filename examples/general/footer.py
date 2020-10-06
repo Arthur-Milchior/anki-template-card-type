@@ -1,5 +1,4 @@
 from ...generators import *
-from .examples import counterexamples, examples
 
 origin = [
     DecoratedField("Chapter", infix=" ", suffix=", ", isMandatory=True),
@@ -11,6 +10,15 @@ origin = [
                   DecoratedField("Index", infix=" ", suffix=", ", isMandatory=True)),
     DecoratedField("Page", infix=" ", suffix=", ")
 ]
-answerFooter = CLASS("footer", Answer(
-    [DecoratedField('Extra', suffix=hr), origin]))
-footer = [examples, counterexamples, answerFooter]
+
+"""Show all informations that gives card context. Only the assumption are sometime asked, there are no other questions."""
+footer = FOOTER(
+    [
+        P(Field("Variables")),
+        QuestionnedField("Assuming"),
+        Empty("Context", P(deck)),
+        Answer(
+            [P(Field("Extra")),
+             origin])]
+)
+

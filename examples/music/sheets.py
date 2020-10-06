@@ -1,9 +1,10 @@
-from ..generators import *
-from .definition.definition import definition
-from .general.foot import footer
-from .general.short_head import short_header
+from ...generators import *
+from ..definition.definition import definitions
+from ..general.footer import footer
+from ..general.header import header
+from ..util import *
 
-header = [short_header, {"Name"}, " ", {
+header = [header, {"Name"}, " ", {
     "Composer"}, br, {"Speed"}, ", ", {"Rythm"}]
 music = [Asked("Subpart", {"Music"}),  Asked("Part", {"Music"})]
 
@@ -27,6 +28,7 @@ def grouping(subgroup, nb=0, size=4, part="Part", prefix="Subpart"):
         part = AskedOrNot(defName,
                           subgroup,
                           part)
+    part = Cascade(partName, part, set(definitions))
     return part
 
 
@@ -53,7 +55,7 @@ definitions = PotentiallyNumberedFields(fieldPrefix="Subpart",
                                         infix="",
                                         applyToGroup=grouping,
                                         groupSize=4)
-learn_sheet = Filled("Learn", [header, music, definitions, hr, footer])
+learn_sheet = addBoilerplate([ music, definitions, hr], "Learn")
 
 
 def practice(*args):
@@ -77,4 +79,4 @@ def practice(*args):
     content = [header, H1(s + " "+precision), l, hr, footer]
     for part in parts:
         content = Filled(f"Part{part if part>1 else ''}", content)
-    return content
+    return addBoilerplate(content)

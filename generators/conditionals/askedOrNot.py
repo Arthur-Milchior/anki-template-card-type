@@ -64,6 +64,7 @@ class NotAsked(FieldChild):
 
 @thisClassIsClonable
 class Cascade(FieldChild):
+    """Is field is asked, assume that all elements of cascade are asked in child"""
     @debugInit
     # @debugOnlyThisInit
     def __init__(self, field, child, cascade, **kwargs):

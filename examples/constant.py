@@ -1,5 +1,5 @@
 from ..generators import *
-from .general import footer, short_header
+from .general import footer, header
 
 number = [QuestionnedField("Significative digit", classes="Definition"),
           Filled("Exponant",
@@ -56,6 +56,6 @@ sis = Answer(
             name="si details"
         ),
         hr])
-constant = [short_header, definition, typeOrNumber, sis, footer]
+constant = [header, definition, typeOrNumber, sis, footer]
 
 # find to deal with both represents

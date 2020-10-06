@@ -1,7 +1,10 @@
 from ...generators import *
-from ..general.foot import footer
-from ..general.head import header
+from ..general.footer import footer
+from ..general.header import header
+from ..general.names import names
+from ..general.notations import notations
 from ..general.typ import typDic
+from ..util import *
 
 labelDef = [Filled("DefType",
                    [QuestionnedField("DefType",
@@ -43,7 +46,7 @@ def grouping(subgroup, nb=0, size=4, part="Part", prefix="Definition"):
     return part
 
 
-definitions = ("Definition",
+_definitions = ("Definition",
                [PotentiallyNumberedFields(fieldPrefix="Definition",
                                           greater=16,
                                           label=labelDef,
@@ -63,9 +66,11 @@ for i in range(1, 5):
     for j in range(4):
         d = 4*(i-1)+j
         content.add("Definition"+("" if d == 1 else str(d)))
-    definitions = Cascade(name,
-                          definitions,
+    _definitions = Cascade(name,
+                          _definitions,
                           content)
+
+
 
 other = TableFields([{"field": "Construction",
                       "showIfAskedOrAnswer": True},
@@ -75,4 +80,9 @@ other = TableFields([{"field": "Construction",
                       "showIfAskedOrAnswer": True},
                      typDic])
 
-definition = [header, definitions, other, footer]
+definitions = addBoilerplate([
+    names(),
+    notations,
+    hr,
+    _definitions
+])

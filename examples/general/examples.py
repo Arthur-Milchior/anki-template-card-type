@@ -1,47 +1,105 @@
 from ...generators import *
+from ..util import *
+from .names import names
 
+def _appliedTo(i):
+    """On {{applied to}}: {{Example}}"""
+    appliedTo = f"Applied to{empty1(i)}"
+    example = f"Example{empty1(i)}"
+    DecoratedField(prefix="On ",
+                   label={appliedTo},
+                   field=example,
+                   suffix="")
 
-def _example(i=""):
-    appliedTo = f"Applied to{i}"
-    example = f"Example{i}"
+def exampleLine(i=""):
+    """Either
+    On {{applied to}}: {{Example}}
+    or
+    {{Example}} """
+    appliedTo = f"Applied to{empty1(i)}"
+    exampleField = f"Example{empty1(i)}"
     return FilledOrEmpty(appliedTo,
-                         DecoratedField(prefix="On ",
-                                        label={appliedTo},
-                                        field=example,
-                                        suffix=""),
-                         QuestionnedField(example, classes="Example"))
+                         _appliedTo(i),
+                         DecoratedField(exampleField, classes="Example", emphasizing=decorateQuestion))
+
+def _exampleAsked(i):
+    """
+    Line of Example 3
+    Line of Example 4
+    Line of Example 1
+    Ask example 2
+    """
+    l = []
+    for j in range(i + 1, i + 4):
+        if j > 4:
+            j -= 4
+        l.append(exampleLine(j))
+    l.append(AskedField(f"Example{empty1(i)}", question="Or ?"))
+    return addBoilerplate(UL(l))
+    
+
+def exampleAsked(i):
+    """All necessary text to ask i-th example"""
+    appliedToField = f"""Applied to{empty1(i)}"""
+    exampleField = f"Example{empty1(i)}"
+    example = FilledOrEmpty(appliedToField,
+                            _appliedTo(i),
+                            _exampleAsked(i)
+    )
+    example = example.assumeAsked(exampleField)
+    example = addBoilerplate(example, exampleField)
+    if i == 1:
+        # ask example 1 separately only if there are multiple examples
+        example = Filled("Example2", example)
+    return example
+
+"""Show all examples"""
+def examples(prefix=None):
+    return Filled("Example",
+                  [prefix,
+                   FilledOrEmpty("Example2",
+                                UL([exampleLine(i) for i in range (1,5)]),
+                                 exampleLine(1)
+                   )]
+    )
+
+"""Ask all examples"""
+examplesAsked = addBoilerplate(
+    [names(), examples(prefix=hr)], "Example"
+).assumeAsked(["Example", "Example2", "Example3", "Example4"])
 
 
-def localFun(i):
-    example = f"Example{i}"
-    child = LI(_example(i))
-    return {"child": child,
-            "questions": {example},
-            "filledFields": [example]}
+
+# def localFun(i):
+#     example = f"Example{i}"
+#     child = LI(_example(i))
+#     return {"child": child,
+#             "questions": {example},
+#             "filledFields": [example]}
 
 
-_examples = ('Example',
-             PotentiallyNumberedFields('Example',
-                                       4,
-                                       suffix=hr,
-                                       localFunMultiple=localFun,
-                                       singleCase=DecoratedField(label="Example",
-                                                                 field="Example",
-                                                                 child=_example(
-                                                                     ""),
-                                                                 suffix=hr),
-                                       isMandatory=False))
-_counterexamples = ('Counterexample', PotentiallyNumberedFields(
-    'Counterexample', 4, isMandatory=False, suffix=hr))
+# _examples = ('Example',
+#              PotentiallyNumberedFields('Example',
+#                                        4,
+#                                        suffix=hr,
+#                                        localFunMultiple=localFun,
+#                                        singleCase=DecoratedField(label="Example",
+#                                                                  field="Example",
+#                                                                  child=_example(
+#                                                                      ""),
+#                                                                  suffix=hr),
+#                                        isMandatory=False))
+# _counterexamples = ('Counterexample', PotentiallyNumberedFields(
+#     'Counterexample', 4, isMandatory=False, suffix=hr))
 
 
-def showOnAnswerOrQuestion(child, Name):
-    return QuestionOrAnswer(AtLeastOneField(child,
-                                            [f"{Name}{i}" for i in [
-                                                "s", "", "2", "3", "4"]],
-                                            asked=True),
-                            child)
+# def showOnAnswerOrQuestion(child, Name):
+#     return QuestionOrAnswer(AtLeastOneField(child,
+#                                             [f"{Name}{i}" for i in [
+#                                                 "s", "", "2", "3", "4"]],
+#                                             asked=True),
+#                             child)
 
 
-examples = showOnAnswerOrQuestion(_examples, "Example")
-counterexamples = showOnAnswerOrQuestion(_counterexamples, "Counterexample")
+# examples = showOnAnswerOrQuestion(_examples, "Example")
+# counterexamples = showOnAnswerOrQuestion(_counterexamples, "Counterexample")

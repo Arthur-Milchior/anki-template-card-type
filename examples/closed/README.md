@@ -51,7 +51,7 @@ For this note type I need 4 kinds of fields:
 ### Python
 As usual, I begin by importing the library of this addon with:
 ```
-from .general import short_header, footer
+from .general import header, footer
 ```
 
 #### Label

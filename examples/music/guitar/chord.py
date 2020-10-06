@@ -1,4 +1,4 @@
-from ..generators import *
+from ....generators import *
 
 name = CLASS(["Name", "Chord name"],
              [QuestionnedField("Base", isMandatory=True, classes="Definition"),

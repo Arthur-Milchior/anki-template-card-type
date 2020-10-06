@@ -1,6 +1,6 @@
 from ..generators import *
-from .general.foot import footer
-from .general.head import header
+from .general.footer import footer
+from .general.header import header
 from .general.typ import typDic
 
 
@@ -36,18 +36,34 @@ def song(nb, nbQuestions):
                             globalFun=identity)
     if nbQuestions == 1:
         questions = frozenset({toField(nb)})
+        mandatories = frozenset({toField(nb if nb % 10 != 1 else nb+1)})
+        # if this part has a single line, don't generate this card since it's also the current part.
     elif nbQuestions == 2:
+        assert nb >= 2
         questions = frozenset({toField(nb), toField(nb-1)})
+        mandatories = frozenset({toField(nb+1 if nb % 10 != 2 else nb+1)})
+    # if this part has at most two lines, don't generate this card since it's also the current part.
     else:
         assert nbQuestions % 10 == 0
         nbParts = nbQuestions // 10
         if nbParts == 1:
+            assert nb >= 10
             questions = frozenset({toPart(nb//10)})
+            mandatories = frozenset({toField(nb-9 if nb != 10 else 11)})
+            # if the song has a single part, don't generate this card since it's also the whole song
         elif nbParts == 2:
+            assert nb >= 20
             questions = frozenset({toPart(nb//10), toPart(nb//10-1)})
+            mandatories = frozenset({toField(nb-9 if nb != 20 else 21)})
+            # if the song has at most two parts, don't generate this card since it's also the whole song
         elif nbParts == 20:
-            questions = frozenset({toPart(nb) for nb in range(1, 21)})
+            assert nb >= 200
+            questions = frozenset({toField(nb) for nb in range(1, 21)})
+            mandatories = frozenset()
         else:
             assert False
     lyrics = lyrics.getNormalForm().assumeAsked(questions)
-    return [prefix, lyrics]
+    r = [prefix, lyrics]
+    for filled_field in mandatories:
+        r = Filled(filled_field, r)
+    return r

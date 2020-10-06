@@ -5,9 +5,20 @@ from ..conditionals.numberOfField import AtLeastOneField
 from ..conditionals.questionOrAnswer import QuestionOrAnswer
 from ..generators import Gen, NotNormal
 from ..html.atom import br, markOfQuestion
-from ..html.html import CLASS
+from ..html.html import * 
 from ..leaf import Field, Leaf
 
+class AskedField(QuestionOrAnswer):
+    """Ask the field on question side, answer on the other side
+
+    emphasizing -- function to apply to element we want to emphasize
+    question -- The question to ask. By default the field name."""
+    def __init__(self, field, question=None, emphasizing=None):
+        if emphasizing is None:
+            emphasizing = lambda x:x
+        if question is None:
+            question = field
+        super().__init__([emphasizing(question), "?"], emphasizing(Field(field)))
 
 class QuestionnedField(AskedOrNot):
     """Show the content of the field. Unless the field is asked and its the question, then show ???
@@ -15,7 +26,13 @@ class QuestionnedField(AskedOrNot):
     This can be parametrized as any branch. To forbid the use of
     questionAsked, assign it to False.
 
-    field is either a field name, or a Field object. It becomes the name of the Branch.
+    field -- either a field name, or a Field object. The generator behaves differently depending on whether this field is asked
+    classes -- classes to apply to all instance of the child. Field name if None. Not applied if not useClasses
+    child -- the principal generator, to which class and tag may be applied depending on question/answer and what is asked
+    isMandatory -- fails if the field is not present in the note type
+    useClasses -- whether the name of the field, or the classes should be applied to this field.
+    suffix -- after child, with same transformations
+    emphasizing -- function to apply to element we want to emphasize
     """
 
     def __init__(self,
@@ -23,14 +40,13 @@ class QuestionnedField(AskedOrNot):
                  classes=None,
                  child=None,
                  isMandatory=False,
-                 emphasize=True,
                  useClasses=True,
+                 emphasizing=None,
                  suffix=None,
                  **kwargs):
-        """
-        useClasses -- whether the name of the field/classes should be applied to this field.
-        emphasize -- apply emphasize and Answer on answer side when this is asked
-        """
+
+        if emphasizing is None:
+            emphasizing = lambda x:x
 
         # Getting both the field and its name
         if isinstance(field, str):
@@ -49,9 +65,8 @@ class QuestionnedField(AskedOrNot):
             self.classes = [self.classes]
         if useClasses is False:
             self.classes = []
-        self.emphasize = ["Answer", "Emphasize"] if emphasize else []
-        self.classesAsked = self.emphasize + self.classes
-
+        self.classesAsked = ["Answer", "Emphasize"] + self.classes
+        
         # Setting the child
         self.child = child
         if self.child is None:
@@ -62,8 +77,9 @@ class QuestionnedField(AskedOrNot):
             self.child = [self.child, suffix]
 
         self.asked = QuestionOrAnswer(markOfQuestion,
-                                      CLASS(self.classesAsked,
-                                            self.child))
+                                      emphasizing(
+                                          CLASS(self.classesAsked,
+                                                self.child)))
         self.notAsked = CLASS(self.classes,
                               self.child)
 
@@ -78,17 +94,22 @@ class QuestionnedField(AskedOrNot):
 
 class Label(QuestionOrAnswer):
     """Apply classes to the label on question side if one of the fields is
-    asked.
+    asked. I.e.
+
+    "<H2>Definition</H2>" if definition is asked, and "Definition" otherwise
 
     label -- the content shown
-    classes -- the classes to apply to the label
+    classes -- the classes to apply to the label if emphasized. If None, field is applied
     fields -- if one of those values is asked, the label is emphasized
+    emphasizing -- function to apply to elements to emphasize
+    alwaysUseClasses -- whether to use classe even when no reason to emphasize
     """
 
     def __init__(self,
                  label,
                  fields,
                  classes=None,
+                 emphasizing=None,
                  alwaysUseClasses=True):
         # Classes
         self.classes = classes
@@ -96,9 +117,11 @@ class Label(QuestionOrAnswer):
             self.classes = [label]
         if isinstance(self.classes, str):
             self.classes = [self.classes]
-        self.questionnedClasses = ["Question", "Emphasize"]+self.classes
+        self.questionnedClasses = ["Question", "Emphasize"] + self.classes
 
-        emphasized = CLASS(self.questionnedClasses, label)
+        if emphasizing is None:
+            emphasizing = lambda x:x
+        emphasized = emphasizing(CLASS(self.questionnedClasses, label))
 
         if alwaysUseClasses:
             notEmphasized = CLASS(self.classes, label)
@@ -113,11 +136,20 @@ class Label(QuestionOrAnswer):
 
 
 class DecoratedField(Filled):
-    """A questionned field, preceded by some way to ask the question.
-    If there is no question, nothing is printed.
+    """Nothing if field is empty
+    Otherwise:
+    "prefix, label, infix, child, suffix"
+    "Definition ???"/"Definition {{Definition}}"
 
-    Emphasize -- whether to add Emphasize and Question/Answer class when this field is asked.
-    useClasses -- whether to use the name of the field/classes on label and question
+    field -- The field that should be present, and is asked
+    infix -- gen between label and field content
+    prefix -- gen before label
+    suffix -- gen after label
+    classes -- classes to apply to element to emphasize. I.e. label in question and field in answer
+    child -- the part corresponding to the answer. By default a questionned field
+    isMandatory -- fails if the field is not in the note type
+    useClasses -- whether to use the name of the field/classes on the question
+    emphasizing -- How to emphasize elements
     """
 
     def __init__(self,
@@ -126,12 +158,11 @@ class DecoratedField(Filled):
                  infix=": ",
                  prefix=None,
                  suffix=br,
-                 toKeep=True,
                  classes=None,
                  child=None,
                  isMandatory=False,
                  useClasses=True,
-                 emphasize=True,
+                 emphasizing=None,
                  **kwargs):
         """field -- a field object, or a string"""
         self.prefix = prefix
@@ -146,22 +177,17 @@ class DecoratedField(Filled):
             self.label = self.field.field
         else:
             self.label = label
-        if classes is None:
-            self.classes = [self.field.field]
-        else:
-            self.classes = classes
+        self.classes = [self.field.field] if classes is None else classes
         if self.child is None:
             self.child = QuestionnedField(field=self.field,
                                           classes=self.classes,
                                           isMandatory=isMandatory,
                                           useClasses=useClasses,
-                                          emphasize=emphasize)
-        if emphasize:
-            labelGen = Label(label=self.label,
-                             fields=[self.field.field],
-                             classes=self.classes)
-        else:
-            labelGen = self.label
+                                          emphasizing=emphasizing)
+        labelGen = Label(label=self.label,
+                         fields=[self.field.field],
+                         emphasizing=emphasizing,
+                         classes=self.classes)
 
         super().__init__(field=self.field.field,
                          child=[
