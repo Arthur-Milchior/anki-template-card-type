@@ -1,6 +1,8 @@
 from ..generators import *
-from .definition.definition import definitions
+from .definition.definition import _definitions
+from .general.namesNotationsDenotedBy import namesNotationsDenotedBy
 from .general import footer, header
+from .util import *
 
 properties = TableFields(
     [
@@ -11,8 +13,10 @@ properties = TableFields(
         "Linearity",
         "Associative",
         "Commutative",
+        "Zero",
+        "Unit",
     ],
     name="Properties"
 )
 
-binaryfunction = [header, definitions, properties, footer]
+binaryfunction = addBoilerplate([namesNotationsDenotedBy, _definitions, properties])

@@ -1,5 +1,7 @@
 from ..generators import *
 from .general import footer, header
+from .util import *
+from .general import namesNotationsDenotedBy
 
 properties = TableFields([
     {"field":   "Location",
@@ -8,4 +10,4 @@ properties = TableFields([
      "classes": "Definition2"},
 ])
 
-graphical = [header, properties, footer]
+graphical = addBoilerplate([namesNotationsDenotedBy, properties])

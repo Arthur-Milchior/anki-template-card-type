@@ -1,27 +1,85 @@
 from ..generators import *
-from .general.footer import footer
-from .general.header import header
 from .general.typ import typDic
+from .general.examples import examples
+from .general.namesNotationsDenotedBy import namesNotationsDenotedBy
+from .util import addBoilerplate, empty1
+
+typDicLanguage = {"field": "Typ",
+                  "label": "Type",
+                  "filledFields": ["Typ"],
+                  "questions": {"Typ"},
+                  "function": lambda i: code("Language")({f"Typ"}),
+}
+
+def code(languageField):
+    """A function which add tag ensuring that the child is interpreted as code in language `language` or given in the field
+    `languageField`."""
+    def aux(child, **kwargs):
+        return FilledOrEmpty(languageField,
+                      PRE(
+                          child=CODE(
+                              child=child,
+                              attrs={"class": "{{" + languageField + "}}"},
+                              **kwargs
+                          ),
+                          **kwargs
+                      ),
+                      child)
+    return aux
+    
+def codeLanguageFixed(language, field_name):
+    assert language
+    def aux(index, **kwargs):
+        return PRE(
+            child=CODE(
+                child={field_name},
+                attrs={"class": language},
+                **kwargs
+            )
+        )
+    return aux
 
 cs_context_ = [
+    {"field": "Code context",
+     "classes": "context",
+     "function": lambda i: code("Language")({"Code context"})
+    },
     {"field": "Library",
      "classes": "context"},
     {"field": "Program",
      "classes": "context"},
     {"field": "Where to use it",
-     "classes": "context"}]
+     "classes": "context"},
+    {"field": "Prefix",
+     "classes": "context",
+     "function": codeLanguageFixed("sh", "Prefix"),
+    }
+]
 cs_context = TableFields(cs_context_,
                          isMandatory=False,
                          name="CS context",
                          suffix=hr)
 name_ = [
     {"field": "Instruction",
-     "classes": "Notation"},
+     "classes": "Notation",
+     "function": lambda i: code("Language")({f"Instruction{empty1(i)}"}),
+    },
+    {"field": "Long flag",
+     "classes": "Notation",
+     "function": codeLanguageFixed("sh", "Long flag"),
+    },
     {"field": "Variable",
-     "classes": "Notation"},
+     "classes": "Notation",
+     "function": lambda i: code("Language")({f"Variable"}),
+    },
     {"field": "Shortcut",
      "classes": ["Abbreviation", "Shortcut"]},
-    "Abbreviation",
+    {"field": "Abbreviation",
+     "classes": ["Abbreviation", "Shortcut"]},
+    {"field": "Short flag",
+     "classes": ["Abbreviation", "Shortcut"],
+     "function": codeLanguageFixed("sh", "Short flag"),
+    },
 ]
 name = TableFields(name_,
                    isMandatory=False,
@@ -45,9 +103,10 @@ values = PotentiallyNumberedFields("Value",
 
 problem_ = ["Input",
             "Returns",
+            "Print",
             "Effect",
             "Meaning",
-            typDic,
+            typDicLanguage,
             "Subtype of",
             "Default",
             "Initialization",
@@ -58,8 +117,23 @@ problem = TableFields(problem_,
                       name="Description",
                       suffix=hr
                       )
+def impl_code(field: str):
+    return {
+        "field": field,
+        "child": code("Language")({field})
+        }
 
-implementation = PotentiallyNumberedFields("Implementation", 4, suffix=hr)
+implementation = PotentiallyNumberedFields(
+    "Implementation", 4,
+    suffix=hr,
+    localFunMultiple=impl_code,
+    singleCase=DecoratedField(
+        "Implementation",
+        child=
+        QuestionnedField(
+            "Implementation",
+            child=code("Language")(P({"Implementation"})))))
+
 exceptions = PotentiallyNumberedFields("Exception", 5, suffix=hr)
 all_ = TableFields(cs_context_ +
                    name_ +
@@ -67,15 +141,19 @@ all_ = TableFields(cs_context_ +
                    complexity_,
                    isMandatory=False,
                    suffix=hr)
-tout = [header,
-        cs_context,
-        name,
-        problem,
-        values,
-        implementation,
-        complexity,
-        exceptions,
-        footer]
+tout = addBoilerplate([
+    CSS("_github.css"),
+    SCRIPT("_highlight.pack.js"),
+    SCRIPT("_highlight_automatic.js"),
+    namesNotationsDenotedBy,
+    cs_context,
+    name,
+    problem,
+    values,
+    implementation,
+    complexity,
+    exceptions,
+    examples()])
 
 
 # CS_header= header+[problem,DecoratedField("Abstract data structures")]

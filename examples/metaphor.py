@@ -1,5 +1,6 @@
 from ..generators import *
 from .general import footer, header
+from .util import *
 
 numbers = [""]+[str(i) for i in range(2, 6)]
 sides = ["Left", "Right"]
@@ -15,4 +16,4 @@ table = Table(
 )
 
 
-metaphor = [header, table, footer]
+metaphor = addBoilerplate(table)

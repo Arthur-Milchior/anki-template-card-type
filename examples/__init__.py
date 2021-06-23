@@ -8,10 +8,10 @@ from .category import category
 from .closed.closed import *
 from .combinatorics import (combinatoric_numeric, combinatoric_symbolic,
                             combinatoric_symbolic2, combinatorics)
-from .constant import constant, typedNumber
+from .constant import constant, typedNumber, represented, represented2
 from .CS import (algorithm, commandLine, dataStructure, instruction, noteType,
                  problem, variable)
-from .definition.definition import definitions
+from .definition.definition import definitions, definitions_names_end
 from .face.face import face
 from .fingering import fingering
 from .functor import functor
@@ -28,7 +28,7 @@ from .ordinal import ordinal
 from .pianoScale.pianoScale import pianoScale
 from .programmingLanguage import programmingLanguage
 from .question import questionGen
-from .relation.relation import decreasing, increasing, relation
+from .relation.relation import decreasing, increasing, relation, increasing_meta, relation_example, relation_counter_example
 from .scale.scale import scale
 # from .shortQuestions import (abbreviation, abbreviation2, abbreviation3,
 #                              english, english2, etymology, etymology2, french,

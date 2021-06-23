@@ -1,5 +1,6 @@
 from ..generators import *
-from .general import footer, header
+from .general import footer, header, namesNotationsDenotedBy
+from .util import *
 
 definition_ordinal = TableFields(
     name="Definition",
@@ -73,4 +74,4 @@ properties_ = TableFields(
 
 properties = HideInSomeQuestions(
     ["Arrows", "Objects", "Compositions", "Definition"], properties_,)
-category = [header, definition_ordinal, properties, footer]
+category = addBoilerplate([namesNotationsDenotedBy, definition_ordinal, properties])

@@ -3,6 +3,7 @@ from ..definition.definition import definitions
 from ..general.footer import footer
 from ..general.header import header
 from ..util import *
+from ..style import *
 
 header = [header, {"Name"}, " ", {
     "Composer"}, br, {"Speed"}, ", ", {"Rythm"}]
@@ -55,7 +56,7 @@ definitions = PotentiallyNumberedFields(fieldPrefix="Subpart",
                                         infix="",
                                         applyToGroup=grouping,
                                         groupSize=4)
-learn_sheet = addBoilerplate([ music, definitions, hr], "Learn")
+learn_sheet = addBoilerplate([header, music, definitions, hr], "Learn")
 
 
 def practice(*args):

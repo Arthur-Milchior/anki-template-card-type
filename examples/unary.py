@@ -1,5 +1,6 @@
 from ..generators import *
-from .general import footer, header
+from .general import footer, header, namesNotationsDenotedBy
+from .util import *
 
 definition = TableFields(
     fields=[
@@ -36,4 +37,4 @@ properties = TableFields([
 
 ])
 
-unary = [header, definition, properties, footer]
+unary = addBoilerplate([namesNotationsDenotedBy, definition, properties])

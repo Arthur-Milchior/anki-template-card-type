@@ -42,6 +42,13 @@ class HTMLAtom(Leaf):
 br = HTMLAtom("br")
 hr = HTMLAtom("hr")
 
+class CSS(HTMLAtom):
+    def __init__(self, path):
+        super().__init__("link", {"rel": "stylesheet", "href": path})
+
+class SCRIPT(HTMLAtom):
+    def __init__(self, path):
+        super().__init__("script", {"src": path})
 
 class Image(HTMLAtom):
     def __init__(self, url):

@@ -1,6 +1,7 @@
 from ..generators import *
 from .definition.definition import definitions
-from .general import footer, header
+from .general import footer, header, namesNotationsDenotedBy
+from .util import *
 
 properties = TableFields([
     "Strong limit",
@@ -70,4 +71,4 @@ properties = TableFields([
     "N superhuge",
 ])
 
-cardinal = [header, definitions, properties, footer]
+cardinal = addBoilerplate([namesNotationsDenotedBy, definitions, properties])

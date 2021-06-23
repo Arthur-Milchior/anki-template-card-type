@@ -1,8 +1,9 @@
 from ...generators import *
-from ..general.footer import footer
-from ..general.header import header
+from ..general.namesNotationsDenotedBy import *
 from ..general.typ import typDic
 from .name import algebra_name_formatted
+from ..util import *
+from ..style import *
 
 inner_function = TableFields(
     [
@@ -39,6 +40,7 @@ inner_function = TableFields(
         {"field":    "◁",
          "classes": "Definition5"},
     ],
+    emphasizing=decorateQuestion,
     name="Inner functions",
     suffix=hr
 )
@@ -88,13 +90,16 @@ properties = TableFields(
      "Faithful",
      "Minimals",
      "Maximals",
-     "Well-founded"
+     "Well-founded",
+     "Units",
+     "Zero divisors",
      ],
     name="Properties"
 )
 
-algebra = [header,
-           algebra_name_formatted,
-           definition,
-           properties,
-           footer]
+algebra = addBoilerplate([
+    namesNotationsDenotedBy,
+    algebra_name_formatted,
+    definition,
+    properties,
+])

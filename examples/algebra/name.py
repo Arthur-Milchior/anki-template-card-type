@@ -36,7 +36,7 @@ ringCom1 = FOE('/',
                )
 
 ring1 = FOE('Commutative',
-            'RingCom1',
+            ringCom1,
             FOE('/',
                 "Division ring",
                 "Unit ring",

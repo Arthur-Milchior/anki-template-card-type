@@ -1,22 +1,22 @@
 from ...generators import *
 from ..util import *
+from ..style import *
 from .names import names
 
-singleCounterexampleAsked = decorateQuestion("Counterexample")
-singleCounterexample = AskedOrNot("Counterexamples",
+singleCounterexampleAsked = QuestionnedField("Counterexample")
+singleCounterexample = AskedOrNot("Counterexample",
                         singleCounterexampleAsked,
                         decorateName(Field("Counterexample"))
 )
 
-counterexamplesAsked = decorateQuestion("Counterexamples")
-
 def counterexampleLine(i):
-    return f"Counterexample{empty1(i)}"
+    counterExampleField = f"Counterexample{empty1(i)}"
+    return Filled(counterExampleField, LI(QuestionnedField(counterExampleField, emphasizing=decorateQuestion)))
 
 allCounterexamples = UL([counterexampleLine(i) for i in range(1, 5)])
-counterexamples = Filled("Counterexample", FilledOrEmpty("Counterexample2", singleCounterexample, allCounterexamples))
+counterexamples = Filled("Counterexample", FilledOrEmpty("Counterexample2", allCounterexamples, singleCounterexample))
 
-def counterexampleAsked(i):
+def counterexampleAsked_(i):
     """Give all information about given counterexample and ask counterexample i"""
     l = []
     for j in range(i + 1, i + 4):
@@ -24,14 +24,23 @@ def counterexampleAsked(i):
             j -= 4
         l.append(counterexampleLine(j))
     l.append(AskedField(f"Counterexample{empty1(i)}", question="Or ?"))
-        # ask example 1 separately only if there are multiple examples
-    counterexample = addBoilerplate([names(), hr, UL(l)])
-    if i == 1:
-        # ask counterexample 1 separately only if there are multiple counterexamples
-        counterexample = Filled("Counterexample2", counterexample)
-    return counterexample
+    return UL(l, addLi=False)
+
+def counterexampleAsked(i):
+    return Filled(f"Counterexample{empty1(i)}",
+                  Filled("Counterexample2",
+                         addBoilerplate(
+                             [
+                                 names(),
+                                 hr,
+                                 decorateSection("Counter-example(s)"),
+                                 counterexampleAsked_(i)]
+                         )))
 
 
-counterexamplesAsked = addBoilerplate(
-    [names(suffix=hr), counterexamples], "Counterexample"
-).assumeAsked(["Counterexample", "Counterexample2", "Counterexample3", "Counterexample4"])
+def counterexamplesAskedParam(content=names(suffix=hr)):
+    return addBoilerplate(
+        [content, DecoratedField("Counterexample", child=counterexamples)],  "Counterexample"
+    )
+
+counterexamplesAsked = counterexamplesAskedParam()

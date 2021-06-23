@@ -1,5 +1,8 @@
 from ..generators import *
-from .general import footer, header
+from .general import footer, header, namesNotationsDenotedBy
+from .util import addBoilerplate
+from .general.examples import examples
+from .general.counterexamples import counterexamples
 
 definition = TableFields(
     fields=[
@@ -20,5 +23,6 @@ properties = TableFields([
     ["Stable on left",
      "Stable on right"]
 ])
+_binaryrelation = [namesNotationsDenotedBy, definition, properties, examples(), counterexamples]
+binaryrelation = addBoilerplate(_binaryrelation)
 
-binaryrelation = [header, definition, properties, footer]

@@ -1,5 +1,6 @@
 from ..generators import *
 from .general import footer, header
+from ..util import *
 
 definition_bar = TableFields(
     name="Bar",
@@ -7,4 +8,4 @@ definition_bar = TableFields(
 )
 properties = TableFields([])
 
-bar = [header, definition_bar, properties, footer]
+bar = addBoilerplate([definition_bar, properties])

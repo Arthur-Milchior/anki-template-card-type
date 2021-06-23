@@ -166,3 +166,6 @@ class CLASS(HTML):
             return self.getChild().getNormalForm()
         else:
             return super()._getNormalForm()
+
+PRE = _fixedTag("pre")
+CODE = _fixedTag("code")

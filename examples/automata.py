@@ -1,9 +1,10 @@
 from ..generators import *
-from .general import footer, header
+from .util import *
+from .general import namesNotationsDenotedBy
 
-automata = [
-    header,
-    ("Typ", [{"Typ"}, ":"]),
+automata = addBoilerplate([
+    namesNotationsDenotedBy,
+    ("Typ", [QuestionnedField("Typ"), ":"]),
     TableFields(
         name="Automata",
         fields=[
@@ -28,6 +29,5 @@ automata = [
             {"field": "Labeling function",
              "classes": "Definition8"},
             {"field": "Clock number",
-             "classes": "Definition9"}]),
-    footer
-]
+             "classes": "Definition9"}])
+])

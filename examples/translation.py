@@ -1,5 +1,6 @@
 from ..generators import *
 from .util import *
+from .style import *
 
 def translationToEnglish(language):
     l = [CLASS("quote", Field(language)),

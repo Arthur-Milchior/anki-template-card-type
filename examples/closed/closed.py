@@ -3,29 +3,50 @@ from ...generators.ensureGen import ensureGen
 from ..general import footer, header
 
 from ..util import *
+from ..style import *
 
 _label = [Field("Name", isMandatory=True), " "]
 
 def _no(i):
     return Filled(f"Not{empty1(i)}",
                     "not ")
+def _counterExample(i, onAnswer=None):
+    counterExample = f"CounterExample{empty1(i)}"
+    if onAnswer is None:
+        onAnswer = lambda x: x
+    return Filled(counterExample, [hr, onAnswer(Field(counterExample))])
 
-def _line(i, onAnswer=None):
+
+def _line(i, is_question, onAnswer=None):
     """ is {{not}} closed under {{under}} when {{condition}}.
     onAnswer -- what to do to important part of the answer"""
     if onAnswer is None:
         onAnswer = lambda x: x
-    i = empty1(i)
-    underField = f"Under{i}"
-    conditionField = f"Condition{i}"
-    return [" is ", _no(i), " closed under ", onAnswer(Field(underField)), Filled(conditionField, [" when ", onAnswer(Field(conditionField))])]
+    empty_i = empty1(i)
+    underField = f"Under{empty_i}"
+    conditionField = f"Condition{empty_i}"
+    closureField = f"Closure{empty_i}"
+    closure = FilledOrEmpty(closureField,
+                            FilledOrEmpty(f"Not{empty1(empty_i)}",
+                                          _no(empty_i),
+                                          [" ", {closureField}, " "],
+                            ),
+                            [" is ", _no(empty_i), " closed under "])
+    return [
+        closure,
+        onAnswer(Field(underField)),
+        Filled(conditionField, [" when ", onAnswer(Field(conditionField))]),
+        _counterExample(i, onAnswer),
+    ]
 
 def closedWhen(i):
     i = empty1(i)
     underField = f"Under{i}"
     conditionField = f"Condition{i}"
-    question = [" is closed under ", Field(underField), decorateQuestion(" when ")]
-    answer = [" ", _line(i, onAnswer=decorateQuestion)]
+    closureField = f"Closure{i}"
+    closure = FilledOrEmpty(closureField, [" ", {closureField}, " "], " is closed under ")
+    question = [closure, Field(underField), decorateQuestion(" when ")]
+    answer = [" ", _line(i, True, onAnswer=decorateQuestion)]
     return addBoilerplate([_label, QuestionOrAnswer(question, answer)], underField)
 
 nbClosure = 11
@@ -35,17 +56,22 @@ def closedMissing(i):
         if j > nbClosure:
             j -= nbClosure
         underField = f"Under{empty1(j)}"
-        l.append(Filled(underField, LI(_line(j))))
+        l.append(Filled(underField, LI(_line(j, False))))
     l.append(
         LI(QuestionOrAnswer(decorateQuestion("and ?"),
-                            _line(i, onAnswer=decorateQuestion)
+                            _line(i, True, onAnswer=decorateQuestion)
     )))
-    return addBoilerplate([_label, UL(l, addLi=False)])
+    return addBoilerplate([
+        _label,
+        UL(l, addLi=False),
+    ],
+                          {f"Under{empty1(i)}"}
+    )
 
 allCloses = addBoilerplate(
     [_label,
      QuestionOrAnswer([" is ", br, decorateQuestion("closed under"), "?"],
-                      UL([Filled(f"Under{empty1(j)}", LI(_line(j, onAnswer=decorateQuestion))) for j in range(1,nbClosure+1)]
+                      UL([Filled(f"Under{empty1(j)}", LI(_line(j, False, onAnswer=decorateQuestion))) for j in range(1,nbClosure+1)]
                          , addLi=False))]
 )
 

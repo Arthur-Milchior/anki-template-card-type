@@ -1,5 +1,8 @@
 from ..generators import *
 from .general import footer, header
+from .general.namesNotationsDenotedBy import namesNotationsDenotedBy
+from .util import *
+from .style import *
 
 definition_stats = TableFields(
     fields=[
@@ -14,6 +17,6 @@ definition_stats = TableFields(
     ], answer=" computation"
 )
 properties = TableFields(["Mean", "Median", "Mode", ["Variance", "Standard deviation"], "Skewness", "Kurtosis",
-                          "Nth moment", "Nth factorial moment", "Nth cumulant", "Nth central moment"], answer=" computation")
+                          "Nth moment", "Nth factorial moment", "Nth cumulant", "Nth central moment"], answer=" computation", emphasizing=decorateQuestion)
 
-statistical_distribution = [header, definition_stats, properties, footer]
+statistical_distribution = addBoilerplate([namesNotationsDenotedBy, definition_stats, properties])

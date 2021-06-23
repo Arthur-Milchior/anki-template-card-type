@@ -32,7 +32,7 @@ class ToAsk(NoPrint):
     """
     questionAsked -- associating a key to the set of model in which it was asked
     setQuestions -- the set of questions one may ask
-"""
+    """
     @debugInit
     def __init__(self, setQuestions, *args, **kwargs):
         self.setQuestions = frozenset(setQuestions)

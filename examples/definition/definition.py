@@ -1,15 +1,17 @@
 from ...generators import *
 from ..general.footer import footer
 from ..general.header import header
+from ..general.namesNotationsDenotedBy import namesNotationsDenotedBy
 from ..general.names import names
 from ..general.notations import notations
 from ..general.typ import typDic
 from ..util import *
+from ..style import *
 
 labelDef = [Filled("DefType",
                    [QuestionnedField("DefType",
                                      isMandatory=True),
-                    " such that "]),
+                    Empty("Conjdef", " such that ")]),
             FilledOrEmpty("Conjdef",
                           QuestionnedField("Conjdef", ["Conjdef"]),
                           Filled("Definition2",
@@ -81,8 +83,14 @@ other = TableFields([{"field": "Construction",
                      typDic])
 
 definitions = addBoilerplate([
-    names(),
-    notations,
+    namesNotationsDenotedBy,
     hr,
-    _definitions
+    _definitions,
+    other,
+])
+definitions_names_end = addBoilerplate([
+    _definitions,
+    other,
+    hr,
+    namesNotationsDenotedBy,
 ])

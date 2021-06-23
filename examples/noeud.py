@@ -1,5 +1,7 @@
 from ..generators import *
 from .general import footer, header
+from .util import addBoilerplate
+from .general import namesNotationsDenotedBy
 
 
 def localFun(i):
@@ -37,7 +39,7 @@ properties = TableFields(
 
 
 def noeudContruction(i):
-    return [header, steps(i), footer]
+    return addBoilerplate([namesNotationsDenotedBy, properties , steps(i)])
 
 
 noeud = noeudContruction(5)

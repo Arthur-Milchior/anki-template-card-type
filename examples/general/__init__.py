@@ -8,6 +8,6 @@ from .notations import notations, notationAsked
 from .header import header
 from .denotedBy import denotedBy
 from .representation import *
-from .etymology import etymology
+from .etymology import *
 from .language import *
 from .abbreviation import *

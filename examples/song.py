@@ -36,12 +36,12 @@ def song(nb, nbQuestions):
                             globalFun=identity)
     if nbQuestions == 1:
         questions = frozenset({toField(nb)})
-        mandatories = frozenset({toField(nb if nb % 10 != 1 else nb+1)})
+        mandatories = frozenset({toField(nb if nb % 10 != 1 else nb+1)} | {"one-line"})
         # if this part has a single line, don't generate this card since it's also the current part.
     elif nbQuestions == 2:
         assert nb >= 2
         questions = frozenset({toField(nb), toField(nb-1)})
-        mandatories = frozenset({toField(nb+1 if nb % 10 != 2 else nb+1)})
+        mandatories = frozenset({toField(nb+1 if nb % 10 != 2 else nb+1)} | {"two-lines"})
     # if this part has at most two lines, don't generate this card since it's also the current part.
     else:
         assert nbQuestions % 10 == 0
@@ -58,7 +58,7 @@ def song(nb, nbQuestions):
             # if the song has at most two parts, don't generate this card since it's also the whole song
         elif nbParts == 20:
             assert nb >= 200
-            questions = frozenset({toField(nb) for nb in range(1, 21)})
+            questions = frozenset({toField(nb) for nb in range(1, 201)})
             mandatories = frozenset()
         else:
             assert False

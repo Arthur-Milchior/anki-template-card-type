@@ -1,5 +1,6 @@
 from ..generators import *
-from .general import footer, header
+from .general import footer, header, namesNotationsDenotedBy
+from .util import *
 
 
 def tf(*arg, **kwargs):
@@ -178,6 +179,6 @@ others = tf(name="Other",
 
 properties = [compactness, bounded, points, sets, separations, connexion,
               group, cardinal, others]
-topology = [header, definition_topology, properties, footer]
+topology = addBoilerplate([namesNotationsDenotedBy, definition_topology, properties])
 topologyBody = topology
 topologyHead = topology

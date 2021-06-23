@@ -1,7 +1,8 @@
 from ..generators import *
 from .general import footer, header
 from .util import *
-from .general.names import names
+from .style import *
+from .general import namesNotationsDenotedBy
 from .general.examples import examples
 
 answers = PotentiallyNumberedFields("Answer",
@@ -12,7 +13,7 @@ answers = PotentiallyNumberedFields("Answer",
 
 questionGen = addBoilerplate(
     [
-        names(suffix=hr),
+        namesNotationsDenotedBy,
         answers,
         hr,
         ShowIfAskedOrAnswer("Construction",

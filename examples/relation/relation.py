@@ -1,5 +1,8 @@
 from ...generators import *
-from ..general import footer, header
+from ..util import *
+from ..general import *
+from ..general.examples import examplesAskedParam
+from ..general.counterexamples import counterexamplesAskedParam
 
 
 def suspend(when):
@@ -83,7 +86,7 @@ listOfSideFieldNames = ["Smallest",
 
 
 def df(fieldName, suffix=None, prefix=None):
-    return DecoratedField(label="", infix=None, field=fieldName, suffix=suffix, prefix=prefix, classes="Side")
+    return DecoratedField(label="", infix=None, field=fieldName, suffix=suffix, prefix=prefix, classes="Side", emphasizing=decorateQuestion)
 
 
 listOfSideFields = [df("Smallest"),
@@ -95,49 +98,75 @@ listOfSideFields = [df("Smallest"),
                     df("Equivalent2"),
                     df("Equivalent3")]
 
-increasing_ = [df("Smallest", suffix=increaseRelation),
-               smaller,
-               increaseRelation,
-               df("Intermediate", suffix=increaseRelation),
-               greater,
-               df("Greatest", prefix=increaseRelation),
-               df("Equivalent", prefix=increaseRelation),
-               df("Equivalent2", prefix=increaseRelation),
-               df("Equivalent3", prefix=increaseRelation)]
-decreasing_ = [
-    df("Equivalent3", suffix=decreaseRelation),
-    df("Equivalent2", suffix=decreaseRelation),
-    df("Equivalent", suffix=decreaseRelation),
-    df("Greatest", suffix=decreaseRelation),
-    greater,
-    df("Intermediate", prefix=decreaseRelation),
+def increasing_(emphasize):
+    if emphasize:
+        increase = QuestionOrAnswer(
+            decorateQuestion(increaseRelation),
+            increaseRelation
+        )
+    else:
+        increase = increaseRelation
+    return [df("Smallest", suffix=increase),
+            smaller,
+            increase,
+            df("Intermediate", suffix=increase),
+            greater,
+            df("Greatest", prefix=increase),
+            df("Equivalent", prefix=increase),
+            df("Equivalent2", prefix=increase),
+        df("Equivalent3", prefix=increase)]
+decreaseRelationEmphasized = QuestionOrAnswer(
+    decorateQuestion(decreaseRelation),
     decreaseRelation,
+)
+decreasing_ = [
+    df("Equivalent3", suffix=decreaseRelationEmphasized),
+    df("Equivalent2", suffix=decreaseRelationEmphasized),
+    df("Equivalent", suffix=decreaseRelationEmphasized),
+    df("Greatest", suffix=decreaseRelationEmphasized),
+    greater,
+    df("Intermediate", prefix=decreaseRelationEmphasized),
+    decreaseRelationEmphasized,
     smaller,
-    df("Smallest", prefix=decreaseRelation),
+    df("Smallest", prefix=decreaseRelationEmphasized),
 ]
 
 
 def longLine(line):
-    line = [header,
-            AskedOrNot("Definition",
-                       QuestionOrAnswer(markOfQuestion,
-                                        line),
-                       line),
-            hr,
-            ShowIfAskedOrAnswer("Construction",
-                                DecoratedField("Construction",
-                                               classes="Definition3",
-                                               suffix=hr)),
-            footer]
+    line = addBoilerplate(
+        [namesNotationsDenotedBy,
+         AskedOrNot("Definition",
+                    QuestionOrAnswer(markOfQuestion,
+                                     line),
+                    line),
+         hr,
+         ShowIfAskedOrAnswer("Construction",
+                             DecoratedField("Construction",
+                                            classes="Definition3",
+                                            suffix=hr))])
     return AtLeastOneField(asked=True,
                            fields=listOfSideFieldNames,
                            child=[suspend("Hide sides"), line],
                            otherwise=line)
 
 
-increasing = longLine(increasing_)
+increasing = longLine(increasing_(True))
 decreasing = longLine(decreasing_)
 
+inc_to_emphasize = increasing_(False)
+increasing_meta_content = [
+    namesNotationsDenotedBy,
+    AskedOrNot("Definition",
+                QuestionOrAnswer(markOfQuestion,
+                                 inc_to_emphasize),
+                inc_to_emphasize),
+     hr,
+     ShowIfAskedOrAnswer("Construction",
+                         DecoratedField("Construction",
+                                        classes="Definition3",
+                                        suffix=hr)),
+    ]
+increasing_meta = addBoilerplate(increasing_meta_content)
 
 def relation(left, right):
     if left < right:
@@ -157,3 +186,6 @@ def relation(left, right):
     empty = [suspend("Hide middle"), l]
     filled = Filled(leftFieldName, Filled(rightFieldName, empty))
     return filled
+
+relation_example = examplesAskedParam(increasing_meta_content)
+relation_counter_example = counterexamplesAskedParam(increasing_meta_content)

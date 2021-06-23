@@ -1,5 +1,6 @@
 from ..generators import *
-from .general import footer, header
+from .general import footer, header, namesNotationsDenotedBy
+from .util import *
 
 extends = PotentiallyNumberedFields(fieldPrefix="Extends",
                                     classes="Definition2",
@@ -25,4 +26,4 @@ definition_theory = Cascade("Definition",
                              axioms],
                             cascade={"Vocabulary", "Extendss", "Axioms"})
 
-theory = [header, definition_theory, models, properties, footer]
+theory = addBoilerplate([namesNotationsDenotedBy, definition_theory, models, properties])

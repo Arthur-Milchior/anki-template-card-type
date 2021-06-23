@@ -1,5 +1,6 @@
 from ..generators import *
-from .general import footer, header
+from .general import footer, header, namesNotationsDenotedBy
+from .util import addBoilerplate
 
 definition_knot = TableFields(["Definition",
                                "Conway",
@@ -89,4 +90,4 @@ properties = TableFields(["Alexander polynomial",
                           "Tangle",
                           ])
 
-knot = [header, definition_knot, properties, footer]
+knot = addBoilerplate([namesNotationsDenotedBy, definition_knot, properties])

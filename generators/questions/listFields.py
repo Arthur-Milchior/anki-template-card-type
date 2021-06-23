@@ -117,7 +117,13 @@ class ListFields(ListElement):
         else:
             super().__init__(ret, toKeep=toKeep, **kwargs)
 
-
+"""A  dic may contain:
+field - the field name
+"hideinsomequestions -- set of fields. When one of this field is asked, the question side should not be shown. This ensure that a similar field does not give too good of a hint (e.g. when asking for variance, hide the standard deviation)
+child -- an initial version of the child. It may be modified to add conditionals on it
+???
+"""
+            
 class TableFields(ListFields):
     @debugInit
     def __init__(self,
@@ -134,6 +140,7 @@ class TableFields(ListFields):
                  defaultClasses=None,
                  label=None,
                  answer=None,
+                 emphasizing=(lambda x:x),
                  **kwargs):
         self.fields = []
         for field_s in fields:
@@ -190,6 +197,7 @@ class TableFields(ListFields):
             # The label
             labelGen = Label(label=label,
                              fields=[fieldName],
+                             emphasizing=emphasizing,
                              classes=classes
                              )
             tdLabel = TD(child=labelGen, attrs=tdLabelAttrs)
@@ -211,6 +219,7 @@ class TableFields(ListFields):
                                                     child=child,
                                                     isMandatory=isMandatory,
                                                     useClasses=useClasses,
+                                                    emphasizing=emphasizing,
                                                     classes=classes)
                 td = TD(child=questionnedField, attrs=tdFieldAttrs)
                 if not answer:
@@ -218,6 +227,7 @@ class TableFields(ListFields):
                 answerField = f"{fieldName}{answer}"
                 answerQuestionned = QuestionnedField(answerField,
                                                      useClasses=useClasses,
+                                                     emphasizing=emphasizing,
                                                      classes=classes)
                 answerTd = TD(child=answerQuestionned,
                               attrs=tdFieldAttrs)

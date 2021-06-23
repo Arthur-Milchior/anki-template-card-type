@@ -1,26 +1,29 @@
 from ...generators import *
 from ..util import *
 from .names import names
+from .namesNotationsDenotedBy import namesNotationsDenotedBy
+from ..style import *
 
 def _appliedTo(i):
     """On {{applied to}}: {{Example}}"""
     appliedTo = f"Applied to{empty1(i)}"
     example = f"Example{empty1(i)}"
-    DecoratedField(prefix="On ",
+    return DecoratedField(prefix="On ",
                    label={appliedTo},
                    field=example,
                    suffix="")
 
-def exampleLine(i=""):
+def exampleLine(i):
     """Either
     On {{applied to}}: {{Example}}
     or
     {{Example}} """
     appliedTo = f"Applied to{empty1(i)}"
     exampleField = f"Example{empty1(i)}"
-    return FilledOrEmpty(appliedTo,
-                         _appliedTo(i),
-                         DecoratedField(exampleField, classes="Example", emphasizing=decorateQuestion))
+    return Filled(exampleField,
+                  LI(FilledOrEmpty(appliedTo,
+                                   _appliedTo(i),
+                                   DecoratedField(exampleField, classes="Example", emphasizing=decorateQuestion))))
 
 def _exampleAsked(i):
     """
@@ -35,7 +38,7 @@ def _exampleAsked(i):
             j -= 4
         l.append(exampleLine(j))
     l.append(AskedField(f"Example{empty1(i)}", question="Or ?"))
-    return addBoilerplate(UL(l))
+    return addBoilerplate(UL(l, addLi=False))
     
 
 def exampleAsked(i):
@@ -47,7 +50,7 @@ def exampleAsked(i):
                             _exampleAsked(i)
     )
     example = example.assumeAsked(exampleField)
-    example = addBoilerplate(example, exampleField)
+    example = addBoilerplate([namesNotationsDenotedBy, example], exampleField)
     if i == 1:
         # ask example 1 separately only if there are multiple examples
         example = Filled("Example2", example)
@@ -55,19 +58,25 @@ def exampleAsked(i):
 
 """Show all examples"""
 def examples(prefix=None):
-    return Filled("Example",
-                  [prefix,
-                   FilledOrEmpty("Example2",
-                                UL([exampleLine(i) for i in range (1,5)]),
-                                 exampleLine(1)
-                   )]
-    )
+    return Cascade("Examples",
+                   Filled("Example",
+                          [prefix,
+                           FilledOrEmpty("Example2",
+                                         UL([exampleLine(i) for i in range (1,5)], addLi=False),
+                                         exampleLine(1)
+                           )]
+                   ),
+                   {f"Example{empty1(i)}" for i in range(1, 5)}
+                   )
 
 """Ask all examples"""
-examplesAsked = addBoilerplate(
-    [names(), examples(prefix=hr)], "Example"
-).assumeAsked(["Example", "Example2", "Example3", "Example4"])
+def examplesAskedParam(content=namesNotationsDenotedBy):
+    return addBoilerplate(
+        QuestionnedField("Examples", child=[content, examples(prefix=hr)]),
+        "Example"
+    ).assumeAsked(["Example", "Example2", "Example3", "Example4"])
 
+examplesAsked = examplesAskedParam()
 
 
 # def localFun(i):

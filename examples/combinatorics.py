@@ -1,5 +1,6 @@
 from ..generators import *
 from .general import footer, header
+from .util import *
 
 definition_combinatorics = TableFields(
     name="Combinatorics",
@@ -53,7 +54,7 @@ symbolic2 = TableFields(["Name2",
                           "classes": "Nth"}],
                         name="Symbolic")
 
-combinatorics = [header, numeric, bijection, symbolics, footer]
-combinatoric_numeric = [header, numeric, footer]
-combinatoric_symbolic = [header, symbolic, footer]
-combinatoric_symbolic2 = [header, symbolic2, footer]
+combinatorics = addBoilerplate([numeric, bijection, symbolics])
+combinatoric_numeric = addBoilerplate(numeric)
+combinatoric_symbolic = addBoilerplate(symbolic)
+combinatoric_symbolic2 = addBoilerplate(symbolic2)

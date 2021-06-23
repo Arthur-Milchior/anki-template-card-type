@@ -1,3 +1,10 @@
 from ...generators import *
 
-header = Filled('Context', HEADER(H1(Field("Context"))))
+header = HEADER (
+    H1([
+        Filled('Language',{"Language"}), # For programming language
+        Filled("Context", Filled("Language",": ")),
+        Filled('Context',{"Context"})
+    ])
+)
+

@@ -2,6 +2,9 @@ from ..generators import *
 from .general.footer import footer
 from .general.header import header
 from .general.typ import typDic
+from .general.namesNotationsDenotedBy import namesNotationsDenotedBy
+from .util import *
+from .style import *
 
 definition_adt = TableFields(
     name="Adt_",
@@ -12,7 +15,8 @@ definition_adt = TableFields(
              "classes": "Definition3"},
             {"field": "Initialization",
              "classes": "Definition4"}
-            ]
+            ],
+    emphasizing=decorateQuestion
 )
 
 definition = Cascade("Adt",
@@ -23,4 +27,4 @@ definition = Cascade("Adt",
                           "Axiom", 4, classes="Definition3"),
                       ],
                      {"Adt_", "Functions"})
-adt = [header, definition, footer]
+adt = addBoilerplate([namesNotationsDenotedBy, definition])

@@ -11,25 +11,24 @@ def question(questionFieldPrefix, fieldToQuestion, actualQuestion, questionToAns
     def fun(i=""):
         questionField = f"{questionFieldPrefix}{i}"
         answer = f"{answerPrefix}{i}"
-        return FromAndTo(questionField, fieldToQuestion, actualQuestion, questionToAnswer, answer, prefix=header, classes=answerPrefix, suffix=footer)
+        return addBoilerplate(
+            FromAndTo(questionField, fieldToQuestion, actualQuestion, questionToAnswer, answer, classes=answerPrefix),
+            {questionField, answer})
     return fun        
 
 
 
-def addBoilerplate(gen, askedAndMandatory=[]):
-    if (isinstance(askedAndMandatory, str) ):
-        askedAndMandatory = [askedAndMandatory]
-    gen = [header, gen, footer]
-    for asked in askedAndMandatory:
+def addBoilerplate(gen, asked=[]):
+    if (isinstance(asked, str) ):
+        asked = [asked]
+    gen = ListElement([header, gen, footer])
+    for asked in asked:
         gen = Filled(asked, gen)
-    for mandatory in askedAndMandatory:
-        gen.assumeAsked(mandatory)
+    # for mandatory in askedAndMandatory:
+    #     gen = gen.assumeAsked(mandatory)
     return gen
 
 def empty1(i):
     if i == 1:
         return ""
     return str(i)
-
-decorateQuestion = H3
-decorateName = H2

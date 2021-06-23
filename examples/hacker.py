@@ -1,5 +1,7 @@
 from ..generators import *
-from .general import footer, header
+from .general import footer, header, namesNotationsDenotedBy
+from .util import addBoilerplate
+
 
 definition_hacker = TableFields(
     name="Hacker",
@@ -22,4 +24,4 @@ exprs = NumberedFields("Expression",
                        suffix=hr)
 
 
-hacker = [header, definition_hacker, exprs, DecoratedField("Property"), footer]
+hacker = addBoilerplate([namesNotationsDenotedBy, definition_hacker, exprs, DecoratedField("Property")])

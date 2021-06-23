@@ -200,7 +200,7 @@ class Field(Leaf):
             if self.typ:
                 print(
                     f"""Beware: you want to have "type:" before a special field {self.field}, this makes no sens.""", file=sys.stderr)
-            if self.typ:
+            if self.cloze:
                 print(
                     f"""Beware: you want to have "cloze:" before a special field {self.field}, this makes no sens.""", file=sys.stderr)
 
@@ -270,7 +270,7 @@ class Field(Leaf):
 
     def _createHtml(self, *args, **kwargs):
         typ = "type:" if self.typ else ""
-        cloze = "cloze:" if self.typ else ""
+        cloze = "cloze:" if self.cloze else ""
         return NavigableString(f"""{{{{{typ}{cloze}{self.field}}}}}""")
 
 

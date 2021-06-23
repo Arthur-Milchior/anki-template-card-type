@@ -1,5 +1,6 @@
 from ..generators import *
 from .general import footer, header
+from .util import *
 
 definition_ordinal = TableFields(
     fields=["Definition",
@@ -19,4 +20,4 @@ properties = TableFields(["Admissible",
                           "Large countable",
                           ])
 
-ordinal = [header, definition_ordinal, properties, footer]
+ordinal = addBoilerplate([definition_ordinal, properties])

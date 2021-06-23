@@ -1,5 +1,6 @@
 from ..generators import *
 from .general import footer, header
+from .util import *
 
 number = [QuestionnedField("Significative digit", classes="Definition"),
           Filled("Exponant",
@@ -56,6 +57,15 @@ sis = Answer(
             name="si details"
         ),
         hr])
-constant = [header, definition, typeOrNumber, sis, footer]
+constant = addBoilerplate([definition, typeOrNumber, sis])
 
 # find to deal with both represents
+
+
+def _represented(i=1):
+    questionField = f"Represents{empty1(i)}"
+    answer = f"Name{empty1(i)}"
+    return FromAndTo(questionField, ' ', 'is represented by', ' ', answer, classes="Name")
+
+represented = _represented()
+represented2 = _represented(2)

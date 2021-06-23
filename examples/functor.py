@@ -1,5 +1,6 @@
 from ..generators import *
-from .general import footer, header
+from .general import footer, header, namesNotationsDenotedBy
+from .util import *
 
 definition_bar = TableFields(
     name="Definition",
@@ -18,4 +19,8 @@ properties = TableFields([["Left adjoint to",
                            "Faithfull"],
                           "Projective"])
 
-functor = [header, definition_bar, properties, footer]
+functor = addBoilerplate(
+    [H5("Functor"), hr,
+     namesNotationsDenotedBy,
+     definition_bar,
+     properties])

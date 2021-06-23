@@ -1,7 +1,8 @@
 from ...generators import *
 from ..util import *
+from ..style import *
 
-singleNameAsked = DecoratedField("Name",
+singleNameAsked = QuestionnedField("Name",
                                  emphasizing=decorateQuestion)
 singleName = AskedOrNot("Name",
                         singleNameAsked,
@@ -28,9 +29,15 @@ def relatedInformations(i=""):
 def nameLine(i):
     """Give all information about the i-th name"""
     name = f"""Name{empty1(i)}"""
-    return Filled(name, [decorateName(Field(name)), relatedInformations(i)])
+    return Filled(name,
+                  LI([
+                      AskedOrNot(name,
+                                 QuestionnedField(name, emphasizing=decorateQuestion),
+                                 QuestionnedField(name, emphasizing=decorateName)),
+                      relatedInformations(i)]
+                  ))
 
-allNames = UL([nameLine(i) for i in range(1, 5)])
+allNames = UL([nameLine(i) for i in range(1, 5)], addLi=False)
 
 def cascade(child):
     return Cascade("Names",
@@ -42,11 +49,14 @@ def cascade(child):
 suffix -- after names if there is any
 """
 def names(suffix=None):
+    """ suffix -- what to put after Name if there is a snigle line"""
+    names_content = FilledOrEmpty("Name2", allNames, [singleName, suffix])
+    name_shown = AskedOrNot("Names",
+                            QuestionOrAnswer([decorateQuestion("Name(s) ?"), suffix],
+                                             decorateQuestion(names_content)),
+                            names_content)
     return cascade(
-        Filled("Name", [
-            FilledOrEmpty("Name2", allNames, singleName),
-            suffix
-        ]))
+        Filled("Name", name_shown))
 
 def nameAsked(i):
     """Give all information about given name and ask name i
@@ -58,7 +68,6 @@ def nameAsked(i):
         if j > 4:
             j -= 4
         l.append(nameLine(j))
-    if i == 1:
-        i = ""
-    l.append(LI(AskedField(f"Name{i}", question="Or ?")))
-    return addBoilerplate(cascade([UL(l, addLi=False), Filled("Name", hr)]))
+    l.append(LI(AskedField(f"Name{empty1(i)}", question="Or ?")))
+    content = addBoilerplate(cascade([UL(l, addLi=False), Filled("Name", hr)]))
+    return Filled(f"Name{i if i > 1 else 2}", content)

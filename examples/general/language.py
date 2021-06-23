@@ -1,4 +1,5 @@
-from ..util import *
+from ..style import *
+from ..util import question
 
 def _language(word, answer, language):
     return question(word, " in ", language, " is ", answer)

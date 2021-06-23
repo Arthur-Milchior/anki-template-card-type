@@ -1,3 +1,13 @@
 from ..util import *
+from ..style import *
+from ...generators import *
 
-denotedBy = FromAndTo("Name", " is ", "denoted by", "", "Denoted by")
+denotedBy = Filled(
+    "Denoted by",
+    addBoilerplate(
+        [FilledOrEmpty("Name", {"Name"}, {"Notation"}),
+         " is denoted by ",
+         QuestionnedField("Denoted by")
+        ]
+    )
+)
