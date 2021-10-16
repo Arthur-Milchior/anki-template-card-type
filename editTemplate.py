@@ -122,4 +122,3 @@ def compileAndSaveModel(model, *args, **kwargs):
     except:
         print(f"Please install add-on 802285486.")
         raise
-    mw.col.models.flush()
