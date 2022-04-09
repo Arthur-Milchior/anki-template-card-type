@@ -66,13 +66,17 @@ name_ = [
     },
     {"field": "Syntactic sugar",
      "classes": "Notation",
-     "function": lambda i: code("Language")({f"Instruction{empty1(i)}"}),
+     "function": lambda i: code("Language")({"Syntactic sugar"}),
     },
     {"field": "Long flag",
      "classes": "Notation",
      "function": codeLanguageFixed("sh", "Long flag"),
     },
     {"field": "Variable",
+     "classes": "Notation",
+     "function": lambda i: code("Language")({f"Variable"}),
+    },
+    {"field": "Constant",
      "classes": "Notation",
      "function": lambda i: code("Language")({f"Variable"}),
     },
@@ -136,16 +140,20 @@ def impl_code(field: str):
         "child": code("Language")({field})
         }
 
-implementation = PotentiallyNumberedFields(
-    "Implementation", 4,
-    suffix=hr,
-    localFunMultiple=impl_code,
-    singleCase=DecoratedField(
-        "Implementation",
-        child=
-        QuestionnedField(
-            "Implementation",
-            child=code("Language")(P({"Implementation"})))))
+# implementation = PotentiallyNumberedFields(
+#     "Implementation", 4,
+#     suffix=hr,
+#     localFunMultiple=impl_code,
+#     singleCase=DecoratedField(
+#         "Implementation",
+#         child=
+#         QuestionnedField(
+#             "Implementation",
+#             child=code("Language")(P({"Implementation"})))))
+
+implementation = code("Language")(
+    PotentiallyNumberedFields("Implementation", 4)
+)
 
 exceptions = PotentiallyNumberedFields("Exception", 5, suffix=hr)
 all_ = TableFields(cs_context_ +
