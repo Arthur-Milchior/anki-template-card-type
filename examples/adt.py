@@ -20,11 +20,12 @@ definition_adt = TableFields(
 )
 
 definition = Cascade("Adt",
-                     [definition_adt,
-                      PotentiallyNumberedFields(
+                     [definition_adt,                      PotentiallyNumberedFields(
                           "Function", 5, classes="Definition"),
                       PotentiallyNumberedFields(
                           "Axiom", 4, classes="Definition3"),
+                      PotentiallyNumberedFields(
+                          "Meaning", 4, classes="Definition5"),
                       ],
                      {"Adt_", "Functions"})
 adt = addBoilerplate([namesNotationsDenotedBy, definition])

@@ -1,3 +1,3 @@
 from .guitar import *
-from .sheets import learn_sheet, practice
+from .sheets import learn_sheet, practice, subpractice, subpractices
 

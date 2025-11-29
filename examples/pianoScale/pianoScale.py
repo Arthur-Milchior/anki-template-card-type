@@ -27,9 +27,17 @@ def pianoScale(hand="right", nbOctave=1, back=False, increase=True):
 
     nbOctaveText = f"""{nbOctave} octave{"s" if nbOctave>1 else ""}"""
     fieldName = f"{hand}{nbOctave}{suffix}"
+    tonic = Field("Tonic", useClasses=False)
+    name = FilledOrEmpty("Scale notation", [tonic, Field("Scale notation", useClasses=False)], [tonic, " ", {"Scale name"}])
     content = [Answer([Field(fieldName, isMandatory=True), hr]),
-               {"Tonic"}, " ", {"Scale"}, hr,
+               name, hr,
                handImage,
                arrowImage,
                nbOctaveText]
+    if nbOctave == 1:
+        content = Filled("Practice single octave", content)
+    if hand != "Both":
+        content = Filled("Practice hands separate", content)
+    if not back :
+        content = Filled("Practice single direction", content)
     return Filled(fieldName, content)

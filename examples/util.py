@@ -1,3 +1,4 @@
+from typing import List, Union
 from .general.footer import footer
 from .general.header import header
 from ..generators import *
@@ -18,7 +19,7 @@ def question(questionFieldPrefix, fieldToQuestion, actualQuestion, questionToAns
 
 
 
-def addBoilerplate(gen, asked=[]):
+def addBoilerplate(gen, asked: Union[str, List[str]]=[]):
     if (isinstance(asked, str) ):
         asked = [asked]
     gen = ListElement([header, gen, footer])
@@ -29,6 +30,7 @@ def addBoilerplate(gen, asked=[]):
     return gen
 
 def empty1(i):
+    """Return the number, or nothing if the input is 1"""
     if i == 1:
         return ""
     return str(i)

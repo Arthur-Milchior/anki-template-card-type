@@ -18,9 +18,14 @@ def compile_(tag, soup=None, FrontSoup=None, FrontHtml=None,  **kwargs):
         FrontSoup = soupFromTemplate(FrontHtml)
     if FrontSoup is None:
         return
+    debug(f"{FrontSoup=}")
     newFrontSoup = copy(FrontSoup)
     templateCompile(newFrontSoup, soup=FrontSoup, recompile=True, **kwargs)
-    tag.contents = newFrontSoup.contents
+    tag.clear()
+    while newFrontSoup.contents:
+        # inneficient, empty a list from 0 to last.
+        tag.append(newFrontSoup.contents[0].extract())
+    debug(f"{newFrontSoup=}")
 
 
 def clean(tag):

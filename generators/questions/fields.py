@@ -163,6 +163,7 @@ class DecoratedField(Filled):
                  isMandatory=False,
                  useClasses=True,
                  emphasizing=None,
+                 emphasizingField=None,
                  **kwargs):
         """field -- a field object, or a string"""
         self.prefix = prefix
@@ -183,7 +184,7 @@ class DecoratedField(Filled):
                                           classes=self.classes,
                                           isMandatory=isMandatory,
                                           useClasses=useClasses,
-                                          emphasizing=emphasizing)
+                                          emphasizing=emphasizingField or emphasizing)
         labelGen = Label(label=self.label,
                          fields=[self.field.field],
                          emphasizing=emphasizing,

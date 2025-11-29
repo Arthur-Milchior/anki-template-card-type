@@ -1,8 +1,8 @@
 {
   "instructions":[],
-  "Shortcut: ReTemplate Card":"Ctrl+Shift+T",
-  "Shortcut: Template Note":"Ctrl+Alt+T",
-  "Shortcut: ReTemplate note":"Ctrl+Alt+Shift+T",
+    "Shortcut: ReTemplate Card":null,
+    "Shortcut: Template Note":null,
+    "Shortcut: ReTemplate note":null,
   "Shortcut: frontside":null,
   "Shortcut: Clean Template note":null
 }

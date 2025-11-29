@@ -1,5 +1,6 @@
 from .adt import adt
 from .algebra.algebra import algebra
+from .analysis import analysis
 from .automata import automata
 from .binaryfunction import binaryfunction
 from .binaryrelation import binaryrelation
@@ -9,9 +10,10 @@ from .closed.closed import *
 from .combinatorics import (combinatoric_numeric, combinatoric_symbolic,
                             combinatoric_symbolic2, combinatorics)
 from .constant import constant, typedNumber, represented, represented2
-from .CS import (algorithm, commandLine, dataStructure, instruction, noteType,
-                 problem, variable)
+from .CS import (algorithm, commandLine, dataStructure, enum, instruction,
+                 noteType, problem, variable)
 from .definition.definition import definitions, definitions_names_end
+# from .enum import enum
 from .face.face import face
 from .fingering import fingering
 from .functor import functor

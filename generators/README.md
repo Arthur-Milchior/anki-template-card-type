@@ -286,7 +286,7 @@ class allowing to generate the pair (label,field) easily from
 different kind of input. Those are also used in ```TableFields```
 below. The different kinds of input are:
 * LabeledField(field): in this case, the field is either a string or a
-  Field. The label is the nmae of the field.
+  Field. The label is the name of the field.
 * LabeledField(labeledField): in this case, the object is a copy of
   the input
 * LabeledField(field,label): in this case, the field is either a

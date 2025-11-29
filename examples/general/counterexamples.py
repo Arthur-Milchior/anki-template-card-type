@@ -11,7 +11,7 @@ singleCounterexample = AskedOrNot("Counterexample",
 
 def counterexampleLine(i):
     counterExampleField = f"Counterexample{empty1(i)}"
-    return Filled(counterExampleField, LI(QuestionnedField(counterExampleField, emphasizing=decorateQuestion)))
+    return Filled(counterExampleField, QuestionnedField(counterExampleField, emphasizing=decorateQuestion))
 
 allCounterexamples = UL([counterexampleLine(i) for i in range(1, 5)])
 counterexamples = Filled("Counterexample", FilledOrEmpty("Counterexample2", allCounterexamples, singleCounterexample))

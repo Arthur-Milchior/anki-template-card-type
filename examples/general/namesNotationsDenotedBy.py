@@ -12,6 +12,7 @@ namesNotationsDenotedBy = Cascade(child=
                                       notations(br),
                                       DecoratedField('Representation', suffix=hr),
                                       DecoratedField('Denoted by', suffix=hr),
+                                      DecoratedField('Japonais', suffix=hr),
                                       DecoratedField('Intuition', suffix=hr),
                                   ],
                                   cascade={"Names", "Notations",

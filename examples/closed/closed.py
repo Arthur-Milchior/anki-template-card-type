@@ -10,6 +10,14 @@ _label = [Field("Name", isMandatory=True), " "]
 def _no(i):
     return Filled(f"Not{empty1(i)}",
                     "not ")
+
+def _construction(i, onAnswer=None):
+    construction = f"Construction{empty1(i)}"
+    if onAnswer is None:
+        onAnswer = lambda x: x
+    return Filled(construction,
+                  [hr, onAnswer(Field(construction))])
+
 def _counterExample(i, onAnswer=None):
     counterExample = f"CounterExample{empty1(i)}"
     if onAnswer is None:
@@ -17,7 +25,7 @@ def _counterExample(i, onAnswer=None):
     return Filled(counterExample, [hr, onAnswer(Field(counterExample))])
 
 
-def _line(i, is_question, onAnswer=None):
+def _shortLine(i, onAnswer=None):
     """ is {{not}} closed under {{under}} when {{condition}}.
     onAnswer -- what to do to important part of the answer"""
     if onAnswer is None:
@@ -36,7 +44,18 @@ def _line(i, is_question, onAnswer=None):
         closure,
         onAnswer(Field(underField)),
         Filled(conditionField, [" when ", onAnswer(Field(conditionField))]),
+    ]
+
+
+def _line(i, onAnswer=None):
+    """ is {{not}} closed under {{under}} when {{condition}}.
+    onAnswer -- what to do to important part of the answer"""
+    if onAnswer is None:
+        onAnswer = lambda x: x
+    return [
+        _shortLine(i, onAnswer=onAnswer),
         _counterExample(i, onAnswer),
+        _construction(i, onAnswer),
     ]
 
 def closedWhen(i):
@@ -46,7 +65,7 @@ def closedWhen(i):
     closureField = f"Closure{i}"
     closure = FilledOrEmpty(closureField, [" ", {closureField}, " "], " is closed under ")
     question = [closure, Field(underField), decorateQuestion(" when ")]
-    answer = [" ", _line(i, True, onAnswer=decorateQuestion)]
+    answer = [" ", _line(i, onAnswer=decorateQuestion)]
     return addBoilerplate([_label, QuestionOrAnswer(question, answer)], underField)
 
 nbClosure = 11
@@ -56,10 +75,10 @@ def closedMissing(i):
         if j > nbClosure:
             j -= nbClosure
         underField = f"Under{empty1(j)}"
-        l.append(Filled(underField, LI(_line(j, False))))
+        l.append(Filled(underField, LI(_shortLine(j))))
     l.append(
         LI(QuestionOrAnswer(decorateQuestion("and ?"),
-                            _line(i, True, onAnswer=decorateQuestion)
+                            _shortLine(i, onAnswer=decorateQuestion)
     )))
     return addBoilerplate([
         _label,
@@ -68,108 +87,21 @@ def closedMissing(i):
                           {f"Under{empty1(i)}"}
     )
 
+def closedWhenConstruction(i):
+    construction = f"Construction{empty1(i)}"
+
+    content = addBoilerplate([_label, _shortLine(i), hr, QuestionOrAnswer( H3("Proof?"), {construction})])
+    return Filled(construction, content)
+
+def closedWhenCounterExample(i):
+    counterExample = f"CounterExample{empty1(i)}"
+    content = addBoilerplate([_label, _shortLine(i), hr, QuestionOrAnswer( H3("Counter-example?"), {counterExample})])
+    return Filled(counterExample, content)
+
+
 allCloses = addBoilerplate(
     [_label,
      QuestionOrAnswer([" is ", br, decorateQuestion("closed under"), "?"],
-                      UL([Filled(f"Under{empty1(j)}", LI(_line(j, False, onAnswer=decorateQuestion))) for j in range(1,nbClosure+1)]
+                      UL([Filled(f"Under{empty1(j)}", LI(_shortLine(j, onAnswer=decorateQuestion))) for j in range(1,nbClosure+1)]
                          , addLi=False))]
 )
-
-# def no(i):
-#     """ ??? on question side if asked
-#     "no" or "" otherwise. I.e. indicate negation correctly"""
-#     filled = Filled(f"Not{empty1(i)}",
-#                     "not ")
-#     alo = AtLeastOneField(fields=[f"Condition{empty1(i)}", f"Under{empty1(i)}", f"Unders", "Conditions"],
-#                           asked=True,
-#                           child=markOfQuestion,
-#                           otherwise=filled)
-#     return QuestionOrAnswer(alo,
-#                             filled)
-
-
-# def when(i):
-#     """ 
-#     "when {{condition}}" on answer side.
-#     Nothing on question side if no restriction
-#     <H2>when</H2> on question side if Condition{i} asked"""
-#     answer = DecoratedField(field=f"Condition{empty1(i)}",
-#                             label="when ",
-#                             classes="Condition",
-#                             infix="",
-#                             emphasizing=decorateQuestion,
-#                             suffix="",
-#                             isMandatory=True)
-#     question = [Label("when",
-#                       fields=[f"Condition{empty1(i)}", f"Under{empty1(i)}"],
-#                       classes=["Condition"],
-#                       emphasizing=decorateQuestion,
-#     ),
-#                 markOfQuestion]
-#     alo = AtLeastOneField(fields=[f"Condition{empty1(i)}", f"Under{empty1(i)}"],
-#                           asked=True,
-#                           child=question,
-#                           otherwise=answer)
-#     return QuestionOrAnswer(alo,
-#                             answer)
-
-
-# def closedUnder(i):
-#     """
-#     "is closed under bar" if asked
-#     or 
-#     "is (not) closed under" """
-#     # {{prefix}} not {{closure}}. 
-#     withClosure = [FilledOrEmpty(f"Prefix{empty1(i)}",
-#                             Field(f"Prefix{empty1(i)}"),
-#                             ""),
-#               " ",
-#               no(i),
-#               " ",
-#               Field(f"Closure{empty1(i)}")]
-#     # is not closed under
-#     withoutClosure = ["is ", no(i), " closed under"]
-#     return DecoratedField(field=f"Under{empty1(i)}",
-#                           label=FilledOrEmpty(f"Closure{empty1(i)}",
-#                                               withClosure,
-#                                               withoutClosure),
-#                           classes="Under",
-#                           infix="",
-#                           suffix="",
-#                           isMandatory=True)
-
-
-# def line(i):
-#     """ "Closed under bar when ???"
-#     or "closed under bar when foo" """
-#     return [closedUnder(i), " ", when(i)]
-
-
-# """ List of cases under which {name} is closed."""
-# _closed = NumberedFields(fieldPrefix="Under",
-#                          greater=11,
-#                          label=label,
-#                          localFun=(lambda i: {"child": LI(line(str(i))),
-#                                               "questions": {f"Under{empty1(i)}"},
-#                                               "filledFields": [f"Under{empty1(i)}"]}),
-#                          unordered=True,
-#                          )
-
-
-# def _counterExample(i=""):
-#     """Show a counter example on answer side only  """
-#     return Answer(DecoratedField(field=f"CounterExample{empty1(i)}",
-#                                  label="Counter example",
-#                                  suffix=hr))
-
-
-# closeds = addBoilerplate(_closed)
-
-
-# def closed(i=""):
-#     """ {{name}} is {{not}} closed under {{closed}} when ???{{when}}. <hr>{{counterExample}}"""
-#     return addBoilerplate(
-#         [label,
-#          ensureGen(line(str(i))).assumeAsked(f"Condition{empty1(i)}"),
-#          hr,
-#          _counterExample(i)], f"Under{empty1(i)}")

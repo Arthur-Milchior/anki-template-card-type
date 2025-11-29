@@ -6,7 +6,7 @@ from .general import namesNotationsDenotedBy
 from .general.examples import examples
 
 answers = PotentiallyNumberedFields("Answer",
-                                    7,
+                                    16,
                                     label=QuestionnedField("Question"),
                                     infix=br,
                                     classes="Definition")

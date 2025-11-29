@@ -27,7 +27,7 @@ def _templateTagAddText(templateTag, soup,
             #debug("already have content, and not asked to recompile", -1)
             return
         else:
-            templateTag.contents = []
+            templateTag.clear()
 
 
 def shouldProcess(template, key):
@@ -61,11 +61,9 @@ def process(template, key, action, prettify=True, **kwargs):
 
 def processIfRequired(template, key, *args, **kwargs):
     if shouldProcess(template, key):
-        ret = process(template, key, *args, **kwargs)
+        return process(template, key, *args, **kwargs)
     else:
-        ret = None, ""
-    soup, text = ret
-    return ret
+        return None, ""
 
 
 def compileModel(model, objects=objects, action="Template",  prettify=True, ords=None):
@@ -87,7 +85,7 @@ def compileModel(model, objects=objects, action="Template",  prettify=True, ords
                     if questionText:
                         templateObject[questionKey] = questionText
                 except Exception as e:
-                    print("\n\n\n")
+                    print("\n\n\nFailed to parse question\n\n\n")
                     print((model['name'], templateObject["name"],
                            questionKey, e), file=sys.stderr)
                     traceback.print_exc(file=sys.stderr)
@@ -100,7 +98,7 @@ def compileModel(model, objects=objects, action="Template",  prettify=True, ords
                         assert assertType(answerText, str)
                         templateObject[answerKey] = answerText
                 except Exception as e:
-                    print("\n\n\n")
+                    print("\n\n\nFailed to parse answer\n\n\n")
                     print((model['name'], templateObject["name"],
                            answerKey, e), file=sys.stderr)
                     traceback.print_exc(file=sys.stderr)
@@ -110,7 +108,10 @@ def compileModel(model, objects=objects, action="Template",  prettify=True, ords
 
 
 def compileAndSaveModel(model, *args, **kwargs):
+    debug(f"compileAndSaveModel:{args=},{kwargs=}")
+    debug(f"{model=}")
     newModel = compileModel(model, *args, **kwargs)
+    debug(f"{newModel=}")
     try:
         newTemplatesData = []
         for i in range(len(newModel['tmpls'])):

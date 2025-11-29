@@ -115,10 +115,12 @@ def increasing_(emphasize):
             df("Equivalent", prefix=increase),
             df("Equivalent2", prefix=increase),
         df("Equivalent3", prefix=increase)]
+
 decreaseRelationEmphasized = QuestionOrAnswer(
     decorateQuestion(decreaseRelation),
     decreaseRelation,
 )
+
 decreasing_ = [
     df("Equivalent3", suffix=decreaseRelationEmphasized),
     df("Equivalent2", suffix=decreaseRelationEmphasized),
@@ -132,26 +134,28 @@ decreasing_ = [
 ]
 
 
+construction = [
+         hr,
+         ShowIfAskedOrAnswer("Construction",
+                             DecoratedField("Construction",
+                                            classes="Construction",
+                                            suffix=hr))]
+
 def longLine(line):
     line = addBoilerplate(
         [namesNotationsDenotedBy,
          AskedOrNot("Definition",
                     QuestionOrAnswer(markOfQuestion,
                                      line),
-                    line),
-         hr,
-         ShowIfAskedOrAnswer("Construction",
-                             DecoratedField("Construction",
-                                            classes="Definition3",
-                                            suffix=hr))])
+                    line),construction])
     return AtLeastOneField(asked=True,
                            fields=listOfSideFieldNames,
                            child=[suspend("Hide sides"), line],
                            otherwise=line)
 
 
-increasing = longLine(increasing_(True))
-decreasing = longLine(decreasing_)
+increasing = Empty("Hide sides", longLine(increasing_(True)))
+decreasing = Empty("Hide sides", longLine(decreasing_))
 
 inc_to_emphasize = increasing_(False)
 increasing_meta_content = [
@@ -160,11 +164,7 @@ increasing_meta_content = [
                 QuestionOrAnswer(markOfQuestion,
                                  inc_to_emphasize),
                 inc_to_emphasize),
-     hr,
-     ShowIfAskedOrAnswer("Construction",
-                         DecoratedField("Construction",
-                                        classes="Definition3",
-                                        suffix=hr)),
+    construction,
     ]
 increasing_meta = addBoilerplate(increasing_meta_content)
 
@@ -182,10 +182,9 @@ def relation(left, right):
     rightField = listOfSideFields[right]
     leftFieldName = listOfSideFieldNames[left]
     rightFieldName = listOfSideFieldNames[right]
-    l = [header, leftField, relation, rightField, hr, footer]
-    empty = [suspend("Hide middle"), l]
-    filled = Filled(leftFieldName, Filled(rightFieldName, empty))
-    return filled
+    l = [header, leftField, relation, rightField, construction, footer,]
+    filled = Filled(leftFieldName, Filled(rightFieldName, l))
+    return Empty("Hide middle", filled)
 
 relation_example = examplesAskedParam(increasing_meta_content)
 relation_counter_example = counterexamplesAskedParam(increasing_meta_content)

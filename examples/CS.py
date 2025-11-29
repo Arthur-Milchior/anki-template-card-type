@@ -44,6 +44,8 @@ cs_context_ = [
      "classes": "context",
      "function": lambda i: code("Language")({"Code context"})
     },
+    {"field": "Invariant context",
+     "classes": "context"},
     {"field": "Library",
      "classes": "context"},
     {"field": "Program",
@@ -68,26 +70,20 @@ name_ = [
      "classes": "Notation",
      "function": lambda i: code("Language")({"Syntactic sugar"}),
     },
-    {"field": "Long flag",
-     "classes": "Notation",
-     "function": codeLanguageFixed("sh", "Long flag"),
-    },
     {"field": "Variable",
      "classes": "Notation",
      "function": lambda i: code("Language")({f"Variable"}),
     },
     {"field": "Constant",
      "classes": "Notation",
-     "function": lambda i: code("Language")({f"Variable"}),
+     "function": lambda i: code("Language")({f"Constant"}),
     },
     {"field": "Shortcut",
      "classes": ["Abbreviation", "Shortcut"]},
     {"field": "Abbreviation",
-     "classes": ["Abbreviation", "Shortcut"]},
-    {"field": "Short flag",
      "classes": ["Abbreviation", "Shortcut"],
-     "function": codeLanguageFixed("sh", "Short flag"),
-    },
+     "function": lambda i: code("Language")({f"Abbreviation"}),
+     },
 ]
 name = TableFields(name_,
                    isMandatory=False,
@@ -106,8 +102,8 @@ complexity = TableFields(complexity_,
                          suffix=hr)
 
 values = PotentiallyNumberedFields("Value",
-                                   7,
-                                   suffix=hr)
+                                   21,
+                                   suffix=hr, emphasizingField=code("Language"))
 
 problem_ = ["Input",
             {"field": "Identifier",
@@ -117,8 +113,13 @@ problem_ = ["Input",
             "Returns",
             "Print",
             "Effect",
-            "Similar to",
+            {"field": "Similar to",
+             "classes": "Notation",
+             "function": lambda i: code("Language")({f"Similar to"}),
+            },
             "Meaning",
+            "TypMeaning",
+            "Construction",
             "Mutable",
             "Storage",
             "Scope",
@@ -151,8 +152,15 @@ def impl_code(field: str):
 #             "Implementation",
 #             child=code("Language")(P({"Implementation"})))))
 
-implementation = code("Language")(
-    PotentiallyNumberedFields("Implementation", 4)
+implementation = PotentiallyNumberedFields("Implementation", 4,  emphasizingField=code("Language"))
+
+flag_ = (
+    "Flag abbreviation",
+    UL([
+        CODE(QuestionnedField("Fla"), attrs={"class":"sh"}),
+        CODE(QuestionnedField("Flag abbreviation"), attrs={"class":"sh"}),
+    ]),
+    P(CODE(QuestionnedField("Fla"), attrs={"class":"sh"})),
 )
 
 exceptions = PotentiallyNumberedFields("Exception", 5, suffix=hr)
@@ -168,6 +176,7 @@ tout = addBoilerplate([
     SCRIPT("_highlight_automatic.js"),
     namesNotationsDenotedBy,
     cs_context,
+    flag_,
     name,
     problem,
     values,
@@ -186,3 +195,5 @@ commandLine = tout
 instruction = tout
 dataStructure = tout
 problem = tout
+enum = tout #todo improve
+constant = tout

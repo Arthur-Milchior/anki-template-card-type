@@ -15,13 +15,12 @@ def runBrowser(browser, action, note):
 
 
 def runBrowserNote(browser, action):
-    mw.checkpoint("Change template on notes")
     mw.progress.start()
     nids = browser.selectedNotes()
     mids = set()
     readIfRequired()
     for nid in nids:
-        note = mw.col.getNote(nid)
+        note = mw.col.get_note(nid)
         mid = note.mid
         mids.add(mid)
     for mid in mids:
@@ -32,13 +31,12 @@ def runBrowserNote(browser, action):
 
 
 def runBrowserCard(browser, action):
-    mw.checkpoint("Change template on cards")
     mw.progress.start()
     readIfRequired()
     cids = browser.selectedCards()
     mids = dict()
     for cid in cids:
-        card = mw.col.getCard(cid)
+        card = mw.col.get_card(cid)
         note = card.note()
         mid = note.mid
         if mid not in mids:

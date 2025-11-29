@@ -69,5 +69,8 @@ def genToTags(*args, **kwargs):
 
 def genToSoup(*args, **kwargs):
     bs = bs4.BeautifulSoup("", "html.parser")
-    bs.contents = testEachStep(goal=TAG, *args, **kwargs)
+    bs.clear()
+    new_tags = testEachStep(goal=TAG, *args, **kwargs)
+    for tag in new_tags:
+        bs.append(tag)
     return bs

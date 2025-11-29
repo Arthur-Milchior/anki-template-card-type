@@ -1,12 +1,14 @@
 import bs4
 
-from ..debug import ExceptionInverse, assertType, debug, debugOnlyThisMethod
+from ..debug import ExceptionInverse, assertType,  debugOnlyThisMethod,debug
+
 
 
 class Template:
     kindOfTemplate = dict()
 
     def __init__(self, names, compile_, clean):
+        self.names = names
         for name in names:
             Template.kindOfTemplate[name.lower()] = self
         self.compile_ = compile_
@@ -60,7 +62,7 @@ def compile_(tag, soup, recompile=False, **kwargs):
     assert assertType(tag, [bs4.element.Tag, bs4.BeautifulSoup])
     if "template" in tag.attrs:
         if not tag.contents or recompile:
-            tag.contents = []
+            tag.clear()
             getModule(tag).compile_(tag=tag, soup=soup,  **kwargs)
     for child in tag.children:
         compile_(child, soup, recompile, **kwargs)

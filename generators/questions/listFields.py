@@ -303,6 +303,7 @@ class NumberedFields(ListFields):
                  unordered=False,
                  localFun=None,
                  globalFun=None,
+                 emphasizingField=None,
                  firstField=None,
                  smaller=1,
                  isMandatory=True,
@@ -333,6 +334,7 @@ class NumberedFields(ListFields):
                 li = LI(child=QuestionnedField(field,
                                                isMandatory=isMandatory,
                                                useClasses=useClasses,
+                                               emphasizing=emphasizingField,
                                                classes=classes),
                         attrs=liAttrs)
                 return {"child": li,
@@ -362,6 +364,7 @@ class PotentiallyNumberedFields(Cascade):
                  greater,
                  label=None,
                  toKeep=None,
+                 emphasizingField=None,
                  attrs=dict(),
                  classes=None,
                  localFunMultiple=None,
@@ -383,6 +386,7 @@ class PotentiallyNumberedFields(Cascade):
                             localFun=localFunMultiple,
                             isMandatory=isMandatory,
                             applyToGroup=applyToGroup,
+                            emphasizingField=emphasizingField,
                             groupSize=groupSize,
                             )
         if singleCase is None:
@@ -390,6 +394,7 @@ class PotentiallyNumberedFields(Cascade):
                                         label=label,
                                         infix=infix,
                                         classes=classes,
+                                        emphasizingField=emphasizingField,
                                         prefix=prefix,
                                         suffix=suffix,
                                         isMandatory=isMandatory)

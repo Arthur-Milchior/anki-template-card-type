@@ -51,7 +51,9 @@ class HTML(SingleChild):
             if not (isinstance(child_tag, bs4.element.NavigableString) or isinstance(child_tag, bs4.element.Tag)):
                 raise Exception(
                     f"child {child} has type {type(child)}, which can't be in a tag.")
-        newtag.contents = children
+        newtag.clear()
+        for child in children:
+            newtag.append(child)
         return newtag
 
 

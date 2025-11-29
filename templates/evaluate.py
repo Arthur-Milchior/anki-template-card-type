@@ -31,12 +31,11 @@ def _tagGetParams(tag):
     choose = tag.attrs.get("choose")
     if objGenerator is None:
         raise ExceptionInverse(f"""Generator missing in {tag}.""")
-    ret = (objGenerator, asked, hide, hideQuestions,
-           mandatory, choose, forbidden)
     assert standardContainer(asked)
     assert standardContainer(hide)
     assert standardContainer(hideQuestions)
-    return ret
+    return (objGenerator, asked, hide, hideQuestions,
+           mandatory, choose, forbidden)
 
 
 def tagGetParamsConfig(tag, objects):
@@ -51,9 +50,9 @@ def tagGetParamsConfig(tag, objects):
      mandatory, choose, forbidden) = _tagGetParams(tag)
     obj = objects.get(objGenerator)
     if obj is None:
-        #debug("""Adding "objectabsent ={objGenerator}" to "{tag}".""",-1)
-        tag.attrs["objectabsent"] = objGenerator
-        return None
+        raise Exception(f"{objGenerator} is not a defined generator")
+#        tag.attrs["objectabsent"] = objGenerator
+#        return None
     elif "objectAbsent" in tag.attrs:
         del tag.attrs["objectAbsent"]
     return (obj, asked, hide, hideQuestions, mandatory, choose, forbidden)
@@ -115,7 +114,9 @@ def compile_(tag, soup, *, isQuestion=True, model=None, objects=dict(), inConfig
                                mandatory=mandatory,
                                modelName=modelName,
                                goal=TAG)
-        tag.contents = new_tags
+        tag.clear()
+        for new_tag in new_tags:
+            tag.append(new_tag)
 
 
 def compile_eval(*args, **kwargs):
