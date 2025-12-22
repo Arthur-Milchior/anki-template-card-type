@@ -51,7 +51,7 @@ def getModule(tag):
     return getFunctionFromKind(getKind(tag))
 
 
-def compile_(tag, soup, recompile=False, **kwargs):
+def compile_(tag, soup: bs4.BeautifulSoup, recompile=False, **kwargs):
     """For each tag having a template non-empty attribute, apply the
     generator according to this value.
 

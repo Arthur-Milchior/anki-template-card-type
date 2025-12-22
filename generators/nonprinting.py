@@ -1,3 +1,4 @@
+import bs4
 from ..debug import debug, debugFun, debugInit
 from .constants import *
 from .generators import thisClassIsClonable
@@ -5,7 +6,7 @@ from .leaf import Leaf
 
 
 class NoPrint(Leaf):
-    def _createHtml(self, soup):
+    def _createHtml(self, soup: bs4.BeautifulSoup):
         return []
 
 

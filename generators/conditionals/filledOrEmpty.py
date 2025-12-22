@@ -41,7 +41,7 @@ class Empty(FieldChild):
         child = child.assumeFieldEmpty(self.field, False)
         return self.cloneSingle(child)
 
-    def _createHtml(self, soup):
+    def _createHtml(self, soup: bs4.BeautifulSoup):
         childHtml = self.getChild().createHtml(soup)
         assert assertType(childHtml, list)
         return ([bs4.NavigableString(f"{{{{^{self.field}}}}}")] +
@@ -84,7 +84,7 @@ class Filled(FieldChild):
         else:
             return self.cloneSingle(self.getChild().restrictToModel(fields))
 
-    def _createHtml(self, soup):
+    def _createHtml(self, soup: bs4.BeautifulSoup):
         child = self.getChild().createHtml(soup)
         assert assertType(child, list)
         return ([bs4.NavigableString(f"{{{{#{self.field}}}}}")] +

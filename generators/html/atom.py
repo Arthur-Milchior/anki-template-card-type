@@ -1,3 +1,4 @@
+import bs4
 from ...debug import assertEqual, assertType, debug, debugFun, debugInit
 from ..generators import Gen, SingleChild, genRepr, thisClassIsClonable
 from ..leaf import Leaf
@@ -34,7 +35,7 @@ class HTMLAtom(Leaf):
         return isinstance(other, HTMLAtom) and self.tag == other.tag and self.attrs == other.attrs
 
     @debugFun
-    def _createHtml(self, soup):
+    def _createHtml(self, soup: bs4.BeautifulSoup):
         newtag = soup.new_tag(self.tag, **self.attrs)
         return newtag
 

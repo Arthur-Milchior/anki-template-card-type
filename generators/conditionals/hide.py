@@ -18,6 +18,9 @@ class HideInSomeQuestions(QuestionOrAnswer):
 
 
 class ShowIfAskedOrAnswer(QuestionOrAnswer):
+    """
+    `ShowIfAskedOrAnswer(field, child)` is "child" unless it's the question side and "field" is not asked.
+    """
     def __init__(self, field, child):
         question = Asked(field, child)
         super().__init__(question, child)

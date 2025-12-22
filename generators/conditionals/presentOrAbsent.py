@@ -1,3 +1,4 @@
+import bs4
 from ...debug import debug, debugFun
 from ..generators import thisClassIsClonable
 from ..listGen import ListElement
@@ -44,7 +45,7 @@ class Absent(FieldChild):
         else:
             return self.getChild().restrictToModel(fields)
 
-    def _createHtml(self, soup):
+    def _createHtml(self, soup: bs4.BeautifulSoup):
         assert False
 
 
@@ -76,7 +77,7 @@ class Present(FieldChild):
         else:
             return None
 
-    def _createHtml(self, soup):
+    def _createHtml(self, soup: bs4.BeautifulSoup):
         assert False
 # class PresentOrAbsent(ListElement):
 #     def __init__(self, field, presentCase = None, absentCase = None,  **kwargs):

@@ -3,6 +3,7 @@ from .general.typ import typDic
 from .general.examples import examples
 from .general.namesNotationsDenotedBy import namesNotationsDenotedBy
 from .util import addBoilerplate, empty1
+from aqt.qt import debug;
 
 typDicLanguage = {"field": "Typ",
                   "label": "Type",
@@ -152,7 +153,16 @@ def impl_code(field: str):
 #             "Implementation",
 #             child=code("Language")(P({"Implementation"})))))
 
-implementation = PotentiallyNumberedFields("Implementation", 4,  emphasizingField=code("Language"))
+def languageComment(*args, **kwargs):
+    return [Comment("Language: "), code("Language")(*args, **kwargs)]
+
+def implementation():
+    return PotentiallyNumberedFields(
+    "Implementation", 
+    4, 
+    emphasizingField=languageComment
+    #infix=[br, Comment("azerty")]
+    )
 
 flag_ = (
     "Flag abbreviation",
@@ -180,7 +190,7 @@ tout = addBoilerplate([
     name,
     problem,
     values,
-    implementation,
+    implementation(),
     complexity,
     exceptions,
     examples()])

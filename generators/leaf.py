@@ -3,6 +3,7 @@ import sys
 import types
 
 from bs4 import NavigableString
+import bs4
 
 from ..debug import ExceptionInverse, assertType, debug, debugFun, debugInit
 from .constants import *
@@ -68,7 +69,7 @@ class NoContent(Leaf):
         else:
             return f"""NoContent(createOther = True,{self.params()})"""
 
-    def _createHtml(self, soup):
+    def _createHtml(self, soup: bs4.BeautifulSoup):
         return None
 
     def _outerEq(self, other):
@@ -120,7 +121,7 @@ class Literal(Leaf):
             return False
         return self.text == other.text
 
-    def _createHtml(self, soup):
+    def _createHtml(self, soup: bs4.BeautifulSoup):
         return NavigableString(self.text)
 
 
@@ -246,7 +247,7 @@ class Field(Leaf):
         else:
             return self
 
-    def _assumeFieldAbsent(field):
+    def _assumeFieldAbsent(self, field):
         if field == self.field:
             if self.special:
                 print(

@@ -88,6 +88,7 @@ asked in this model.
 ## Current cores
 Here is the current list of Core generators. They are described in README.md
 * HTML
+* Comment
 * HTMLAtom
 * ListElement
 * Absent

@@ -138,7 +138,9 @@ construction = [
          hr,
          ShowIfAskedOrAnswer("Construction",
                              DecoratedField("Construction",
+                                            label=H2("Construction"),
                                             classes="Construction",
+                                            infix="",
                                             suffix=hr))]
 
 def longLine(line):

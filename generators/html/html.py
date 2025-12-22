@@ -38,12 +38,12 @@ class HTML(SingleChild):
             t += "\n"+genRepr(self.child, label="child")+","
         t += self.params()+")"
         return t
-
+    
     def _outerEq(self, other):
         return isinstance(other, HTML) and self.tag == other.tag and self.attrs == other.attrs and super()._outerEq(other)
 
     @debugFun
-    def _createHtml(self, soup):
+    def _createHtml(self, soup: bs4.BeautifulSoup):
         newtag = soup.new_tag(self.tag, **self.attrs)
         children = self.getChild().createHtml(soup)
         assert assertType(children, list)
@@ -88,6 +88,47 @@ class Table(HTML):
                          child=ListElement(
                              elements=table),
                          **kwargs)
+        
+@thisClassIsClonable
+class Comment(SingleChild):
+
+    comment: str 
+    @debugInit
+    def __init__(self, comment, **kwargs):
+        """
+        A html comment.
+
+        commentText -- the text of the comment.
+        """
+        self.comment = comment
+        super().__init__(**kwargs)
+        
+    def __hash__(self):
+        return hash(self.comment)
+    
+    def clone(self, elements):
+        return Comment(self.comment)
+    
+    def _getChildren(self):
+        return []
+    
+    def _repr(self):
+        return f"""Comment("{self.comment}")"""
+    
+    def _outerEq(self, other):
+        return isinstance(other, Comment) and self.comment == other.comment
+    
+    def __eq__(self, other):
+        return self._outerEq(other)
+    
+    def _firstDifference(self, other):
+        if self == other:
+            return None
+        return
+    
+    def _createHtml(self, soup: bs4.BeautifulSoup):
+        return bs4.Comment(self.comment)
+
 
 
 def _fixedTag(tag_):

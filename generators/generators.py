@@ -596,7 +596,7 @@ class Gen:
 
     @memoize((lambda soup: None))
     @debugFun
-    def createHtml(self, soup):
+    def createHtml(self, soup: bs4.BeautifulSoup):
         """A list of BeautifulSoup object representing this
         generator.
         """
@@ -650,7 +650,7 @@ class Gen:
         return None
 
     @debugFun
-    def _createHtml(self, soup):
+    def _createHtml(self, soup: bs4.BeautifulSoup):
         """A (list of) BeautifulSoup object representing this
         generator. Or None
         """

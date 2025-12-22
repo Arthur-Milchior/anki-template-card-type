@@ -43,7 +43,7 @@ class Function(Gen):
         return value.callOnChildren(*args, **kwargs)
 
     @debugFun
-    def _createHtml(self, soup):
+    def _createHtml(self, soup: bs4.BeautifulSoup):
         return self.getValue().createHtml(soup)
 
     @debugFun

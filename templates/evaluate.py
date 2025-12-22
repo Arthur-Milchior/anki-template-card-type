@@ -1,5 +1,7 @@
 import sys
 
+import bs4
+
 from ..config import evaluate
 from ..debug import ExceptionInverse, assertType
 from ..generators.constants import TAG
@@ -71,7 +73,7 @@ def tagGetParamsEval(tag, objects):
     return ret
 
 
-def compile_(tag, soup, *, isQuestion=True, model=None, objects=dict(), inConfig=True, **kwargs):
+def compile_(tag, soup: bs4.BeautifulSoup, *, isQuestion=True, model=None, objects=dict(), inConfig=True, **kwargs):
     """The pair with text for the current tag according to parameters
     (without the tag). And the tag with its content.
     Edit the tag to add its content as HTML.

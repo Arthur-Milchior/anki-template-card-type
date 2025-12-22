@@ -39,7 +39,9 @@ class Answer(SingleChild):
 
 
 class QuestionOrAnswer(ListElement):
-    """The class which expands differently in function of the question/answer side."""
+    """
+    QuestionOrAnswer(question, answer) expends as `question` on the question side and as `answer` on the answer side.
+    """
 
     def __init__(self,
                  question=None,

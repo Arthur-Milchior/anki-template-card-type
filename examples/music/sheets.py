@@ -59,6 +59,7 @@ definitions = PotentiallyNumberedFields(fieldPrefix="Subpart",
                                         groupSize=4)
 learn_sheet = addBoilerplate([header, music, definitions, hr], "Learn")
 
+title = H1(Filled("Name", [{"Name"}, Filled( "Receuil", [",", {"Receuil"}]), Filled( "Composer", [",", {"Composer"}])]))
 
 def practice(*args):
     parts = [arg for arg in args if isinstance(arg, int)]
@@ -74,25 +75,25 @@ def practice(*args):
     else:
         if len(parts) == 1:
             s = f"Play part {parts[0]}"
-            l = {f"Part{parts[0] if parts[0]>1 else ''}"}
+            l = {f"Part{empty1(parts[0])}"}
         else:
             s = "Play parts " + ", ".join(parts[:-1]) + " and " + parts[-1]
-            l = [[{f"Part{i if i>1 else ''}"}, br] for i in parts]
-    content = [ H1(s + " "+precision), l]
-    return addBoilerplate(content, asked=[*l, content])
+            l = [[{f"Part{empty1(i)}"}, br] for i in parts]
+    content = [ H2(s + " "+precision), title, l]
+    return addBoilerplate(content, asked=[f"Part{empty1(i)}" for i in parts])
 
 def subpractices(subpart: int):
     """Coentent to practice subpart and the last present subpart. Assuming this is at most 4 before before subpart."""
     all_content = emptyGen
-    current_subpart_field = f"Subpart{subpart if subpart>1 else ''}"
+    current_subpart_field = f"Subpart{empty1(subpart)}"
     for i in range(4):
         first_subpart = subpart -4 + i
-        first_subpart_field = f"Subpart{first_subpart if first_subpart>1 else ''}"
-        this_content=  [f"Practice part {first_subpart} to {subpart}", br, {first_subpart_field}, {current_subpart_field}]
+        first_subpart_field = f"Subpart{empty1(first_subpart)}"
+        this_content=  [H2(f"Practice part {first_subpart} to {subpart}"), title, br, {first_subpart_field}, {current_subpart_field}]
         all_content = FilledOrEmpty(first_subpart_field, this_content, all_content)
     return addBoilerplate(Filled(current_subpart_field, all_content))
 
 def subpractice(subpart: int):
     header_text = f"Play subpart {subpart}"
-    sp = f"Subpart{subpart if subpart >1 else ''}"
-    return addBoilerplate(Filled("Practice subpart", Filled(sp, [H1(header_text), {sp}, hr, footer])))
+    sp = f"Subpart{empty1(subpart)}"
+    return addBoilerplate(Filled("Practice subpart", Filled(sp, [H2(header_text), title, {sp}, hr, footer])))

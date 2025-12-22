@@ -1,7 +1,7 @@
 Each file correspond to one kind of tag.
 
 Each file must:
-* have a method compile_(tag, soup, **kwargs). It adds the content to the tag, and return the string of new contents. It may assume there is no content currently. kwargs may be arguments used for other modules.
+* have a method compile_(tag, soup: bs4.BeautifulSoup, **kwargs). It adds the content to the tag, and return the string of new contents. It may assume there is no content currently. kwargs may be arguments used for other modules.
 * Have a method clean(tag), cleaning params potentially added by this module. The contents is cleaned by the caller.
 * call templates.addKindOfTemplate(templateParameter, sys.modules[__name__]), stating that if «tempplate = templateParameter» occurs in a Span tag, the current module must be used on it.
 
