@@ -50,7 +50,7 @@ def connexion(nb, side, default="and"):
 
 def bigSide(side):
     """side0 connect0 side1 connect1 side2 connect2 side3"""
-    l = [{f"Prefix {side}"},
+    l = [{f"Prefix {side}0"},
          QuestionnedField(f"{side}0", classes="Side"),
          connexion(0, side),
          connexion(1, side),
