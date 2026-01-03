@@ -4,10 +4,12 @@ from .util import *
 
 extends = PotentiallyNumberedFields(fieldPrefix="Extends",
                                     classes="Definition2",
+                                    numbered_field=numbered_field,
                                     greater=2)
 
 axioms = PotentiallyNumberedFields(fieldPrefix="Axiom",
                                    classes="Definition3",
+                                   numbered_field=numbered_field,
                                    greater=10)
 
 properties = TableFields(["Complete",
@@ -15,6 +17,7 @@ properties = TableFields(["Complete",
                           "Closed"])
 
 models = PotentiallyNumberedFields(fieldPrefix="Model",
+                                   numbered_field=numbered_field,
                                    greater=4)
 
 

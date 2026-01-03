@@ -30,6 +30,7 @@ def globalFun(l):
 def steps(i):
     return NumberedFields(fieldPrefix="Step",
                           greater=i,
+                          numbered_field=numbered_field,
                           localFun=localFun,
                           globalFun=globalFun)
 

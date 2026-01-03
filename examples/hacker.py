@@ -16,6 +16,7 @@ definition_hacker = TableFields(
 
 exprs = NumberedFields("Expression",
                        6,
+                       numbered_field,
                        localFun=(lambda i:
                                  {"child": LI([QuestionnedField(f"Expression{i}", classes="Definition"),
                                                Filled(f"Explanation{i}", Answer(Parenthesis({f"Explanation{i}"})))]),

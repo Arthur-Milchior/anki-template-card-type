@@ -13,7 +13,7 @@ def singleNotation(emphasizing=lambda x:x):
 notationsAsked = decorateQuestion("Notations")
 
 def notationLine(i, emphasizing = lambda x:x):
-    notationField = f"Notation{empty1(i)}"
+    notationField = numbered_field("Notation", i)
     return Filled(notationField, LI(QuestionnedField(notationField, emphasizing=emphasizing)))
 
 def allNotations(emphasizing = lambda x:x):
@@ -34,7 +34,7 @@ def notations(suffix=None):
                                 notation_content(emphasizing=decorateName))
     notations_if_filled = Filled("Notation",
                                  notation_shown)
-    return Cascade(field="Notations", child=notations_if_filled, cascade={f"Notation{empty1(i)}" for i in range(1, 5)})
+    return Cascade(field="Notations", child=notations_if_filled, cascade={numbered_field("Notation", i) for i in range(1, 5)})
 
 def notationAsked(i):
     """Give all information about given notation and ask notation i"""
@@ -42,7 +42,7 @@ def notationAsked(i):
     for j in range(i + 1, i + 4):
         if j > 4:
             j -= 4
-        l.append(Filled(f"Notation{empty1(j)}", notationLine(j, emphasizing=decorateName)))
-    l.append(AskedField(f"Notation{empty1(i)}", question="Or ?"))
+        l.append(Filled(numbered_field("Notation", j), notationLine(j, emphasizing=decorateName)))
+    l.append(AskedField(numbered_field("Notation", i), question="Or ?"))
     content = addBoilerplate(UL(l, addLi=False))
     return Filled(f"Notation{i if i > 1 else 2}", content)

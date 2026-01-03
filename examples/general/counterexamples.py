@@ -10,7 +10,7 @@ singleCounterexample = AskedOrNot("Counterexample",
 )
 
 def counterexampleLine(i):
-    counterExampleField = f"Counterexample{empty1(i)}"
+    counterExampleField = numbered_field("Counterexample", i)
     return Filled(counterExampleField, QuestionnedField(counterExampleField, emphasizing=decorateQuestion))
 
 allCounterexamples = UL([counterexampleLine(i) for i in range(1, 5)])
@@ -23,11 +23,11 @@ def counterexampleAsked_(i):
         if j > 4:
             j -= 4
         l.append(counterexampleLine(j))
-    l.append(AskedField(f"Counterexample{empty1(i)}", question="Or ?"))
+    l.append(AskedField(numbered_field("Counterexample", i), question="Or ?"))
     return UL(l, addLi=False)
 
 def counterexampleAsked(i):
-    return Filled(f"Counterexample{empty1(i)}",
+    return Filled(numbered_field("Counterexample", i),
                   Filled("Counterexample2",
                          addBoilerplate(
                              [

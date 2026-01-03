@@ -34,6 +34,7 @@ symbolics = TableFields(["Name",
                          {"field": "Nth element",
                           "classes": "Nth"}],
                         greater=2,
+                        numbered_field=numbered_field,
                         name="Symbolic")
 symbolic = TableFields(["Name",
                         "French",

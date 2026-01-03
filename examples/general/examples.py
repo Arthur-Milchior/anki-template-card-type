@@ -6,8 +6,8 @@ from ..style import *
 
 def _appliedTo(i):
     """On {{applied to}}: {{Example}}"""
-    appliedTo = f"Applied to{empty1(i)}"
-    example = f"Example{empty1(i)}"
+    appliedTo = numbered_field("Applied to", i)
+    example = numbered_field("Example", i)
     return DecoratedField(prefix="On ",
                    label={appliedTo},
                    field=example,
@@ -18,8 +18,8 @@ def exampleLine(i):
     On {{applied to}}: {{Example}}
     or
     {{Example}} """
-    appliedTo = f"Applied to{empty1(i)}"
-    exampleField = f"Example{empty1(i)}"
+    appliedTo = numbered_field("Applied to", i)
+    exampleField = numbered_field("Example", i)
     return Filled(exampleField,
                   LI(FilledOrEmpty(appliedTo,
                                    _appliedTo(i),
@@ -37,14 +37,14 @@ def _exampleAsked(i):
         if j > 4:
             j -= 4
         l.append(exampleLine(j))
-    l.append(AskedField(f"Example{empty1(i)}", question="Or ?"))
+    l.append(AskedField(numbered_field("Example", i), question="Or ?"))
     return addBoilerplate(UL(l, addLi=False))
     
 
 def exampleAsked(i):
     """All necessary text to ask i-th example"""
     appliedToField = f"""Applied to{empty1(i)}"""
-    exampleField = f"Example{empty1(i)}"
+    exampleField = numbered_field("Example", i)
     example = FilledOrEmpty(appliedToField,
                             _appliedTo(i),
                             _exampleAsked(i)
@@ -66,7 +66,7 @@ def examples(prefix=None):
                                          exampleLine(1)
                            )]
                    ),
-                   {f"Example{empty1(i)}" for i in range(1, 5)}
+                   {numbered_field("Example", i) for i in range(1, 5)}
                    )
 
 """Ask all examples"""

@@ -47,7 +47,7 @@ def _set(s, value):
 
 def jsonStringToDic(jsonString, dic=dict()):
     json = json.loads(jsonString)
-    return jsonToDic(instructions, dic)
+    return jsonToDic(instruction, dic)
 
 
 def jsonToDic(json, dic=dict()):

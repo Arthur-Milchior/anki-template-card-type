@@ -51,6 +51,7 @@ presentation = ("Relation",
                                                             "Generating family"),
                                                         {"Generating family"}),
                                           greater=5,
+                                          numbered_field=numbered_field,
                                           fieldPrefix="Relation",
                                           suffix=hr))
 outer_function = TableFields(

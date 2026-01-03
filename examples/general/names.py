@@ -42,7 +42,7 @@ allNames = UL([nameLine(i) for i in range(1, 5)], addLi=False)
 def cascade(child):
     return Cascade("Names",
                 child,
-                {f"Name{empty1(i)}" for i in range(1,5)})
+                {numbered_field("Name", i) for i in range(1,5)})
 
 """One name or a list of name
 
@@ -68,6 +68,6 @@ def nameAsked(i):
         if j > 4:
             j -= 4
         l.append(nameLine(j))
-    l.append(LI(AskedField(f"Name{empty1(i)}", question="Or ?")))
+    l.append(LI(AskedField(numbered_field("Name", i), question="Or ?")))
     content = addBoilerplate(cascade([UL(l, addLi=False), Filled("Name", hr)]))
     return Filled(f"Name{i if i > 1 else 2}", content)

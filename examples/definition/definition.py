@@ -33,7 +33,7 @@ def grouping(subgroup, nb=0, size=4, part="Part", prefix="Definition"):
 
     """
     partName = f"{part}{nb+1}" if nb else part
-    definitions = [prefix if i == 1 else f"{prefix}{i}" for i in range(
+    definitions = [numbered_field(prefix, i) for i in range(
         size*nb+1, size*(nb+1)+1)]
     part = LI({partName})
     part = FilledOrEmpty(
@@ -51,6 +51,7 @@ def grouping(subgroup, nb=0, size=4, part="Part", prefix="Definition"):
 _definitions = ("Definition",
                [PotentiallyNumberedFields(fieldPrefix="Definition",
                                           greater=16,
+                                          numbered_field=numbered_field,
                                           label=labelDef,
                                           infix="",
                                           applyToGroup=grouping,
@@ -63,11 +64,11 @@ _definitions = ("Definition",
 
 # Ensure that if Parti is asked, then Definition4i+1, 4i+2, 4i+3 and 4i+4 is asked
 for i in range(1, 5):
-    name = "Part"+("" if i == 1 else str(i))
+    name = numbered_field("Part",i)
     content = set()
     for j in range(4):
         d = 4*(i-1)+j
-        content.add("Definition"+("" if d == 1 else str(d)))
+        content.add(numbered_field("Definition",d))    
     _definitions = Cascade(name,
                           _definitions,
                           content)

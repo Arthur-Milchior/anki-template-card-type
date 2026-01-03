@@ -15,17 +15,19 @@ definition_adt = TableFields(
              "classes": "Definition3"},
             {"field": "Initialization",
              "classes": "Definition4"}
-            ],
+            ], 
+            numbered_field=numbered_field,
     emphasizing=decorateQuestion
 )
 
 definition = Cascade("Adt",
-                     [definition_adt,                      PotentiallyNumberedFields(
-                          "Function", 5, classes="Definition"),
+                     [definition_adt,   
                       PotentiallyNumberedFields(
-                          "Axiom", 4, classes="Definition3"),
+                          "Function", 5, classes="Definition", numbered_field=numbered_field),
                       PotentiallyNumberedFields(
-                          "Meaning", 4, classes="Definition5"),
+                          "Axiom", 4, classes="Definition3", numbered_field=numbered_field),
+                      PotentiallyNumberedFields(
+                          "Meaning", 4, classes="Definition5", numbered_field=numbered_field),
                       ],
                      {"Adt_", "Functions"})
-adt = addBoilerplate([namesNotationsDenotedBy, definition])
+adt = addBoilerplate([namesNotationsDenotedBy, hr, definition])

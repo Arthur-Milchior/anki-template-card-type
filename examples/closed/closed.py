@@ -8,18 +8,18 @@ from ..style import *
 _label = [Field("Name", isMandatory=True), " "]
 
 def _no(i):
-    return Filled(f"Not{empty1(i)}",
+    return Filled(numbered_field("Not", i),
                     "not ")
 
 def _construction(i, onAnswer=None):
-    construction = f"Construction{empty1(i)}"
+    construction = numbered_field("Construction", i)
     if onAnswer is None:
         onAnswer = lambda x: x
     return Filled(construction,
                   [hr, onAnswer(Field(construction))])
 
 def _counterExample(i, onAnswer=None):
-    counterExample = f"CounterExample{empty1(i)}"
+    counterExample = numbered_field("CounterExample", i)
     if onAnswer is None:
         onAnswer = lambda x: x
     return Filled(counterExample, [hr, onAnswer(Field(counterExample))])
@@ -35,7 +35,7 @@ def _shortLine(i, onAnswer=None):
     conditionField = f"Condition{empty_i}"
     closureField = f"Closure{empty_i}"
     closure = FilledOrEmpty(closureField,
-                            FilledOrEmpty(f"Not{empty1(empty_i)}",
+                            FilledOrEmpty(numbered_field("Not", empty_i),
                                           _no(empty_i),
                                           [" ", {closureField}, " "],
                             ),
@@ -74,7 +74,7 @@ def closedMissing(i):
     for j in range (i+1, i+nbClosure):
         if j > nbClosure:
             j -= nbClosure
-        underField = f"Under{empty1(j)}"
+        underField = numbered_field("Under", j)
         l.append(Filled(underField, LI(_shortLine(j))))
     l.append(
         LI(QuestionOrAnswer(decorateQuestion("and ?"),
@@ -84,17 +84,17 @@ def closedMissing(i):
         _label,
         UL(l, addLi=False),
     ],
-                          {f"Under{empty1(i)}"}
+                          {numbered_field("Under", i)}
     )
 
 def closedWhenConstruction(i):
-    construction = f"Construction{empty1(i)}"
+    construction = numbered_field("Construction", i)
 
     content = addBoilerplate([_label, _shortLine(i), hr, QuestionOrAnswer( H3("Proof?"), {construction})])
     return Filled(construction, content)
 
 def closedWhenCounterExample(i):
-    counterExample = f"CounterExample{empty1(i)}"
+    counterExample = numbered_field("CounterExample", i)
     content = addBoilerplate([_label, _shortLine(i), hr, QuestionOrAnswer( H3("Counter-example?"), {counterExample})])
     return Filled(counterExample, content)
 
@@ -102,6 +102,6 @@ def closedWhenCounterExample(i):
 allCloses = addBoilerplate(
     [_label,
      QuestionOrAnswer([" is ", br, decorateQuestion("closed under"), "?"],
-                      UL([Filled(f"Under{empty1(j)}", LI(_shortLine(j, onAnswer=decorateQuestion))) for j in range(1,nbClosure+1)]
+                      UL([Filled(numbered_field("Under", j), LI(_shortLine(j, onAnswer=decorateQuestion))) for j in range(1,nbClosure+1)]
                          , addLi=False))]
 )

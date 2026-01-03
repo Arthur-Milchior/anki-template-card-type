@@ -138,11 +138,17 @@ class TableFields(ListFields):
                  isMandatory=True,
                  useClasses=True,
                  defaultClasses=None,
+                 header_decoration=H3,
                  label=None,
                  answer=None,
                  emphasizing=(lambda x:x),
+                 numbered_field=None,
                  **kwargs):
         self.fields = []
+        if numbered_field is None:
+            assert greater == 1
+            def numbered_field(field, i):
+                return field
         for field_s in fields:
             if isinstance(field_s, list):
                 group = set()
@@ -182,7 +188,7 @@ class TableFields(ListFields):
             assert assertType(fieldInputDic, dict)
 
             fieldName = fieldInputDic["field"]
-            label = fieldInputDic.get("label", fieldName)
+            label = fieldInputDic.get("label", f"{fieldName}:")
 
             # Choosing the class to apply
             if "classes" in fieldInputDic:
@@ -200,11 +206,12 @@ class TableFields(ListFields):
                              emphasizing=emphasizing,
                              classes=classes
                              )
-            tdLabel = TD(child=labelGen, attrs=tdLabelAttrs)
+            tdLabel = header_decoration(child=labelGen, attrs=tdLabelAttrs)
 
             # The fields
-            def tdField(i=""):
-                fieldName_ = f"{fieldName}{i}"
+            def tdField(i=1):
+                """Returns the entry for the current question i-th column."""
+                fieldName_ = numbered_field(fieldName, i)
                 if "function" in fieldInputDic:
                     child = fieldInputDic["function"](i)
                 else:
@@ -221,7 +228,7 @@ class TableFields(ListFields):
                                                     useClasses=useClasses,
                                                     emphasizing=emphasizing,
                                                     classes=classes)
-                td = TD(child=questionnedField, attrs=tdFieldAttrs)
+                td = SPAN(child=questionnedField, attrs=tdFieldAttrs)
                 if not answer:
                     return td
                 answerField = f"{fieldName}{answer}"
@@ -229,18 +236,19 @@ class TableFields(ListFields):
                                                      useClasses=useClasses,
                                                      emphasizing=emphasizing,
                                                      classes=classes)
-                answerTd = TD(child=answerQuestionned,
+                answerTd = SPAN(child=answerQuestionned,
                               attrs=tdFieldAttrs)
                 return QuestionOrAnswer(td, [td, answerTd])
 
-            trChild = [tdLabel, tdField()]+[tdField(i)
-                                            for i in range(2, self.greater+1)]
+            trChild = P([tdLabel, tdField()]+[[br,tdField(i)]
+                                            for i in range(2, self.greater+1)])
 
             # The whole line
-            ret["child"] = TR(child=trChild,
+            ret["child"] = SPAN(child=trChild,
                               attrs=trAttrs)
-            defaultList = [f"""{fieldInputDic["field"]}{i}""" for i in [
-                ""]+list(range(2, self.greater+1))]
+            indexes = range(1, self.greater+1)
+            name = fieldInputDic["field"]
+            defaultList = [numbered_field(name, i) for i in indexes]
             defaultSet = set(defaultList)
             ret["questions"] = fieldInputDic.get("questions", defaultSet)
 
@@ -260,8 +268,7 @@ class TableFields(ListFields):
 
         @debugFun
         def globalFun(lines):
-            ret = Table(lines, attrs=attrs, caption=label,
-                        trAttrs=trAttrs, tdAttrs=tdAttrs)
+            ret = SPAN(lines, attrs=attrs, )
             return ret
         super().__init__(self.fields,
                          localFun=localFun,
@@ -297,6 +304,7 @@ class NumberedFields(ListFields):
     def __init__(self,
                  fieldPrefix,
                  greater,
+                 numbered_field,
                  label=None,
                  attrs=dict(),
                  liAttrs=dict(),
@@ -319,18 +327,15 @@ class NumberedFields(ListFields):
         self.label = label if label is not None else self.plural
         assert(isinstance(fieldPrefix, str))
         assert(isinstance(greater, int))
-        self.suffixes = [str(i) for i in range(smaller, greater+1)]
-        self.smaller = smaller
-        if smaller <= 1 <= greater:
-            self.suffixes[1-smaller] = ""
-        self.numberedFields = [f"{fieldPrefix}{i}" for i in self.suffixes]
+        self.suffixes = [i for i in range(smaller, greater+1)]
+        self.numberedFields = [numbered_field(fieldPrefix, i) for i in self.suffixes]
         self.firstField = fieldPrefix
         self.groupName = f"{fieldPrefix}s"
         if classes is None:
             classes = fieldPrefix
         if localFun is None:
             def localFun(i):
-                field = f"""{fieldPrefix}{i}"""
+                field = numbered_field(fieldPrefix, i)
                 li = LI(child=QuestionnedField(field,
                                                isMandatory=isMandatory,
                                                useClasses=useClasses,
@@ -374,11 +379,15 @@ class PotentiallyNumberedFields(Cascade):
                  prefix=None,
                  infix=": ",
                  isMandatory=False,
+                 numbered_field=None,
                  applyToGroup=None,
                  groupSize=None,
                  **kwargs):
+        if numbered_field is None:
+            numbered_field = lambda prefix, i: prefix
         nf = NumberedFields(fieldPrefix,
                             greater,
+                            numbered_field,
                             label=label,
                             attrs=attrs,
                             liAttrs=liAttrs,
@@ -401,7 +410,7 @@ class PotentiallyNumberedFields(Cascade):
         singleCase = Cascade(field=f"{fieldPrefix}s",
                              child=singleCase,
                              cascade={fieldPrefix})
-        foe = FilledOrEmpty(f"""{fieldPrefix}2""",
+        foe = FilledOrEmpty(numbered_field(fieldPrefix,2),
                             nf,
                             singleCase)
         super().__init__(child=foe,

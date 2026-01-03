@@ -34,3 +34,23 @@ def empty1(i):
     if i == 1:
         return ""
     return str(i)
+
+def numbered_field(field_name, i):
+    """Return field_name suffixed with i, unless i == 1"""
+    return f"{field_name}{empty1(i)}"
+
+def code(languageField):
+    """A function which add tag ensuring that the child is interpreted as code in language `language` or given in the field
+    `languageField`."""
+    def aux(child, **kwargs):
+        return FilledOrEmpty(languageField,
+                      PRE(
+                          child=CODE(
+                              child=child,
+                              attrs={"class": "{{" + languageField + "}}"},
+                              **kwargs
+                          ),
+                          **kwargs
+                      ),
+                      child)
+    return aux

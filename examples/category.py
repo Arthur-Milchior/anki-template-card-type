@@ -9,6 +9,10 @@ definition_ordinal = TableFields(
          "classes": "Definition"},
         {"field": "Arrows",
          "classes": "Definition2"},
+        {"field": "2-morphism",
+         "classes": "Definition4"},
+        {"field": "n-morphism",
+         "classes": "Definition5"},
         {"field": "Compositions",
          "classes": "Definition3",
          "emptyCase": AskedOrNot("Composition",
@@ -21,7 +25,7 @@ definition_ordinal = TableFields(
 def relatedFields(fields):
     assert assertType(relatedFields, list)
     return [{"field": field,
-             "hideInSomeQuestion": s - {field}} for field in fields]
+             "hideInSomeQuestion": fields - {field}} for field in fields]
 
 
 properties_ = TableFields(
@@ -74,4 +78,4 @@ properties_ = TableFields(
 
 properties = HideInSomeQuestions(
     ["Arrows", "Objects", "Compositions", "Definition"], properties_,)
-category = addBoilerplate([namesNotationsDenotedBy, definition_ordinal, properties])
+category = addBoilerplate([namesNotationsDenotedBy, hr, definition_ordinal, hr, properties])

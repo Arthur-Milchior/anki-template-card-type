@@ -640,7 +640,7 @@ tableFourShownAnswerAll = ListElement([
 
 
 # Numbered
-twoQuestionsNumbered = NumberedFields('Definition', 2)
+twoQuestionsNumbered = NumberedFields('Definition', 2, numbered_field)
 twoQuestionsNumberedLine1 = Filled(
     field='Definition',
     child=HTML("li",

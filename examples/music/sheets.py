@@ -18,7 +18,7 @@ def grouping(subgroup, nb=0, size=4, part="Part", prefix="Subpart"):
 
     """
     partName = f"{part}{nb+1}" if nb else part
-    definitions = [prefix if i == 1 else f"{prefix}{i}" for i in range(
+    definitions = [numbered_field(prefix, i) for i in range(
         size*nb+1, size*(nb+1)+1)]
     part = LI({partName})
     part = FilledOrEmpty(
@@ -53,6 +53,7 @@ labelDef = Cascade("Definitions",
 
 definitions = PotentiallyNumberedFields(fieldPrefix="Subpart",
                                         greater=16,
+                                        numbered_field=numbered_field,
                                         label=labelDef,
                                         infix="",
                                         applyToGroup=grouping,
@@ -75,25 +76,25 @@ def practice(*args):
     else:
         if len(parts) == 1:
             s = f"Play part {parts[0]}"
-            l = {f"Part{empty1(parts[0])}"}
+            l = {numbered_field("Part", parts[0])}
         else:
             s = "Play parts " + ", ".join(parts[:-1]) + " and " + parts[-1]
-            l = [[{f"Part{empty1(i)}"}, br] for i in parts]
+            l = [[{numbered_field("Part", i)}, br] for i in parts]
     content = [ H2(s + " "+precision), title, l]
-    return addBoilerplate(content, asked=[f"Part{empty1(i)}" for i in parts])
+    return addBoilerplate(content, asked=[numbered_field("Part", i) for i in parts])
 
 def subpractices(subpart: int):
     """Coentent to practice subpart and the last present subpart. Assuming this is at most 4 before before subpart."""
     all_content = emptyGen
-    current_subpart_field = f"Subpart{empty1(subpart)}"
+    current_subpart_field = numbered_field("Subpart", subpart)
     for i in range(4):
         first_subpart = subpart -4 + i
-        first_subpart_field = f"Subpart{empty1(first_subpart)}"
+        first_subpart_field = numbered_field("Subpart", first_subpart)
         this_content=  [H2(f"Practice part {first_subpart} to {subpart}"), title, br, {first_subpart_field}, {current_subpart_field}]
         all_content = FilledOrEmpty(first_subpart_field, this_content, all_content)
     return addBoilerplate(Filled(current_subpart_field, all_content))
 
 def subpractice(subpart: int):
     header_text = f"Play subpart {subpart}"
-    sp = f"Subpart{empty1(subpart)}"
+    sp = numbered_field("Subpart", subpart)
     return addBoilerplate(Filled("Practice subpart", Filled(sp, [H2(header_text), title, {sp}, hr, footer])))

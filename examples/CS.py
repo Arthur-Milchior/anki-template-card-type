@@ -6,27 +6,12 @@ from .util import addBoilerplate, empty1
 from aqt.qt import debug;
 
 typDicLanguage = {"field": "Typ",
-                  "label": "Type",
+                  "label": "Type:",
                   "filledFields": ["Typ"],
                   "questions": {"Typ"},
                   "function": lambda i: code("Language")({f"Typ"}),
 }
 
-def code(languageField):
-    """A function which add tag ensuring that the child is interpreted as code in language `language` or given in the field
-    `languageField`."""
-    def aux(child, **kwargs):
-        return FilledOrEmpty(languageField,
-                      PRE(
-                          child=CODE(
-                              child=child,
-                              attrs={"class": "{{" + languageField + "}}"},
-                              **kwargs
-                          ),
-                          **kwargs
-                      ),
-                      child)
-    return aux
     
 def codeLanguageFixed(language, field_name):
     assert language
@@ -65,7 +50,7 @@ cs_context = TableFields(cs_context_,
 name_ = [
     {"field": "Instruction",
      "classes": "Notation",
-     "function": lambda i: code("Language")({f"Instruction{empty1(i)}"}),
+     "function": lambda i: code("Language")({numbered_field("Instruction", i)}),
     },
     {"field": "Syntactic sugar",
      "classes": "Notation",
@@ -134,7 +119,8 @@ problem_ = ["Input",
 problem = TableFields(problem_,
                       isMandatory=False,
                       name="Description",
-                      suffix=hr
+                      suffix=hr,
+                 header_decoration=H2,
                       )
 def impl_code(field: str):
     return {

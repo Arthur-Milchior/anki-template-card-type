@@ -41,6 +41,7 @@ table = TableFields(
             {"field": "Nth",
              "classes": ["Definition4", "Guitar chord"]},
         ]],
+    numbered_field=numbered_field,
     greater=5,
     isMandatory=True)
 

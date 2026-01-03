@@ -35,6 +35,7 @@ definition = TableFields(
      {"field": "Represents",
       "classes": "Intuition"}],
     greater=2,
+    numbered_field=numbered_field,
     name="Definition",
     suffix=hr
 )
@@ -63,8 +64,8 @@ constant = addBoilerplate([definition, typeOrNumber, sis])
 
 
 def _represented(i=1):
-    questionField = f"Represents{empty1(i)}"
-    answer = f"Name{empty1(i)}"
+    questionField = numbered_field("Represents", i)
+    answer = numbered_field("Name", i)
     return FromAndTo(questionField, ' ', 'is represented by', ' ', answer, classes="Name")
 
 represented = _represented()

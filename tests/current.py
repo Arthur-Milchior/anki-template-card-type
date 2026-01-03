@@ -25,7 +25,9 @@ labelDef = [Label("Definition", ["Definition"]),
                           Filled("Definition2", "Equivalently: "))
             ]
 definitions = NumberedFields(fieldPrefix="Definition",
+                             numbered_field=numbered_field,
                              greater=16,
+                             numbered_field=numbered_field;
                              label=labelDef
                              )
 at = AtLeastOneField(child=CLASS(["foo"], ""),
@@ -39,6 +41,7 @@ label = Label(label=labelDef,
 ex = ('Example',
       NumberedFields('Example',
                      4,
+                     numbered_field=numbered_field;
                      suffix=hr,
                      localFun=(lambda i: {"child": LI(FilledOrEmpty(f"Applied to{i}",
                                                                     DecoratedField(prefix="On ",
@@ -63,6 +66,7 @@ labelDef = FilledOrEmpty("Conjdef",
 definitions = ("Definition",
                [NumberedFields(fieldPrefix="Definition",
                                greater=3,
+                               numbered_field=numbered_field,
                                label=labelDef,
                                #infix = ""
                                ),
