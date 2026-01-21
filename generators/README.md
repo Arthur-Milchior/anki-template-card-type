@@ -345,7 +345,7 @@ given either:
   * "field" (this is the only mandatory value), which is the name of
     the field shown in this line
   * "label" the label to put in the first column in this line
-  * "hideInSomeQuestion": apply HideInSomeQuestion to this line, with
+  * "hideInSomeQuestions": apply HideInSomeQuestion to this line, with
     the value contained in this entry.
   * "showIfAskedOrAnswer": apply ShowIfAskedOrAnswer to this line, with
     the value contained in this entry.
@@ -356,7 +356,7 @@ given either:
 * as a list ```relatedList```. In which case, it is assumed that for
   each field ```f``` of ```relatedList```, the list ```fields```
   contains an entry ```{"field":f,
-  hideInSomeQuestion:relatedList-f}```.
+  hideInSomeQuestions:relatedList-f}```.
 Each line is similar to a Question generator, with ```<tr><td>``` as
 prefix, ```</td><td>``` as infix and ```</td></tr>``` as suffix.
 
@@ -438,5 +438,5 @@ ListFields takes the following parameters:
     elements are also supposed to be asked.
   * filledFields: request that at least one of the field from this
     list is filled to display the line
-  * hideInSomeQuestion: apply HideInSomeQuestion with those fields to
+  * hideInSomeQuestions: apply HideInSomeQuestion with those fields to
   this line.

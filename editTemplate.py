@@ -11,8 +11,8 @@ from aqt import mw
 from .config import objects
 from .debug import assertType, debug
 from .tag import tagContent
-from .templates.soupAndHtml import soupFromTemplate, templateFromSoup
-from .templates.templates import clean, compile_
+from .template.soupAndHtml import soupFromTemplate, templateFromSoup
+from .template.templates import clean, compile_
 
 
 def _templateTagAddText(templateTag, soup,

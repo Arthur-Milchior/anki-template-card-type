@@ -50,7 +50,7 @@ LAST_GEN_STEP = FORBIDDEN
 
 TAG = Step(9, "TAG")  # used for debugging
 EMPTY = Step(100, "EMPTY")
-l = [BASIC, NORMAL, WITHOUT_REDUNDANCY, QUESTION_ANSWER, MODEL_APPLIED, HIDE, ASKED, MANDATORY, FORBIDDEN  # , QUESTIONS
+L_mj = [BASIC, NORMAL, WITHOUT_REDUNDANCY, QUESTION_ANSWER, MODEL_APPLIED, HIDE, ASKED, MANDATORY, FORBIDDEN  # , QUESTIONS
      , TAG]
-posToStep = {i: l[i] for i in range(len(l))}
-stepToPos = {l[i]: i for i in range(len(l))}
+posToStep = {i: L_mj[i] for i in range(len(L_mj))}
+stepToPos = {L_mj[i]: i for i in range(len(L_mj))}

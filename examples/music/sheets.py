@@ -97,4 +97,4 @@ def subpractices(subpart: int):
 def subpractice(subpart: int):
     header_text = f"Play subpart {subpart}"
     sp = numbered_field("Subpart", subpart)
-    return addBoilerplate(Filled("Practice subpart", Filled(sp, [H2(header_text), title, {sp}, hr, footer])))
+    return addBoilerplate(Filled("Practice subpart", Filled(sp, [H2(header_text), title, {sp}, hr, footer()])))

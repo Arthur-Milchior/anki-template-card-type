@@ -36,8 +36,10 @@ def _tagGetParams(tag):
     assert standardContainer(asked)
     assert standardContainer(hide)
     assert standardContainer(hideQuestions)
-    return (objGenerator, asked, hide, hideQuestions,
+    t= (objGenerator, asked, hide, hideQuestions,
            mandatory, choose, forbidden)
+    print (t)
+    return t
 
 
 def tagGetParamsConfig(tag, objects):

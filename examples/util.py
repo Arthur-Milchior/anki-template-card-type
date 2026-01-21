@@ -1,7 +1,14 @@
-from typing import List, Union
+from typing import List, Optional, Union
 from .general.footer import footer
 from .general.header import header
 from ..generators import *
+
+
+def bareField(name):
+    return Field(name, useClasses=False)
+
+def bareFieldOrDefault(name, default):
+    return FilledOrEmpty(name, bareField(name), default)
 
 def question(questionFieldPrefix, fieldToQuestion, actualQuestion, questionToAnswer, answerPrefix):
     """Intuitively, it is ```{{questionFieldPrefix}} fieldToQuestion
@@ -19,10 +26,12 @@ def question(questionFieldPrefix, fieldToQuestion, actualQuestion, questionToAns
 
 
 
-def addBoilerplate(gen, asked: Union[str, List[str]]=[]):
+def addBoilerplate(gen, 
+                   asked: Union[str, List[str]]=[],
+                   extra_variables: Optional[Gen] = None):
     if (isinstance(asked, str) ):
         asked = [asked]
-    gen = ListElement([header, gen, footer])
+    gen = ListElement([header, gen, footer(extra_variables=extra_variables)])
     for asked in asked:
         gen = Filled(asked, gen)
     # for mandatory in askedAndMandatory:

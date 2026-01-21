@@ -1,3 +1,4 @@
+from typing import Optional
 from ...generators import *
 from ..style import *
 
@@ -13,9 +14,13 @@ origin = [
 ]
 
 """Show all informations that gives card context. Only the assumption are sometime asked, there are no other questions."""
-footer = FOOTER(
+def footer(
+        extra_variables: Optional[Gen] = None,
+        ):
+    extra_variables = [br, extra_variables] if extra_variables is not None else emptyGen
+    return FOOTER(
     [
-        P(Field("Variables")),
+        P([Field("Variables"), extra_variables]),
         DecoratedField("Assuming", emphasizing=decorateQuestion),
         Empty("Context", P(deck)),
         Answer(

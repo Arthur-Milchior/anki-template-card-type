@@ -5,18 +5,18 @@ from .automata import automata
 from .binaryfunction import binaryfunction
 from .binaryrelation import binaryrelation
 from .cardinal import cardinal
-from .category import category
+from .category import *
 from .closed.closed import *
 from .combinatorics import (combinatoric_numeric, combinatoric_symbolic,
                             combinatoric_symbolic2, combinatorics)
 from .constant import constant, typedNumber, represented, represented2
 from .CS import (algorithm, commandLine, dataStructure, enum, instruction,
                  noteType, problem, variable)
+from .data_structure import data_structure
 from .definition.definition import definitions, definitions_names_end
 # from .enum import enum
 from .face.face import face
 from .fingering import fingering
-from .functor import functor
 from .general import *
 from .graphical import graphical
 from .music import *

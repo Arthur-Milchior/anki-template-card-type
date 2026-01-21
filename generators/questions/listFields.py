@@ -9,8 +9,8 @@ from ..conditionals.numberOfField import AtLeastOneField
 from ..conditionals.questionOrAnswer import QuestionOrAnswer
 from ..ensureGen import ensureGen
 from ..generators import Gen, NotNormal, genRepr
-from ..html.atom import br
-from ..html.html import HTML, LI, TD, TR, Table
+from ..html.atom import *
+from ..html.html import *
 from ..leaf import Field
 from ..listGen import ListElement, MultipleChildren
 from ..nonprinting import ToAsk
@@ -74,7 +74,7 @@ class ListFields(ListElement):
                     checkField(field)
             toCascadeLocal = processedFieldDic.get("questions", frozenset())
             hideFields = processedFieldDic.get(
-                "hideInSomeQuestion", frozenset())
+                "hideInSomeQuestions", frozenset())
             showIfAskedOrAnswer = processedFieldDic.get(
                 "showIfAskedOrAnswer", False)
             if not processedField:
@@ -119,7 +119,7 @@ class ListFields(ListElement):
 
 """A  dic may contain:
 field - the field name
-"hideinsomequestions -- set of fields. When one of this field is asked, the question side should not be shown. This ensure that a similar field does not give too good of a hint (e.g. when asking for variance, hide the standard deviation)
+"hideInSomeQuestion -- set of fields. When one of this field is asked, the question side should not be shown. This ensure that a similar field does not give too good of a hint (e.g. when asking for variance, hide the standard deviation)
 child -- an initial version of the child. It may be modified to add conditionals on it
 ???
 """
@@ -166,7 +166,7 @@ class TableFields(ListFields):
                         d = field
                     else:
                         assert False
-                    d["hideInSomeQuestion"] = group - {d["field"]}
+                    d["hideInSomeQuestions"] = group - {d["field"]}
                     self.fields.append(d)
             else:
                 self.fields.append(field_s)
@@ -260,8 +260,8 @@ class TableFields(ListFields):
             else:
                 ret["filledFields"] = defaultList
 
-            ret["hideInSomeQuestion"] = fieldInputDic.get(
-                "hideInSomeQuestion", frozenset())
+            ret["hideInSomeQuestions"] = fieldInputDic.get(
+                "hideInSomeQuestions", frozenset())
             if fieldInputDic.get("showIfAskedOrAnswer"):
                 ret["showIfAskedOrAnswer"] = fieldName
             return ret
@@ -384,6 +384,7 @@ class PotentiallyNumberedFields(Cascade):
                  groupSize=None,
                  **kwargs):
         if numbered_field is None:
+            assert greater == 1
             numbered_field = lambda prefix, i: prefix
         nf = NumberedFields(fieldPrefix,
                             greater,

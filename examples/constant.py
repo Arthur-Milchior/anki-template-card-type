@@ -16,6 +16,7 @@ typedNumber = Cascade("Typs", typedNumber, {"Typ"})
 types = Filled("Typ",
                PotentiallyNumberedFields("Typ",
                                          5,
+                                         numbered_field=numbered_field,
                                          label="Type",
                                          suffix=hr)
                )

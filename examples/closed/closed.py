@@ -54,8 +54,8 @@ def _line(i, onAnswer=None):
         onAnswer = lambda x: x
     return [
         _shortLine(i, onAnswer=onAnswer),
-        _counterExample(i, onAnswer),
-        _construction(i, onAnswer),
+        _counterExample(i),
+        _construction(i),
     ]
 
 def closedWhen(i):

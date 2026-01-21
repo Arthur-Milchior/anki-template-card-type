@@ -2,7 +2,7 @@ from ..generators import *
 from .general.typ import typDic
 from .general.examples import examples
 from .general.namesNotationsDenotedBy import namesNotationsDenotedBy
-from .util import addBoilerplate, empty1
+from .util import addBoilerplate, code, empty1, numbered_field
 from aqt.qt import debug;
 
 typDicLanguage = {"field": "Typ",
@@ -89,6 +89,7 @@ complexity = TableFields(complexity_,
 
 values = PotentiallyNumberedFields("Value",
                                    21,
+                                   numbered_field=numbered_field,
                                    suffix=hr, emphasizingField=code("Language"))
 
 problem_ = ["Input",
@@ -145,7 +146,8 @@ def languageComment(*args, **kwargs):
 def implementation():
     return PotentiallyNumberedFields(
     "Implementation", 
-    4, 
+    4,
+    numbered_field=numbered_field,
     emphasizingField=languageComment
     #infix=[br, Comment("azerty")]
     )
@@ -159,7 +161,8 @@ flag_ = (
     P(CODE(QuestionnedField("Fla"), attrs={"class":"sh"})),
 )
 
-exceptions = PotentiallyNumberedFields("Exception", 5, suffix=hr)
+exceptions = PotentiallyNumberedFields("Exception", 5, 
+    numbered_field=numbered_field, suffix=hr)
 all_ = TableFields(cs_context_ +
                    name_ +
                    problem_ +

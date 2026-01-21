@@ -1,8 +1,9 @@
+from .util import numbered_field
 from ..generators import *
 from .general.footer import footer
 from .general.header import header
 from .general.typ import typDic
-from ...generators.html.atom import *
+from ..generators.html.atom import *
 
 
 def toPart(n):

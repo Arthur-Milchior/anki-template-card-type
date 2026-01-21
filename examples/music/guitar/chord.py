@@ -1,3 +1,4 @@
+from ...util import numbered_field
 from ....generators import *
 
 name = CLASS(["Name", "Chord name"],

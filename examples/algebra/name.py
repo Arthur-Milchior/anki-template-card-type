@@ -5,7 +5,7 @@ def FOE(*args, **kwargs):
     return FilledOrEmpty(*args, isMandatory=True, **kwargs)
 
 
-ringCom1 = FOE('/',
+ringCom1 = FOE('÷',
                'Field',
                FOE('Graduation',
                    'Gradued ring',
@@ -37,7 +37,7 @@ ringCom1 = FOE('/',
 
 ring1 = FOE('Commutative',
             ringCom1,
-            FOE('/',
+            FOE('÷',
                 "Division ring",
                 "Unit ring",
                 )
@@ -75,7 +75,7 @@ ring_like = Empty('Not associative',
                   )
 
 times_only = FOE('Not associative',
-                 FOE('/',
+                 FOE('÷',
                      FOE('\\',
                          FOE('0',
                              'Loop',
@@ -85,7 +85,7 @@ times_only = FOE('Not associative',
                      'Magma'
                      ),
                  [FOE('1',
-                      FOE('/',
+                      FOE('÷',
                           FOE('Commutative',
                               'Abelian group',
                               'Group'
@@ -127,7 +127,7 @@ outer = FOE('*',
             [Filled('Quadratic form',
                     'Composition '),
              Filled('1',
-                    FOE('/',
+                    FOE('÷',
                         'division',
                         'unital '
                         )

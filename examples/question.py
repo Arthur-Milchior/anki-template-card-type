@@ -9,6 +9,7 @@ answers = PotentiallyNumberedFields("Answer",
                                     16,
                                     label=QuestionnedField("Question"),
                                     infix=br,
+                                    numbered_field=numbered_field,
                                     classes="Definition")
 
 questionGen = addBoilerplate(

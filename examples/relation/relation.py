@@ -184,7 +184,7 @@ def relation(left, right):
     rightField = listOfSideFields[right]
     leftFieldName = listOfSideFieldNames[left]
     rightFieldName = listOfSideFieldNames[right]
-    l = [header, leftField, relation, rightField, construction, footer,]
+    l = [header, leftField, relation, rightField, construction, footer(),]
     filled = Filled(leftFieldName, Filled(rightFieldName, l))
     return Empty("Hide middle", filled)
 

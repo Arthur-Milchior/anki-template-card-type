@@ -3,10 +3,11 @@ from html import escape
 
 from bs4 import BeautifulSoup
 
+from ..generators.leaf import Literal
+
 from ..debug import assertEqual, debug, endDebug, startDebug
 from ..generators import *
-from ..templates.soupAndHtml import soupFromTemplate, templateFromSoup
-from ..templates.templates import compile_
+from ...templates.template import compile_
 from ..user_files import *
 from .data import *
 from .functions import (TestHTML, compileGen, genToSoup, genToTags,
@@ -27,7 +28,6 @@ labelDef = [Label("Definition", ["Definition"]),
 definitions = NumberedFields(fieldPrefix="Definition",
                              numbered_field=numbered_field,
                              greater=16,
-                             numbered_field=numbered_field;
                              label=labelDef
                              )
 at = AtLeastOneField(child=CLASS(["foo"], ""),
@@ -41,7 +41,7 @@ label = Label(label=labelDef,
 ex = ('Example',
       NumberedFields('Example',
                      4,
-                     numbered_field=numbered_field;
+                     numbered_field=numbered_field,
                      suffix=hr,
                      localFun=(lambda i: {"child": LI(FilledOrEmpty(f"Applied to{i}",
                                                                     DecoratedField(prefix="On ",

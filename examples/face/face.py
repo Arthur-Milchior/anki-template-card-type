@@ -7,4 +7,4 @@ fullName = Cascade("Full name", [firstName, lastName, br], {
                    "First name", "Last name"})
 knownFor = DecoratedField("Known for", suffix=br)
 _face = [fullName, knownFor, QuestionnedField("Picture")]
-face = [header, _face, footer]
+face = [header, _face, footer()]

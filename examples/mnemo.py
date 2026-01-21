@@ -22,4 +22,4 @@ definition_mnemo = TableFields(
 )
 
 
-mnemo = [header, HTML("H1", {"Symbol"}), definition_mnemo, footer]
+mnemo = [header, HTML("H1", {"Symbol"}), definition_mnemo, footer()]
