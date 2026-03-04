@@ -26,7 +26,7 @@ definition_theory = Cascade("Definition",
                                             classes="Definition3",
                                             suffix=hr),
                              extends,
-                             axioms],
+                             axioms,],
                             cascade={"Vocabulary", "Extends", "Axioms"})
 
 theory = addBoilerplate([namesNotationsDenotedBy, definition_theory, models, properties])

@@ -11,6 +11,13 @@ morphism2 = bareFieldOrDefault("Morphism2 (mathjax)", "g")
 morphism3 = bareFieldOrDefault("Morphism3 (mathjax)", "h")
 
 
+composition_label = mathjax_label(
+                  morphism2,
+                  " \\circ ",
+                  morphism1)
+                  
+                 
+
 definition_ordinal = TableFields(
     name="Definition",
     fields=[
@@ -20,28 +27,33 @@ definition_ordinal = TableFields(
          "classes": "Definition"},
         {"field": "Arrows",
          "classes": "Definition2",
-         "label":["Arrows \\(", 
+         "label":["Arrows ", mathjax_label( 
                   object1,
                   " \\to ",
                   object2,
-                  "\\) :",
-                 ],
+         )],
+         "hideInSomeQuestions": "Objects",
          },
         {"field": "2-morphism",
-         "classes": "Definition4"},
+         "classes": "Definition4",
+         "hideInSomeQuestions": {
+             "Objects", "Arrows",
+        },},
         {"field": "n-morphism",
-         "classes": "Definition5"},
+         "classes": "Definition5",
+         "hideInSomeQuestions": {
+             "Objects", "Arrows", "2-morphism",
+        },},
         {"field": "Compositions",
          "classes": "Definition3",
-         "label":["Arrows \\(", 
-                  morphism1,
-                  " \\circ ",
-                  morphism2,
-                  "\\) :",
-                 ],
+         "label": composition_label,
          "emptyCase": AskedOrNot("Composition",
                                  markOfQuestion,
-                                 "Standard composition")},
+                                 "Standard composition"),
+         "hideInSomeQuestions": {
+             "Objects", "Arrows", "2-morphism", "n-morphism",
+        },
+         },
     ]
 )
 
@@ -64,37 +76,35 @@ properties_ = TableFields(
             {
                 "field":"Pullback",
                 "label":[
-                    "Pullback of \\(", 
+                    "Pullback of ", mathjax(
                     morphism1,
                     ": ",
                     object1,
                     " \\to ",
-                    object3,
-                    "\\) and \\(",
+                    object3),
+                    " and ", mathjax(
                     morphism2,
                     ": ",
                     object2,
                     " \\to ",
-                    object3,
-                    "\\)"
+                    object3,)
                  ],
             }, 
             {
                 "field":"Pushout",
                 "label":[
-                    "Pushout of \\(", 
+                    "Pushout of ", mathjax(
                     morphism1,
                     ": ",
                     object1,
                     " \\to ",
-                    object2,
-                    "\\) and \\(",
+                    object2),
+                    " and ", mathjax(
                     morphism2,
                     ": ",
                     object1,
                     " \\to ",
-                    object3,
-                    "\\)"
+                    object3,)
                  ],
             },
         ],
@@ -102,29 +112,27 @@ properties_ = TableFields(
             {
                 "field":"Coequalizer",
                 "label":[
-                    "Coequalizer of \\(", 
+                    "Coequalizer of ", mathjax(
                     morphism1,
                     ", ",
                     morphism2,
                     ": ",
                     object1,
                     " \\to ",
-                    object2,
-                    "\\)",
+                    object2,)
                  ],
             },
           {
                 "field":"Equalizer",
                 "label":[
-                    "Equalizer of \\(", 
+                    "Equalizer of ", mathjax(
                     morphism1,
                     ", ",
                     morphism2,
                     ": ",
                     object1,
                     " \\to ",
-                    object2,
-                    "\\)",
+                    object2)
                  ],
             }],
         ["Kernel",

@@ -134,30 +134,37 @@ decreasing_ = [
 ]
 
 
-construction = [
-         hr,
-         ShowIfAskedOrAnswer("Construction",
-                             DecoratedField("Construction",
-                                            label=H2("Construction"),
+def construction(show_increasing:bool, in_increasing:bool):
+    """The construction from smaller to greater if show_increasing else from greater to smaller.
+    If in_increasing, this is displayed in a card where the statement starts with smaller and ends with greater."""
+    field_name = f"Construction{"" if show_increasing else " back"}"
+    field_label = FilledOrEmpty("Construction back", "Construction ⇒" if show_increasing==in_increasing else "Construction ⇐", "Construction")
+    return [hr,
+         ShowIfAskedOrAnswer(field_name,
+                             DecoratedField(field_name,
+                                            label=H2(field_label),
                                             classes="Construction",
                                             infix="",
                                             suffix=hr))]
 
-def longLine(line):
+def constructions(in_increasing:bool):
+    return [construction(show_increasing=in_increasing, in_increasing=in_increasing), construction(show_increasing=not in_increasing, in_increasing=in_increasing)]
+
+def longLine(line, construction):
     line = addBoilerplate(
         [namesNotationsDenotedBy,
          AskedOrNot("Definition",
                     QuestionOrAnswer(markOfQuestion,
                                      line),
-                    line),construction])
-    return AtLeastOneField(asked=True,
+                    line), construction],)
+    return [AtLeastOneField(asked=True,
                            fields=listOfSideFieldNames,
                            child=[suspend("Hide sides"), line],
-                           otherwise=line)
+                           otherwise=line)]
 
 
-increasing = Empty("Hide sides", longLine(increasing_(True)))
-decreasing = Empty("Hide sides", longLine(decreasing_))
+increasing = Empty("Hide sides", longLine(increasing_(True), constructions( in_increasing=True)))
+decreasing = Empty("Hide sides", longLine(decreasing_, constructions(in_increasing=False)))
 
 inc_to_emphasize = increasing_(False)
 increasing_meta_content = [
@@ -166,7 +173,7 @@ increasing_meta_content = [
                 QuestionOrAnswer(markOfQuestion,
                                  inc_to_emphasize),
                 inc_to_emphasize),
-    construction,
+    constructions(in_increasing=True),
     ]
 increasing_meta = addBoilerplate(increasing_meta_content)
 
@@ -184,7 +191,8 @@ def relation(left, right):
     rightField = listOfSideFields[right]
     leftFieldName = listOfSideFieldNames[left]
     rightFieldName = listOfSideFieldNames[right]
-    l = [header, leftField, relation, rightField, construction, footer(),]
+    in_increasing=left < right
+    l = [header, leftField, relation, rightField, constructions(in_increasing=in_increasing), footer(),]
     filled = Filled(leftFieldName, Filled(rightFieldName, l))
     return Empty("Hide middle", filled)
 

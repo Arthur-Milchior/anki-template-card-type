@@ -51,7 +51,7 @@ class Empty(FieldChild):
 
 @thisClassIsClonable
 class Filled(FieldChild):
-    """The class which expands differently in function of the question/answer side."""
+    """The class which expands differently in function of wheter some field is filled."""
 
     def _assumeFieldFilled(self, fields, setMandatoryState):
         if self.field in fields:

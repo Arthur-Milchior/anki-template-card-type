@@ -1,47 +1,60 @@
-from .category import bareField
 from ...generators import *
 from ..general import footer, header, namesNotationsDenotedBy
 from ..util import *
 
-source_object1 = bareFieldOrDefault("Source object (mathjax)", "a")
-source_object2 = bareFieldOrDefault("Source object2 (mathjax)", "b")
-target_object1 = bareFieldOrDefault("Target object (mathjax)", "F(a)")
-target_object2 = bareFieldOrDefault("Target object2 (mathjax)", "F(b)")
-morphism1 = bareFieldOrDefault("Source arrow (mathjax)", "f")
-domain = bareFieldOrDefault("Domain (mathjax)", "\mathcal A")
-codomain = bareFieldOrDefault("Codomain (mathjax)", "\mathcal A'")
+domain_field = "Domain (mathjax)"
+codomain_field = "Codomain (mathjax)"
+
+notation_mj = bareFieldOrDefault("Notation (mathjax)", "F")
+source_object1_mj = bareFieldOrDefault("Source object (mathjax)", "a")
+source_object2_mj = bareFieldOrDefault("Source object2 (mathjax)", "b")
+target_object1_mj = bareFieldOrDefault("Target object (mathjax)", [notation_mj, parenthese(source_object1_mj)])
+target_object2_mj = bareFieldOrDefault("Target object2 (mathjax)", [notation_mj, parenthese(source_object2_mj)])
+morphism1_mj = bareFieldOrDefault("Source arrow (mathjax)", "f")
+domain_mj = bareFieldOrDefault(domain_field, "\mathcal A")
+codomain_mj = bareFieldOrDefault(codomain_field, "\mathcal A'")
 
 images = [
         {
             "field":"Object",
             "label":[
-                "Sends \\(",
-                source_object1,
-                "\\) to "
+                "Sends ", mathjax(
+                source_object1_mj, "\\in ", domain_mj
+                ), " to "
                 ],
-                "hideInSomeQuestion": {
-                    "Domain", "Codomain", "Arrow",
+                "hideInSomeQuestions": {
+                    "Domain (mathjax)", "Codomain (mathjax)", 
+                    "Domain", "Codomain",
                 },
          },
         {
             "field":"Arrow",
             "label":[
-                "Sends \\(",
-                morphism1,
-                "\in ", domain, "(", source_object1, ", ", source_object2,
-                ")\\) to \\(",
-                codomain, "(", target_object1, ", ", target_object2,
-                ")\\)'s ",],
-                "hideInSomeQuestion": {
-                    "Domain", "Codomain"
+                "Sends ",mathjax(
+                morphism1_mj,
+                "\in ", domain_mj, "(", source_object1_mj, ", ", source_object2_mj,
+                ")"), " to ", mathjax(
+                codomain_mj, "(", target_object1_mj, ", ", target_object2_mj,
+                ")"), "'s ",],
+                "hideInSomeQuestions": {
+                    "Domain (mathjax)", "Codomain (mathjax)",
+                    "Domain", "Codomain", "Object",
                 },
          },]
 
 definition_bar = TableFields(
     name="Definition",
     fields=[
-        "Domain",
-        "Codomain",
+        {
+            "field": domain_field,
+            "label": "Domain",
+            "function": lambda _: mathjax(bareField(domain_field))
+        },
+        {
+            "field": codomain_field,
+            "label": "Codomain",
+            "function": lambda _: mathjax(bareField(codomain_field))
+        },
         *images
          ]
 )
@@ -51,18 +64,26 @@ functor_base = addBoilerplate(
      definition_bar])
 
 properties = TableFields([*images,
-                          ["Left adjoint to",
-                           "Right adjoint to"],
+                          ["Its right adjoint",
+                           "Its left adjoint"],
                           ["Create limits",
-                           "Preserve limits"],
-                          ["Preserve product",
-                           "Preserve coproduct"],
+                           "Preserve limits",
+                           "Create colimits",
+                           "Preserve colimits"],
+                           ["Preserve reflections",
+                            "Preserve coreflections"],
+                          ["Preserve products",
+                           "Preserve coproducts"],
                           ["Full",
                            "Faithfull"],
-                           "Representable",
-                          "Projective"])
+                          {
+                             "field": "Functor representation",
+                             "label":"Representation"},
+                          "Projective",
+                          ["Elements", "Universal element"],
+                          ])
 
 functor = addBoilerplate(
-    [H5(["Functor in \\([", domain, ", ", codomain, "]\\)"]), hr,
+    [H5(["Functor in ", mathjax("[", domain_mj, ", ", codomain_mj, "]")]), hr,
      namesNotationsDenotedBy,
      properties])

@@ -119,7 +119,7 @@ class ListFields(ListElement):
 
 """A  dic may contain:
 field - the field name
-"hideInSomeQuestion -- set of fields. When one of this field is asked, the question side should not be shown. This ensure that a similar field does not give too good of a hint (e.g. when asking for variance, hide the standard deviation)
+"hideInSomeQuestions -- set of fields. When one of this field is asked, the question side should not be shown. This ensure that a similar field does not give too good of a hint (e.g. when asking for variance, hide the standard deviation)
 child -- an initial version of the child. It may be modified to add conditionals on it
 ???
 """

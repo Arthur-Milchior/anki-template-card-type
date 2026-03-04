@@ -1,37 +1,45 @@
 
 from .category import bareField
-from ..util import addBoilerplate, bareFieldOrDefault
+from ..util import addBoilerplate, bareFieldOrDefault, mathjax, mathjax_label, parenthese
 from ...generators import *
+
+
 
 c_in_C_name = "c in C (mathjax)"
 c_in_LD_name = "c in LD (mathjax)"
 c_in_LRC_name = "c in LRC (mathjax)"
 
+d_in_D_mj_name = "d in D (mathjax)"
+
 catC_mj = bareFieldOrDefault("Cat C (mathjax)", "\\mathcal C")
 catD_mj = bareFieldOrDefault("Cat D (mathjax)", "\\mathcal D")
-C_mj = bareFieldOrDefault("C (mathjax)", "C")
-D_mj = bareFieldOrDefault("D (mathjax)", "D")
-C2_mj = bareFieldOrDefault("C' (mathjax)", "C'")
-D2_mj = bareFieldOrDefault("D' (mathjax)", "D'")
+def C_mj(suffix=""):
+    return bareFieldOrDefault(f"C{suffix} (mathjax)", f"C{suffix}")
+def D_mj(suffix=""):
+    return bareFieldOrDefault(f"D{suffix} (mathjax)", f"D{suffix}")
 c_in_C_mj = bareFieldOrDefault(c_in_C_name, "c")
 d_in_RC_mj = bareFieldOrDefault("d in RC (mathjax)", "d")
 c_in_LRC_mj = bareFieldOrDefault(c_in_LRC_name, "c")
 f_C_mj = bareFieldOrDefault("f_C (Cat C(C C')) (mathjax)", "f_c")
-d_in_D_mj = bareFieldOrDefault("d in D (mathjax)", "d")
+d_in_D_mj = bareFieldOrDefault(d_in_D_mj_name, "d")
 c_in_LD_mj = bareFieldOrDefault(c_in_LD_name, "c")
 f_D_mj = bareFieldOrDefault("f_D (Cat D(D D')) (mathjax)", "f_d")
-L_mj = bareFieldOrDefault("L (Cat D to Cat C) (mathjax)", "L")
-R_mj = bareFieldOrDefault("R (Cat C to Cat D) (mathjax)", "R")
+def L_mj(base:bool):
+    return  "L" if base else  bareFieldOrDefault("L (Cat D to Cat C) (mathjax)", "L")
+def R_mj(base: bool):
+    return "R" if base else bareFieldOrDefault("R (Cat C to Cat D) (mathjax)", "R")
 fC_mj = bareFieldOrDefault("F_C (Cat C(LD C)) (mathjax)", "F(C)")
 fD_mj = bareFieldOrDefault("F_D (Cat D(D RC)) (mathjax)", "F(D)")
-RC_mj = [R_mj, "(", C_mj, ")"]
-LD_mj = [L_mj, "(", D_mj, ")"]
-LRC_mj = [L_mj, "(", RC_mj, ")"]
-RLD_mj = [R_mj, "(", LD_mj, ")"]
+def RC_formal_mj(base:bool, suffix=""):
+    return [R_mj(base), parenthese(C_mj(suffix))]
+def LD_formal_mj(base:bool, suffix=""):
+    return [L_mj(base), parenthese(D_mj(suffix))]
+LRC_formal_mj = [L_mj(base=False), parenthese(RC_formal_mj(base=False))]
+RLD_formal_mj = [R_mj(base=False), parenthese(LD_formal_mj(base=False))]
 
 
-hom_set_in_D_mj = [catD_mj, "(", D_mj, ",", RC_mj, ")"]
-hom_set_in_C_mj = [catC_mj, "(", LD_mj, ", ", C_mj, ") "]
+hom_set_in_D_mj = [catD_mj, "(", D_mj(), ",", D_mj("'"), ")"]
+hom_set_in_C_mj = [catC_mj, "(", C_mj(), ", ", C_mj("'"), ") "]
 
 L_name = "L (Cat D to Cat C)"
 R_name = "R (Cat C to Cat D)"
@@ -39,62 +47,83 @@ LD = "LD (C)"
 RC = "RC (D)"
 Lf_D = "Lf_D (Cat C(LD LD'))"
 Rf_C = "Rf_C (Cat D(RC RC'))"
-Lf_D_Ld = "(Lf_D)(Ld) (LD')"
-Rf_C_Rc = "(Rf_C)(Rc) (RC')"
+Lf_D_Ld = "(Lf_D)(c in LD) (LD')"
+Rf_C_Rc = "(Rf_C)(d in RC) (RC')"
+def LD_mj_name(suffix=""):
+    return f"LD{suffix} (mathjax)"
+def RC_mj_name(suffix=""):
+    return f"RC{suffix} (mathjax)"
+RLD_mj_name ="RLD (mathjax)"
+LRC_mj_name ="LRC (mathjax)"
 
-def lr(left, right):
-    LD_mj = [left, "(", D_mj, ")"]
-    RC_mj = [right, "(", C_mj, ")"]
-    LD2_mj = [left, "(", D2_mj, ")"]
-    RC2_mj = [right, "(", C2_mj, ")"]
+def LD_long_mj(base: bool, suffix=""):
+    return [LD_formal_mj(base, suffix), Filled (LD_mj_name(suffix), ["=", bareField(LD_mj_name(suffix))])]
+def RC_long_mj(base, suffix=""):
+    return [RC_formal_mj(base, suffix), Filled (RC_mj_name(suffix), ["=", bareField(RC_mj_name(suffix))])]
+RLD_long_mj = [RLD_formal_mj, Filled (RLD_mj_name, ["=", bareField(RLD_mj_name)])]
+LRC_long_mj = [LRC_formal_mj, Filled (LRC_mj_name, ["=", bareField(LRC_mj_name)])]
+
+def LD_short_mj(suffix=""):
+    return (LD_mj_name(suffix), bareField(LD_mj_name(suffix)), LD_formal_mj(base=False, suffix=suffix))
+def RC_short_mj(suffix=""):
+    return (RC_mj_name(suffix), bareField(RC_mj_name(suffix)), RC_formal_mj(base=False, suffix=suffix))
+RLD_short_mj = (RLD_mj_name, bareField(RLD_mj_name), RLD_formal_mj)
+LRC_short_mj = (LRC_mj_name, bareField(LRC_mj_name), LRC_formal_mj)
+
+
+
+def LD_mj(base:bool, suffix="'"):
+    return LD_formal_mj(base, suffix) if base else LD_long_mj(base=base, suffix=suffix)
+
+def RC_mj(base:bool, suffix=""):
+    return RC_formal_mj(base, suffix) if base else RC_long_mj(suffix)
+
+def lr(base:bool):
     return [
              {
                  "field": L_name,
-                 "label": [
-                     "\\(",left, "\\in[", catD_mj, " , ", catC_mj, "]\\): "
-                 ],
+                 "label": mathjax_label([L_mj(base=base), "\\in[", catD_mj, " , ", catC_mj, "]"]),
              },
              {
                  "field": LD,
-                 "label": [
-                     "\\(",left,"(", D_mj ,")", "\\in ",catC_mj, "\\): "
-                 ],
+                 "label": 
+                      mathjax_label(L_mj(base=base),parenthese(D_mj() ), "\\in ",catC_mj, )
+                 
              },
              {
                  "field": Lf_D,
-                 "label": [
-                     "\\(",left,"(", f_D_mj ,")\\in ",catC_mj, "(", LD_mj, ", ", LD2_mj,")\\): "
-                 ],
+                 "label": 
+                      mathjax_label(L_mj(base=base),parenthese(f_D_mj ),"\\in ",catC_mj, "(", LD_mj(base), ", ", LD_mj(base, "'"),")")
+                 
              },
              {
                  "field": Lf_D_Ld,
-                 "label": [
-                     "\\((",left,"(", f_D_mj ,"))(",  c_in_LD_mj, ")\\in", LD2_mj,"\\):"
-                 ],
+                 "label": 
+                      mathjax_label("(",L_mj(base=base),parenthese(f_D_mj ),")",parenthese(c_in_LD_mj),"\\in", LD_mj(base, "'"),)
+                 
              },
              {
                  "field": R_name,
-                 "label": [
-                     "\\(",right, "\\in[", catC_mj, " , ", catD_mj, "]\\): "
-                 ],
+                 "label": 
+                      mathjax_label(R_mj(base=base), "\\in[", catC_mj, " , ", catD_mj, "]")
+                 
              },
              {
                  "field": RC,
-                 "label": [
-                     "\\(",right,"(", C_mj ,")", "\\in ",catD_mj, "\\): "
-                 ],
+                 "label": 
+                      mathjax_label(R_mj(base=base), parenthese(C_mj() ), "\\in ", catD_mj, )
+                 
              },
              {
                  "field": Rf_C,
-                 "label": [
-                     "\\(",right,"(", f_C_mj ,")\\in ",catD_mj, "(", RC_mj, ", ", RC2_mj, ")\\): "
-                 ],
+                 "label": 
+                      mathjax_label(R_mj(base=base), parenthese(f_C_mj ), "\\in ", catD_mj, "(", RC_mj(base), ", ", RC_mj(base, "'"), ")")
+                 
              },
              {
                  "field": Rf_C_Rc,
-                 "label": [
-                     "\\((",right,"(", f_C_mj ,"))(", right, d_in_RC_mj, ")\\in", RC2_mj, "\\):"
-                 ],
+                 "label": 
+                      mathjax_label("(", R_mj(base=base), parenthese(f_C_mj ), ")", parenthese(d_in_RC_mj), "\\in", RC_mj(base, "'"), )
              },
 ]
 
@@ -106,16 +135,24 @@ def _make_adjunction(ls, vars):
          extra_variables = vars
 )
 
-var_object = [["\\(", C_mj, "\\in ", catC_mj, "\\)"], ", ", ["\\(", D_mj, "\\in ", catD_mj, "\\)"],]
+var_cat = Filled("Cat C", [{"Cat C"}, {"Cat D"}])
+var_object = [[ mathjax( C_mj(), "\\in ", catC_mj, )], ", ", [ mathjax( D_mj(), "\\in ", catD_mj, )],]
 var_function = [
-        ["\\(", fD_mj, "\\in ", hom_set_in_D_mj, "\\)"], ", " , ["\\(", fC_mj, "\\in ",  hom_set_in_C_mj, "\\)"]]
-var_content_base = [
-        #["\\(", c_in_C, "\\in ", C, "\\)"], ",", ["\\(", d_in_D, "\\in ", D, "\\)"],
-         Filled(c_in_LD_name, [br, 
-        ["\\(", c_in_LD_mj, "\\in ", L_mj,D_mj, "\\)"], ",", ["\\(", d_in_RC_mj, "\\in ", R_mj,C_mj, "\\)"],])
+        [ mathjax( f_C_mj, "\\in ",  hom_set_in_C_mj, )], ",", [ mathjax( f_D_mj, "\\in ", hom_set_in_D_mj, )]]
+
+def var_content_base(base: bool):
+    return [
+         Filled(
+             c_in_LD_name, 
+             [br, 
+              [ mathjax( c_in_LD_mj, "\\in ", LD_mj(base), )], ",",
+              [ mathjax( d_in_RC_mj, "\\in ", RC_mj(base), )],
+            ]
+          )
         ]
 
-var_base = [var_object, br, var_function, Filled(c_in_C_name, [br, var_content_base])]
+def var_base(base:bool):
+    return [var_object, br, var_function, var_content_base(base)]
 
 RLD = "RLD"
 LRC = "LRC"
@@ -132,127 +169,136 @@ Lf_d = "Lf_D (Cat C(L(D) L(D'))"
 Rc = "RC (D)"
 Rf_c = "Rf_C (Cat D(R(C) R(C')))"
 
-adjunction_base = _make_adjunction([lr("L", "R")], var_base)
 
-_lr = lr(L_mj, R_mj)
+
+adjunction_base = _make_adjunction([lr(base=True)], var_base(base=True))
+
+_lr = lr(base=False)
 
 _eta = [
             {
                 "field": RLD,
-                "label": [
-                    "\\(", RLD_mj, "\\in ", catD_mj, "\\): "
-                ],
-                "hideInSomeQuestion": {LRC, epsilon},
+                "label": 
+                     mathjax_label( RLD_formal_mj, "\\in ", catD_mj, ),
+                
+                "hideInSomeQuestions": {LRC},
             },
             {
                 "field": eta,
-                "label": [
-                    "\\(\\eta\\in 1_{", catD_mj, "}\\to ", R_mj, "\\circ ", L_mj, "\\): "
-                ],
-                "hideInSomeQuestion": {RLD, LRC, epsilon},
+                "label": 
+                     mathjax_label("\\eta\\in \mathrm{id}_{", catD_mj, "}\\to ", R_mj(base=False), "\\circ ", L_mj(base=False), ),
+                
+                "hideInSomeQuestions": {RLD, LRC},
             },
             {
                 "field": eta_D,
-                "label": [
-                    "\\(\\eta_{", D_mj, "}\\in ", catD_mj, "(", D_mj, ", ", RLD_mj, ")\\): "
-                ],
-                "hideInSomeQuestion": {RLD, LRC, epsilon},
+                "label": 
+                     mathjax_label("\\eta_{", D_mj(), "}\\in ", catD_mj, "(", D_mj(), ", ", RLD_long_mj, ")"),
+                
+                "hideInSomeQuestions": {RLD, LRC},
             },
             {
                 "field": eta_Dd,
-                "label": [
-                    "\\(\\eta_{", D_mj, "}(", d_in_D_mj, ")\\in ", RLD_mj, "\\): "
-                ],
-                "hideInSomeQuestion": {RLD, LRC, epsilon},
+                "label": 
+                     mathjax_label("\\eta_{", D_mj(), "}", parenthese(d_in_D_mj), "\\in ", RLD_long_mj, ),
+                
+                "hideInSomeQuestions": {RLD, LRC},
             },
 ] 
 _epsilon = [
             {
                 "field": LRC,
-                "label": [
-                    "\\(", LRC_mj, "\\in ", catC_mj,"\\): "
-                ],
-                "hideInSomeQuestion": {RLD, eta},
+                "label":
+                     mathjax_label( LRC_formal_mj, "\\in ", catC_mj,),
+        
+                "hideInSomeQuestions": {RLD},
             },
             {
                 "field": epsilon,
-                "label": [
-                    "\\(\\varepsilon\\in ", L_mj, " \\circ ", R_mj, "\\to 1_{", catC_mj, "}\\): "
-                ],
-                "hideInSomeQuestion": {LRC, RLD, eta},
+                "label": 
+                     mathjax_label("\\varepsilon\\in ", L_mj(base=False), " \\circ ", R_mj(base=False), "\\to \mathrm{id}_{", catC_mj, "}"),
+                "hideInSomeQuestions": {LRC, RLD},
             },
             {
                 "field": epsilon_C,
-                "label": [
-                    "\\(\\varepsilon_{", C_mj, "} \\in ", catC_mj,  "(", LRC_mj, ",", C_mj, ")\\): "
-                ],
-                "hideInSomeQuestion": {LRC, RLD, eta},
+                "label": 
+                     mathjax_label("\\varepsilon_{", C_mj(), "} \\in ", catC_mj,  "(", LRC_long_mj, ",", C_mj(), ")"),             
+                "hideInSomeQuestions": {LRC, RLD},
             },
             {
                 "field": epsilon_Cc,
-                "label": [
-                    "\\(\\varepsilon_{", C_mj, "}(", c_in_LRC_mj, ")\\in ", C_mj, "\\): "
-                ],
-                "hideInSomeQuestion": {LRC, RLD, eta},
+                "label": 
+                     mathjax_label("\\varepsilon_{", C_mj(), "}", parenthese(c_in_LRC_mj), "\\in ", C_mj(), )
+                ,
+                "hideInSomeQuestions": {LRC, RLD},
             },
         ]
 
-var_epsilon=[
-Filled(c_in_LRC_name,    [", \\(", c_in_LRC_mj, "\\in ", LRC_mj, "\\)"])
+def d_in_D_mj_var(suffix=emptyGen):
+    return Filled(d_in_D_mj_name, mathjax(d_in_D_mj, "\\in ", D_mj(),) ,suffix)
+
+var_eta=[
+    d_in_D_mj_var(),
+    Filled(c_in_LRC_name,    [", ", mathjax(c_in_LRC_mj, "\\in ", LRC_formal_mj, )])
 ]
 
-adjunction_eta = _make_adjunction([_lr, _eta], [var_base])
-adjunction_epsilon = _make_adjunction([_lr, _epsilon], [var_base, var_epsilon])
+adjunction_eta = _make_adjunction([_lr, _eta], [var_base(base=False), var_eta])
+adjunction_epsilon = _make_adjunction([_lr, _epsilon], [var_base(base=False)])
 
 overline_F_C = "overline F_C (Cat D(D RC))"
 overline_F_Cd = "overline F_C(d) (RC)"
 overline_F_D = "overline F_D (Cat C(LD C))"
 overline_F_D_L_d = "overline F_D(Ld) (C)"
 
+
+hom_set_equivalence_in_D_mj = [catD_mj, "(", D_mj(), ",", RC_short_mj(), ")"]
+hom_set_equivalence_in_C_mj = [catC_mj, "(", LD_short_mj(), ", ", C_mj(), ") "]
 _equivalence = [
              {
                  "field": overline_F_C,
-                 "label": [
-                     "\\(\\overline{", fC_mj, "}\\in ", hom_set_in_D_mj, "\\):",
-                 ],
+                 "label": 
+                      mathjax_label("\\overline{", fC_mj, "} \\in ", hom_set_equivalence_in_D_mj, ), 
+                 
              },
              {
                  "field": overline_F_Cd,
-                 "label": [
-                     "\\(\\overline{", fC_mj, "}(", d_in_D_mj,")\\in ", R_mj, "(", C_mj, ")" , "\\):",
-                 ],
+                 "label": 
+                      mathjax_label("\\overline{", fC_mj, "}", parenthese(d_in_D_mj), "\\in ", RC_short_mj(), ), 
+                 
              },
              {
                  "field": overline_F_D,
-                 "label": [
-                     "\\(\\overline{", fD_mj, "}\\in ", hom_set_in_C_mj, "\\)",
-                 ],
+                 "label": 
+                      mathjax_label("\\overline{", fD_mj, "} \\in ", hom_set_equivalence_in_C_mj, ), 
+                 
              },
              {
                  "field": overline_F_D_L_d,
-                 "label": [
-                     "\\(\\overline{", fD_mj, "}(", c_in_LD_mj,")\\in ", C_mj, "\\):",
-                 ],
+                 "label": 
+                      mathjax_label("\\overline{", fD_mj, "}", parenthese(c_in_LD_mj), "\\in ", C_mj(), ), 
+                 
              },
 ]
 var_content_bar = [br,
-    ["\\(", fC_mj, "\\in", hom_set_in_C_mj, "\\)"], ",", ["\\(", fD_mj, "\\in", hom_set_in_D_mj, "\\)"],
+    d_in_D_mj_var(br),
+    mathjax( fC_mj, "\\in", hom_set_equivalence_in_C_mj, ), ",",
+    mathjax( fD_mj, "\\in", hom_set_equivalence_in_D_mj, ),
    ]
-adjunction_equivalence = _make_adjunction([_lr , _equivalence], [var_base,var_content_bar])
+adjunction_equivalence = _make_adjunction([_lr , _equivalence], [var_base(base=False), var_content_bar])
 
 
 all = [_lr, _eta+_epsilon, _equivalence
             #  {
             #      "field": "Isomorphism from hom_D(d,Rc) to hom_C(Ld,c)",
             #      "label": [
-            #          "\\(\\mathrm{Hom}_{", D, "}(", d2, ",", R, c1, ") \\to \\mathrm{Hom}_", C, "(", L, d2, ",", c1, ")\\)"
+            #           mathjax("\\mathrm{Hom}_{", D, "}(", d2, ",", R, c1, ") \\to \\mathrm{Hom}_", C, "(", L, d2, ",", c1, ")")
             #      ],
             #  },
             #  {
             #      "field": "Isomorphism from hom_C(Ld,c) to hom_D(d,Rc)",
             #      "label": [
-            #          "\\(\\mathrm{Hom}_", C, "(", L, d2, ",", c1, ") \\to \\mathrm{Hom}_{", D, "}(", d2, ",", R, c1, ") \\)"
+            #           mathjax("\\mathrm{Hom}_", C, "(", L, d2, ",", c1, ") \\to \\mathrm{Hom}_{", D, "}(", d2, ",", R, c1, ") ")
             #      ],
             #  },
          ]
-adjunction = _make_adjunction(all,[var_base, var_epsilon, var_content_bar])
+adjunction = _make_adjunction(all,[var_base(base=False), var_eta, var_content_bar])

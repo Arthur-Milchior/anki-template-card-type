@@ -4,6 +4,22 @@ from .general.header import header
 from ..generators import *
 
 
+_add_parenthesis = "Add Parenthesis"
+
+def parenthese(child):
+    return [
+        Filled(_add_parenthesis,"\\left("), child, Filled(_add_parenthesis,"\\right)")
+    ]
+
+
+def mathjax(*content):
+    return ["\\(", *content, "\\)"]
+
+def mathjax_label(*content):
+    return [ mathjax( *content, ), ": "]
+def mathjax_equal(*content):
+    return [ mathjax( *content, "=" ), ]
+
 def bareField(name):
     return Field(name, useClasses=False)
 
