@@ -14,8 +14,10 @@ d_in_D_mj_name = "d in D (mathjax)"
 catC_mj = bareFieldOrDefault("Cat C (mathjax)", "\\mathcal C")
 catD_mj = bareFieldOrDefault("Cat D (mathjax)", "\\mathcal D")
 def C_mj(suffix=""):
+    """Returns Mathjax for C or C'."""
     return bareFieldOrDefault(f"C{suffix} (mathjax)", f"C{suffix}")
 def D_mj(suffix=""):
+    """Returns Mathjax for D or D'."""
     return bareFieldOrDefault(f"D{suffix} (mathjax)", f"D{suffix}")
 c_in_C_mj = bareFieldOrDefault(c_in_C_name, "c")
 d_in_RC_mj = bareFieldOrDefault("d in RC (mathjax)", "d")
@@ -25,14 +27,18 @@ d_in_D_mj = bareFieldOrDefault(d_in_D_mj_name, "d")
 c_in_LD_mj = bareFieldOrDefault(c_in_LD_name, "c")
 f_D_mj = bareFieldOrDefault("f_D (Cat D(D D')) (mathjax)", "f_d")
 def L_mj(base:bool):
+    """Returns "L" if the question is about the base, or the notation of L otherwise."""
     return  "L" if base else  bareFieldOrDefault("L (Cat D to Cat C) (mathjax)", "L")
 def R_mj(base: bool):
+    """Returns "R" if the question is about the base, or the notation of R otherwise."""
     return "R" if base else bareFieldOrDefault("R (Cat C to Cat D) (mathjax)", "R")
 fC_mj = bareFieldOrDefault("F_C (Cat C(LD C)) (mathjax)", "F(C)")
 fD_mj = bareFieldOrDefault("F_D (Cat D(D RC)) (mathjax)", "F(D)")
 def RC_formal_mj(base:bool, suffix=""):
+    """Returns RC or RC'. With either actually "R" if the question is in the base, or its notation otherwise."""
     return [R_mj(base), parenthese(C_mj(suffix))]
 def LD_formal_mj(base:bool, suffix=""):
+    """Returns LD or LD'. With either actually "L" if the question is in the base, or its notation otherwise."""
     return [L_mj(base), parenthese(D_mj(suffix))]
 LRC_formal_mj = [L_mj(base=False), parenthese(RC_formal_mj(base=False))]
 RLD_formal_mj = [R_mj(base=False), parenthese(LD_formal_mj(base=False))]
@@ -73,6 +79,10 @@ LRC_short_mj = (LRC_mj_name, bareField(LRC_mj_name), LRC_formal_mj)
 
 
 def LD_mj(base:bool, suffix="'"):
+    """Returns the value of LD.
+    
+    
+    """
     return LD_formal_mj(base, suffix) if base else LD_long_mj(base=base, suffix=suffix)
 
 def RC_mj(base:bool, suffix=""):

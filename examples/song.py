@@ -25,6 +25,44 @@ two_line_warning = Filled("two-line", Empty("one paragraph", "two-lines is fille
 warning = [one_line_warning, two_line_warning]
 prefix = TableFields(['Titre', 'Interprète', 'Auteur'])
 
+
+class MandatoryFieldTree:
+    def encapsulateGenerator(self, gen_true, gen_false=emptyGen):
+        raise NotImplementedError()
+
+class MandatoryFieldLeaf(MandatoryFieldTree):
+    def __init__(self, field):
+        self.field = field
+
+    def encapsulateGenerator(self, gen_true, gen_false=emptyGen):
+        return FilledOrEmpty(self.field, gen_true, gen_false)
+
+class MandatoryFieldOr(MandatoryFieldTree):
+    def __init__(self, *children):
+        self.children = children
+
+    def encapsulateGenerator(self, gen_true, gen_false=emptyGen):
+        gen = gen_false
+        for child in self.children:
+            gen = child.encapsulateGenerator(gen_true, gen)
+        return gen
+
+class MandatoryFieldAnd(MandatoryFieldTree):
+    def __init__(self, *children):
+        self.children = children
+
+    def encapsulateGenerator(self, gen_true, gen_false=emptyGen):
+        gen = gen_true
+        for child in self.children:
+            gen = child.encapsulateGenerator(gen, gen_false)
+        return gen
+    
+class MandatoryFieldTrue(MandatoryFieldTree):
+    def encapsulateGenerator(self, gen_true, gen_false=emptyGen):
+        return gen_true
+
+
+
 def song(numberOfShownLines, numberOfAskedLines):
     """
     `numberOfShownLines` - the number of verse shown in the answer.
@@ -50,7 +88,10 @@ def song(numberOfShownLines, numberOfAskedLines):
             # Just check this line exists.
             mandatoryLineIndex = numberOfShownLines
             mandatoryRestriction = "one-line"
-        mandatories = frozenset({numbered_field("vers",  mandatoryLineIndex )} | {mandatoryRestriction})
+        mandatories = MandatoryFieldAnd(
+            MandatoryFieldLeaf(numbered_field("vers",  mandatoryLineIndex )) , 
+             MandatoryFieldOr(MandatoryFieldLeaf(mandatoryRestriction), 
+                               MandatoryFieldLeaf(f"Focus {numberOfShownLines}")))
         # if this part has a single line, don't generate this card since it's also the current part.
     elif numberOfAskedLines == 2:
         assert numberOfShownLines >= 2
@@ -69,7 +110,10 @@ def song(numberOfShownLines, numberOfAskedLines):
                 # Just check this line exists.
                 mandatoryLineIndex = numberOfShownLines
             questions = frozenset({numbered_field("vers", numberOfShownLines), numbered_field("vers", numberOfShownLines-1)})
-        mandatories = frozenset({numbered_field("vers", mandatoryLineIndex)} | {"two-lines"})
+        mandatories = MandatoryFieldAnd(MandatoryFieldLeaf(numbered_field("vers", mandatoryLineIndex)),
+                                        MandatoryFieldOr(MandatoryFieldLeaf("two-lines"), 
+                                                         MandatoryFieldLeaf(f"Focus {numberOfShownLines}"),
+                                                         MandatoryFieldLeaf(f"Focus {numberOfShownLines - 1}")))
     else:
         assert numberOfAskedLines % 10 == 0
         assert numberOfShownLines % 10 == 0
@@ -80,11 +124,12 @@ def song(numberOfShownLines, numberOfAskedLines):
             if numberOfShownParagraphs == 1:
                 # If we ask to show the first paragraph, request the existence of paragraph two, to ensure this card is not the same as total
                 mandatoryLineIndex = 11
-                mandatoryRestriction = frozenset()
+                mandatoryRestriction = MandatoryFieldTrue()
             else:
                 mandatoryLineIndex = numberOfShownLines - 9 # Eg, if we show 30 lines, we request line 21
-                mandatoryRestriction = {"one paragraph"}
-            mandatories = frozenset({numbered_field("vers", mandatoryLineIndex)}) | mandatoryRestriction
+                mandatoryRestriction = MandatoryFieldLeaf("one paragraph")
+            mandatories = MandatoryFieldAnd(MandatoryFieldLeaf(numbered_field("vers", mandatoryLineIndex)),
+                                             mandatoryRestriction)
             # if the song has a single part, don't generate this card since it's also the whole song
         elif numberOfAskedParagraphs == 2:
             assert numberOfShownLines >= 20
@@ -94,17 +139,16 @@ def song(numberOfShownLines, numberOfAskedLines):
                 mandatoryLineIndex = 21
             else:
                 mandatoryLineIndex = numberOfShownLines - 9 # Eg, if we show 30 lines, we request line 21
-            mandatories = frozenset({numbered_field("vers", mandatoryLineIndex)})
+            mandatories = MandatoryFieldLeaf(numbered_field("vers", mandatoryLineIndex))
             # if the song has at most two parts, don't generate this card since it's also the whole song
         elif numberOfAskedParagraphs == 20:
             # We show the entire song
             assert numberOfShownLines >= 200
             questions = frozenset({numbered_field("vers", numberOfShownLines) for numberOfShownLines in range(1, 201)})
-            mandatories = frozenset()
+            mandatories = MandatoryFieldTrue()
         else:
             assert False
     lyrics = lyrics.getNormalForm().assumeAsked(questions)
     r = [prefix, lyrics]
-    for filled_field in mandatories:
-        r = Filled(filled_field, r)
+    r = mandatories.encapsulateGenerator(r)
     return [warning, r]
