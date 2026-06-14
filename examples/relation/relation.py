@@ -138,7 +138,11 @@ def construction(show_increasing:bool, in_increasing:bool):
     """The construction from smaller to greater if show_increasing else from greater to smaller.
     If in_increasing, this is displayed in a card where the statement starts with smaller and ends with greater."""
     field_name = f"Construction{"" if show_increasing else " back"}"
-    field_label = FilledOrEmpty("Construction back", "Construction ⇒" if show_increasing==in_increasing else "Construction ⇐", "Construction")
+    field_header = "Construction symbol"
+    field_header_back = "Construction back symbol"
+    field_label = FilledOrEmpty("Construction back", 
+                                FilledOrEmpty(field_header, {field_header}, "Construction ⇒") if show_increasing==in_increasing else FilledOrEmpty(field_header_back, {field_header_back}, "Construction ⇐"), 
+                                FilledOrEmpty(field_header, {field_header}, "Construction"))
     return [hr,
          ShowIfAskedOrAnswer(field_name,
                              DecoratedField(field_name,

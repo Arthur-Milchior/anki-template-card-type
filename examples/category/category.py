@@ -66,8 +66,8 @@ def relatedFields(fields):
 
 properties_ = TableFields(
     [
-        ["Arrow from initial", "Arrow to initial",
-            "Arrow from terminal", "Arrow to terminal"],
+        ["Arrow to initial",
+            "Arrow from terminal"],
         ["Mono", "Epi", "Iso", "Bimorphism", "Split epi",
          "Split mono"],
         ["Initial", "Terminal", "Zero object"],

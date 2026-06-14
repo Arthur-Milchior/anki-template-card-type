@@ -151,7 +151,6 @@ Generator
 Groups
 Identity morphism
 Initial
-Arrow from initial
 Arrow to initial
 Injective object
 Iso
@@ -175,7 +174,6 @@ Subcategory
 Subobjects
 Symmetric monoidal category
 Terminal
-Arrow to terminal
 Arrow from terminal
 Topos
 Zero morphism
@@ -314,10 +312,8 @@ Full
 Faithfull
 Respect limit
 Respect colimit
-Arrow from initial
 Arrow to initial
 Terminal
-Arrow to terminal
 Arrow from terminal
 Subobjects
 Complete

@@ -11,7 +11,7 @@ header = [header, fullname, " ", {
 music = [Asked("Subpart", {"Music"}),  Asked("Part", {"Music"})]
 
 
-def grouping(subgroup, nb=0, size=4, part="Part", prefix="Subpart"):
+def grouping(subgroup, nb=0, numberOfGroup: Optional[None]= None, size=4, part="Part", prefix="Subpart"):
     """If none of prefix{i} for i in the nb-th segment of size size is
     asked, and if part{nb+1} is present, then show part{nb+1}. Else show
     subgroup

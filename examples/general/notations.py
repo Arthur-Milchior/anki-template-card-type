@@ -18,7 +18,7 @@ def singleNotation(emphasizing=lambda x:x):
     """The generator if there is a single notation."""
     return AskedOrNot("Notation",
                       singleNotationAsked,
-                      emphasizing(notation_mj))
+                      emphasizing(either_notation_field))
 
 notationsAsked = decorateQuestion("Notations")
 

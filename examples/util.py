@@ -54,13 +54,13 @@ def addBoilerplate(gen,
     #     gen = gen.assumeAsked(mandatory)
     return gen
 
-def empty1(i):
+def empty1(i: int):
     """Return the number, or nothing if the input is 1"""
     if i == 1:
         return ""
     return str(i)
 
-def numbered_field(field_name, i):
+def numbered_field(field_name: str, i: int):
     """Return field_name suffixed with i, unless i == 1"""
     return f"{field_name}{empty1(i)}"
 

@@ -63,22 +63,28 @@ RLD_mj_name ="RLD (mathjax)"
 LRC_mj_name ="LRC (mathjax)"
 
 def LD_long_mj(base: bool, suffix=""):
-    return [LD_formal_mj(base, suffix), Filled (LD_mj_name(suffix), ["=", bareField(LD_mj_name(suffix))])]
+    assert (isinstance(base, bool))
+    shorter = LD_mj_name(suffix)
+    return [LD_formal_mj(base, suffix), Filled (shorter, ["=", bareField(shorter)])]
 def RC_long_mj(base, suffix=""):
-    return [RC_formal_mj(base, suffix), Filled (RC_mj_name(suffix), ["=", bareField(RC_mj_name(suffix))])]
+    assert (isinstance(base, bool))
+    shorter = RC_mj_name(suffix)
+    return [RC_formal_mj(base, suffix), Filled (shorter, ["=", bareField(shorter)])]
 RLD_long_mj = [RLD_formal_mj, Filled (RLD_mj_name, ["=", bareField(RLD_mj_name)])]
 LRC_long_mj = [LRC_formal_mj, Filled (LRC_mj_name, ["=", bareField(LRC_mj_name)])]
 
 def LD_short_mj(suffix=""):
-    return (LD_mj_name(suffix), bareField(LD_mj_name(suffix)), LD_formal_mj(base=False, suffix=suffix))
+    shorter = LD_mj_name(suffix)    
+    return (shorter, bareField(shorter), LD_formal_mj(base=False, suffix=suffix))
 def RC_short_mj(suffix=""):
-    return (RC_mj_name(suffix), bareField(RC_mj_name(suffix)), RC_formal_mj(base=False, suffix=suffix))
+    shorter = RC_mj_name(suffix)
+    return (shorter, bareField(shorter), RC_formal_mj(base=False, suffix=suffix))
 RLD_short_mj = (RLD_mj_name, bareField(RLD_mj_name), RLD_formal_mj)
 LRC_short_mj = (LRC_mj_name, bareField(LRC_mj_name), LRC_formal_mj)
 
 
 
-def LD_mj(base:bool, suffix="'"):
+def LD_mj(base:bool, suffix=""):
     """Returns the value of LD.
     
     
@@ -86,7 +92,7 @@ def LD_mj(base:bool, suffix="'"):
     return LD_formal_mj(base, suffix) if base else LD_long_mj(base=base, suffix=suffix)
 
 def RC_mj(base:bool, suffix=""):
-    return RC_formal_mj(base, suffix) if base else RC_long_mj(suffix)
+    return RC_formal_mj(base, suffix) if base else RC_long_mj(base, suffix)
 
 def lr(base:bool):
     return [
@@ -137,8 +143,19 @@ def lr(base:bool):
              },
 ]
 
-def _make_adjunction(ls, vars):
-    return addBoilerplate([H5(["Adjunction"]), hr,
+def _make_adjunction(base, ls, vars):
+    adjunction_mj = mathjax(
+                      L_mj(base),
+                      "\\dashv",
+                      R_mj(base)
+                  )
+    cong_mj = mathjax(
+                  "\\mathrm{hom}_{", catC_mj,"}(", L_mj(base), d_in_D_mj, ", ", c_in_C_mj, ")",
+                  "\\cong",
+                  "\\mathrm{hom}_{", catD_mj,"}(", d_in_D_mj, ", ", R_mj(base), c_in_C_mj, ")",
+                  )
+    title = ["Adjunction: ", adjunction_mj, ", ", cong_mj]
+    return addBoilerplate([H5(title), hr,
      [[TableFields(
          name="Adjunction",
          fields=l),hr] for l in ls]], 
@@ -181,7 +198,7 @@ Rf_c = "Rf_C (Cat D(R(C) R(C')))"
 
 
 
-adjunction_base = _make_adjunction([lr(base=True)], var_base(base=True))
+adjunction_base = _make_adjunction(True, [lr(base=True)], var_base(base=True))
 
 _lr = lr(base=False)
 
@@ -252,8 +269,8 @@ var_eta=[
     Filled(c_in_LRC_name,    [", ", mathjax(c_in_LRC_mj, "\\in ", LRC_formal_mj, )])
 ]
 
-adjunction_eta = _make_adjunction([_lr, _eta], [var_base(base=False), var_eta])
-adjunction_epsilon = _make_adjunction([_lr, _epsilon], [var_base(base=False)])
+adjunction_eta = _make_adjunction(False,[_lr, _eta], [var_base(base=False), var_eta])
+adjunction_epsilon = _make_adjunction(False, [_lr, _epsilon], [var_base(base=False)])
 
 overline_F_C = "overline F_C (Cat D(D RC))"
 overline_F_Cd = "overline F_C(d) (RC)"
@@ -294,7 +311,7 @@ var_content_bar = [br,
     mathjax( fC_mj, "\\in", hom_set_equivalence_in_C_mj, ), ",",
     mathjax( fD_mj, "\\in", hom_set_equivalence_in_D_mj, ),
    ]
-adjunction_equivalence = _make_adjunction([_lr , _equivalence], [var_base(base=False), var_content_bar])
+adjunction_equivalence = _make_adjunction(False, [_lr , _equivalence], [var_base(base=False), var_content_bar])
 
 
 all = [_lr, _eta+_epsilon, _equivalence
@@ -311,4 +328,4 @@ all = [_lr, _eta+_epsilon, _equivalence
             #      ],
             #  },
          ]
-adjunction = _make_adjunction(all,[var_base(base=False), var_eta, var_content_bar])
+adjunction = _make_adjunction(False, all,[var_base(base=False), var_eta, var_content_bar])

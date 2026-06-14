@@ -26,7 +26,7 @@ labelDef = Cascade("Definitions",
                    {"Conjdef"})
 
 
-def grouping(subgroup, nb=0, size=4, part="Part", prefix="Definition"):
+def grouping(subgroup, nb=0, numberOfGroup: Optional[None]= None, size=4, part="Part", prefix="Definition"):
     """If none of prefix{i} for i in the nb-th segment of size size is
     asked, and if part{nb+1} is present, then show part{nb+1}. Else show
     subgroup

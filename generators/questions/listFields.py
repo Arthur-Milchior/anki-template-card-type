@@ -15,6 +15,7 @@ from ..leaf import Field
 from ..listGen import ListElement, MultipleChildren
 from ..nonprinting import ToAsk
 from .fields import DecoratedField, Label, QuestionnedField
+import math
 
 
 class ListFields(ListElement):
@@ -27,7 +28,7 @@ class ListFields(ListElement):
     globalFun -- the function to apply to generate the final object. Takes as argument the list of fields and separator passed as argument. By default, apply ListElement.
     name -- a name for this generator. When this name is asked, the questions returned as 3rd element by localFun are also considered to be asked
     groupSize -- stating that each subgroup containing elements groupSize*n up to groupSize *(n+1) -1 belongs to a single subgroup
-    applyToGroup -- a method applied to each subgroup, with second argument the index of the subgroup
+    applyToGroup -- a method applied to each subgroup, with second argument the index of the subgroup, and third element the number of groups
     """
 
     def __init__(self,
@@ -54,7 +55,6 @@ class ListFields(ListElement):
         self.potentiallyFilledFields = []
         toCascade = set()
         for field in self.originalFields:
-            #print(f"Considering field {field}")
             if self.processedInputs:
                 sep = self.globalSep(self.processedInputs)
                 if sep is not None:
@@ -95,11 +95,12 @@ class ListFields(ListElement):
 
         elements_ = []
         if applyToGroup and groupSize:
+            numberOfGroup = math.ceil(len(elements)/groupSize) if groupSize else None
             i = 0
             while elements:
                 subgroup = elements[:groupSize]
                 elements = elements[groupSize:]
-                elements_.append(applyToGroup(subgroup, i))
+                elements_.append(applyToGroup(subgroup, i, numberOfGroup=numberOfGroup))
                 i += 1
             elements = elements_
 

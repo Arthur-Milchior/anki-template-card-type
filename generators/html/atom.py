@@ -42,6 +42,7 @@ class HTMLAtom(Leaf):
 
 br = HTMLAtom("br")
 hr = HTMLAtom("hr")
+hr_answer = HTMLAtom("hr", attrs = {"id":"answer"})
 
 class CSS(HTMLAtom):
     def __init__(self, path):
