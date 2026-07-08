@@ -336,7 +336,7 @@ class NumberedFields(ListFields):
             classes = fieldPrefix
         if localFun is None:
             def localFun(i):
-                field = numbered_field(fieldPrefix, i)
+                field = numbered_field(fieldPrefix, i) 
                 li = LI(child=QuestionnedField(field,
                                                isMandatory=isMandatory,
                                                useClasses=useClasses,

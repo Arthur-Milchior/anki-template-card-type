@@ -75,7 +75,13 @@ def missing_previous(line):
         expectedLine = line - 10
     else:
         expectedLine = line - 1
-    return Filled(numbered_field("vers", line), Empty(numbered_field("vers", expectedLine), f"Line {line} is filled, please fill line {expectedLine}"))
+    field_name = numbered_field("vers", line)
+    expected_field_name = numbered_field("vers", expectedLine)
+    warning = [
+        f"Please fill line {expectedLine}. It is required as line {line} is filled:",br, 
+        Field(field_name)
+    ]
+    return Filled(field_name, Empty(expected_field_name, warning))
             
 
 
@@ -86,15 +92,11 @@ def song(indexOfTheLastAskedLine, numberOfAskedLines):
     """
     assert indexOfTheLastAskedLine >= numberOfAskedLines
     indexOfTheFirstAskedLine = indexOfTheLastAskedLine-numberOfAskedLines+1
-    
+    def focus(i):
+        """It starts at "focuse 1"""
+        return f"Focus {i}"
+    focus_field_name = focus(indexOfTheLastAskedLine)
 
-    lyrics = NumberedFields(fieldPrefix="vers",
-                            label="",
-                            greater=indexOfTheLastAskedLine,
-                            numbered_field=numbered_field,
-                            applyToGroup=grouping,
-                            groupSize=10,
-                            globalFun=identity)
     # We are setting `questions` and `mandatories`
     if numberOfAskedLines == 1:
         questions = frozenset({numbered_field("vers", indexOfTheLastAskedLine)})
@@ -110,7 +112,7 @@ def song(indexOfTheLastAskedLine, numberOfAskedLines):
         mandatories = MandatoryFieldAnd(
             MandatoryFieldLeaf(numbered_field("vers",  mandatoryLineIndex )) , 
              MandatoryFieldOr(MandatoryFieldLeaf(mandatoryRestriction), 
-                               MandatoryFieldLeaf(f"Focus {indexOfTheLastAskedLine}")))
+                               MandatoryFieldLeaf(focus_field_name)))
         # if this part has a single line, don't generate this card since it's also the current part.
     elif numberOfAskedLines == 2:
         assert indexOfTheLastAskedLine >= 2
@@ -131,7 +133,7 @@ def song(indexOfTheLastAskedLine, numberOfAskedLines):
             questions = frozenset({numbered_field("vers", indexOfTheLastAskedLine), numbered_field("vers", indexOfTheLastAskedLine-1)})
         mandatories = MandatoryFieldAnd(MandatoryFieldLeaf(numbered_field("vers", mandatoryLineIndex)),
                                         MandatoryFieldOr(MandatoryFieldLeaf("two-lines"), 
-                                                         MandatoryFieldLeaf(f"Focus {indexOfTheLastAskedLine}")))
+                                                         MandatoryFieldLeaf(focus_field_name)))
     else:
         assert numberOfAskedLines % 10 == 0
         assert indexOfTheLastAskedLine % 10 == 0
@@ -166,6 +168,31 @@ def song(indexOfTheLastAskedLine, numberOfAskedLines):
             mandatories = MandatoryFieldTrue()
         else:
             assert False
+    fieldPrefix="vers"
+    def localFun(i):
+        field = numbered_field(fieldPrefix, i)
+        def li(attrs):
+            return LI(child=QuestionnedField(field,
+                                        isMandatory=True,
+                                        useClasses=True,
+                                        emphasizing=None,
+                                        classes=None),
+                attrs=attrs)
+        liHard = li({"class":"hard"})
+        liEasy =  li({"class":"easy"})
+        child = FilledOrEmpty(focus(i), liHard, liEasy)
+        return {"child": child,
+                "questions": {field},
+                "filledFields": [field]}
+
+    lyrics = NumberedFields(fieldPrefix=fieldPrefix,
+                            label="",
+                            greater=indexOfTheLastAskedLine,
+                            numbered_field=numbered_field,
+                            applyToGroup=grouping,
+                            groupSize=10,
+                            globalFun=identity,
+                            localFun=localFun)
     lyrics = lyrics.getNormalForm().assumeAsked(questions)
     r = [prefix, lyrics]
     r = mandatories.encapsulateGenerator(r)
