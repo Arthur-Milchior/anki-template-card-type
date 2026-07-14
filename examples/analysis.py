@@ -28,12 +28,20 @@ properties = TableFields([
     "Measurable",
     "Monotonic",
     "Measure",
+    "Period",
     ["Zero",
      "Unit"],
     [mt_table_entry("Derivative"),
      mt_table_entry("Nth derivative"),
      mt_table_entry("Integral")],
     "Inverse",
+    "Partial fractions",
+    "Differential equation",
+    "Infinite product expansion",
+    "Continued fraction",
+    "Fixed points",
+    "Roots",
+    "Poles",
 ])
 
 analysis = addBoilerplate([H1(mathjax_field("Notation")), definition, properties])

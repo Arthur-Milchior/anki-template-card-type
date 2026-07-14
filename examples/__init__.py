@@ -30,7 +30,7 @@ from .ordinal import ordinal
 from .pianoScale.pianoScale import pianoScale
 from .programmingLanguage import programmingLanguage
 from .question import questionGen
-from .relation.relation import decreasing, increasing, relation, increasing_meta, relation_example, relation_counter_example
+from .relation.relation import conclusion_false, Strictness, decreasing, increasing, relation, increasing_meta, relation_example, relation_counter_example
 from .scale.scale import scale
 # from .shortQuestions import (abbreviation, abbreviation2, abbreviation3,
 #                              english, english2, etymology, etymology2, french,

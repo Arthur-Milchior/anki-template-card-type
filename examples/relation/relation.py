@@ -202,3 +202,24 @@ def relation(left, right):
 
 relation_example = examplesAskedParam(increasing_meta_content)
 relation_counter_example = counterexamplesAskedParam(increasing_meta_content)
+
+conclusion_only_field = "Strictness"
+conclusion_false_field ="Conclusion and premise don't hold"
+
+Strictness = Filled(
+    conclusion_only_field,
+    addBoilerplate([
+        increasing_meta_content,
+        H3("Show that the relation is strict"),
+        br,
+        Answer({conclusion_only_field})
+        ]))
+
+conclusion_false = Filled(
+    conclusion_false_field,
+    addBoilerplate([
+        increasing_meta_content,
+        H3("Show how the conclusion can be false if the premise does not hold"),
+        br,
+        Answer({conclusion_false_field})
+        ]))
